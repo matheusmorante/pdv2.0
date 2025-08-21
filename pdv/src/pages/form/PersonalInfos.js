@@ -1,4 +1,4 @@
-const PersonalInfoFields = () => {
+const PersonalInfos = () => {
     return (
         <div className="flex justify-between flex-wrap gap-4">
             <div className="flex flex-col">
@@ -36,4 +36,4 @@ const PersonalInfoFields = () => {
         </div>
     )
 }
-export default PersonalInfoFields;
+export default PersonalInfos;

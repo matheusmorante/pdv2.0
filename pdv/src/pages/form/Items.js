@@ -1,5 +1,5 @@
 
-const itemFields = () => {
+const Items = () => {
     return (
        <table>
         <tr>
@@ -30,4 +30,4 @@ const itemFields = () => {
       
     )
 }
-export default itemFields;
+export default Items;
