@@ -1,6 +1,6 @@
 import Items from "./itemsTable/Index";
 import React, { useState } from "react";
-import Payments from "./Payments";
+import PaymentsTable from "./paymentsTable/Index";
 import PersonalInfos from "./PersonalInfos";
 
 export type Item = {
@@ -38,7 +38,7 @@ const Form = () => {
                 setFreight={setFreight}
             />
             <div>
-                <Payments />
+                <PaymentsTable />
             </div>
             <PersonalInfos />
             <div>

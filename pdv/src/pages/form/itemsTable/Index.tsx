@@ -12,7 +12,7 @@ interface Props {
     setOrderTotalValue: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const Table = ({ items, setItems, freight, setFreight, orderTotalValue, setOrderTotalValue }: Props) => {
+const itemsTable = ({ items, setItems, freight, setFreight, orderTotalValue, setOrderTotalValue }: Props) => {
     const addItem = () => {
         setItems(prev => [...prev, { description: '', quantity: 1, price: 0, discount: 0, discountIsPercentage: false, itemTotalValue: 0 }]);
     }
@@ -42,4 +42,4 @@ const Table = ({ items, setItems, freight, setFreight, orderTotalValue, setOrder
 
     )
 }
-export default Table;
+export default itemsTable;

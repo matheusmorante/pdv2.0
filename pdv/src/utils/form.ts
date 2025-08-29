@@ -7,7 +7,7 @@ export const itemTotalValue = (price: number, quantity: number, discount: number
   return +(total - discountValue).toFixed(2);
 };
 
-export const toggleDiscountMode = (price: number, discount: number, discountIsPercentage: boolean) => {
+export const convertValue = (price: number, discount: number, isPercentage: boolean) => {
   const p = price || 0;
   const d = discount || 0;
 
@@ -15,15 +15,15 @@ export const toggleDiscountMode = (price: number, discount: number, discountIsPe
     return discount
   }
 
-  if (discountIsPercentage) {
+  if (isPercentage) {
     return +(d / p * 100 ).toFixed(2);
   } else {
     return +(p * (d / 100)).toFixed(2);                                                                                                                                               d.toFixed(2);
   }
 };
 
-export const currencyToNumber = (price: string) => {
-  return Number(price.replace('.', '')
+export const currencyToNumber = (currency: string) => {
+  return Number(currency.replace('.', '')
     .replace(',', '.').replace('R$ ', ''));
 }
 

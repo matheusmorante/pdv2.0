@@ -1,5 +1,5 @@
 import React from "react";
-import { currencyToNumber, itemTotalValue, toggleDiscountMode } from "../../../utils/form";
+import { currencyToNumber, itemTotalValue, convertValue } from "../../../utils/form";
 import { NumericFormat } from 'react-number-format';
 import { Item } from "../Index";
 import PercentModeBtn from "../PercentModeBtn";
@@ -28,7 +28,7 @@ const TFoot = ({ items, setItems }: Props) => {
 
             if (key === 'discountIsPercentage') {
                 const newDiscountIsPercentage = value as boolean;
-                discount = toggleDiscountMode(price, discount, newDiscountIsPercentage);
+                discount = convertValue(price, discount, newDiscountIsPercentage);
                 newItems[idx]['discount'] = discount;
             }
 
