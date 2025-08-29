@@ -1,6 +1,6 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import Order from './pages/Order';
-import Form from './pages/form/Main';
+import Form from './pages/form/Index';
 
 function App() {
   return (
