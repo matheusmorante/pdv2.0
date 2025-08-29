@@ -1,8 +1,9 @@
 import React from "react";
-import {currencyToNumber, itemTotalValue, toggleDiscountMode } from "../../../utils/form";
+import { currencyToNumber, itemTotalValue, toggleDiscountMode } from "../../../utils/form";
 import { NumericFormat } from 'react-number-format';
 import { Item } from "../Index";
 import PercentModeBtn from "../PercentModeBtn";
+
 
 interface Props {
     items: Item[];
@@ -17,17 +18,18 @@ const TFoot = ({ items, setItems }: Props) => {
     ) => {
         setItems((prev: Item[]) => {
             const newItems = [...prev];
-            const price = newItems[idx]['price'];
-            const quantity = newItems[idx]['quantity'];
-            const discount = newItems[idx]['discount'];
-            const discountIsPercentage = newItems[idx]['discountIsPercentage'];
 
             newItems[idx] = { ...newItems[idx], [key]: value };
 
+            const price = newItems[idx]['price'];
+            const quantity = newItems[idx]['quantity'];
+            let discount = newItems[idx]['discount'];
+            const discountIsPercentage = newItems[idx]['discountIsPercentage'];
+
             if (key === 'discountIsPercentage') {
                 const newDiscountIsPercentage = value as boolean;
-                const newDiscount = toggleDiscountMode(price, discount, newDiscountIsPercentage);
-                newItems[idx]['discount'] = newDiscount;
+                discount = toggleDiscountMode(price, discount, newDiscountIsPercentage);
+                newItems[idx]['discount'] = discount;
             }
 
             newItems[idx]['itemTotalValue'] = itemTotalValue(
@@ -36,6 +38,10 @@ const TFoot = ({ items, setItems }: Props) => {
                 discount,
                 discountIsPercentage
             );
+            console.log(price,
+                quantity,
+                discount,
+                discountIsPercentage)
 
             return newItems;
         });
@@ -64,7 +70,6 @@ const TFoot = ({ items, setItems }: Props) => {
                         <td>
                             <NumericFormat
                                 value={item.price}
-                                allowNegative={false}
                                 thousandSeparator="."
                                 prefix={"R$ "}
                                 decimalScale={2}
@@ -73,9 +78,9 @@ const TFoot = ({ items, setItems }: Props) => {
                                     changeItems(idx, 'price', currencyToNumber(e.target.value))}
                             />
                         </td>
-                        <td>
+                        <td className="flex">
+
                             <NumericFormat
-                                allowNegative={false}
                                 thousandSeparator="."
                                 decimalSeparator=","
                                 prefix={item.discountIsPercentage ? '' : "R$ "}
@@ -88,7 +93,16 @@ const TFoot = ({ items, setItems }: Props) => {
                                 {item.discountIsPercentage ? '%' : 'R$'}
                             </PercentModeBtn>
                         </td>
-                        <td>{item.itemTotalValue}</td>
+                        <td>
+                            <NumericFormat
+                                thousandSeparator="."
+                                decimalSeparator=","
+                                prefix={"R$ "}
+                                decimalScale={2}
+                                value={item.itemTotalValue}
+
+                            />
+                        </td>
                     </tr>
                 ))}
         </ tbody>

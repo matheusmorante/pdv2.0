@@ -28,7 +28,7 @@ const Form = () => {
     const [orderTotalValue, setOrderTotalValue] = useState<number>(0);
 
     return (
-        <form className="mx-[200px] p-4 shadow-md">
+        <form className="w-[900px] mx-auto p-4 shadow-md">
             <Items
                 items={items}
                 setItems={setItems}

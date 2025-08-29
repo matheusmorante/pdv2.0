@@ -11,6 +11,10 @@ export const toggleDiscountMode = (price: number, discount: number, discountIsPe
   const p = price || 0;
   const d = discount || 0;
 
+  if (discount === 0) {
+    return discount
+  }
+
   if (discountIsPercentage) {
     return +(d / p * 100 ).toFixed(2);
   } else {

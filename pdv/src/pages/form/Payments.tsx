@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PercentModeBtn from "./PercentModeBtn";
+import { NumericFormat } from "react-number-format";
 
 type Payment = {
     value: string;
@@ -48,15 +49,39 @@ const Payments = () => {
                                 }
                             </select>
                         </td>
-                        <td><input value={payment.value} onChange={e => changePayments(idx, 'value', e.target.value)} className="text-right" /></td>
+                        <td>
+                            <NumericFormat
+                                value={payment.value}
+                                allowNegative={false}
+                                thousandSeparator="."
+                                prefix={"R$ "}
+                                decimalScale={2}
+                                decimalSeparator=","
+                                onChange={
+                                    (e: React.ChangeEvent<HTMLInputElement>) =>
+                                        changePayments(idx, 'value', e.target.value)
+                                }
+                            />
+                        </td>
                         <td className="flex">
-                            <input value={payment.fee} onChange={e => changePayments(idx, 'fee', e.target.value)} className="text-right mr-1" />
-                            
+                            <NumericFormat
+                                value={payment.fee}
+                                allowNegative={false}
+                                thousandSeparator="."
+                                prefix={"R$ "}
+                                decimalScale={2}
+                                decimalSeparator=","
+                                onChange={
+                                    (e: React.ChangeEvent<HTMLInputElement>) =>
+                                        changePayments(idx, 'fee', e.target.value)
+                                }
+                            />
                             <PercentModeBtn action={() => changePayments(idx, 'feeIsPercentage', !payment.feeIsPercentage)}>
                                 {payment.feeIsPercentage ? '%' : 'R$'}
                             </PercentModeBtn>
                         </td>
-                        <td><input value={payment.status} onChange={e => changePayments(idx, 'status', e.target.value)} /></td>
+                        <td>
+                            <input value={payment.status} onChange={e => changePayments(idx, 'status', e.target.value)} /></td>
                         <td></td>
                         <td><i className="bi bi-x-lg" onClick={() => setPayments(prev => prev.filter((_, idxTarget) => idxTarget !== idx))} /></td>
                     </tr>

@@ -35,7 +35,6 @@ const TFoot = ({ items, freight, setFreight, orderTotalValue, setOrderTotalValue
                 <td>
                     <NumericFormat
                         value={freight}
-                        allowNegative={false}
                         thousandSeparator="."
                         prefix={"R$ "}
                         decimalScale={2}
@@ -52,7 +51,6 @@ const TFoot = ({ items, freight, setFreight, orderTotalValue, setOrderTotalValue
                 <td>
                     <NumericFormat
                         value={orderTotalValue}
-                        allowNegative={false}
                         thousandSeparator="."
                         prefix={"R$ "}
                         decimalScale={2}

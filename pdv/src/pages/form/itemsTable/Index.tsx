@@ -14,11 +14,11 @@ interface Props {
 
 const Table = ({ items, setItems, freight, setFreight, orderTotalValue, setOrderTotalValue }: Props) => {
     const addItem = () => {
-        setItems(prev => [...prev, { description: '', quantity: 1, price: 0, discount: 0, discountIsPercentage: false, itemTotalValue: 0 }])
+        setItems(prev => [...prev, { description: '', quantity: 1, price: 0, discount: 0, discountIsPercentage: false, itemTotalValue: 0 }]);
     }
 
     return (
-        <table>
+        <table >
             <thead>
                 <tr>
                     <th>Descrição do Produto</th>
