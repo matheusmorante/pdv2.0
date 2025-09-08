@@ -1,6 +1,6 @@
 const PersonalInfos = () => {
     return (
-        <div className="flex justify-between flex-wrap gap-4">
+        <div className="flex justify-between flex-wrap gap-4 my-12">
             <div className="flex flex-col">
                 <label>Nome Completo</label>
                 <input />

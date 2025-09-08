@@ -10,7 +10,8 @@ const PercentModeBtn = ({ action, children }: props) => {
                 action()
             }
 
-            className="flex w-7 h-7 justify-center items-center bg-gray-300"
+            className="flex w-10 px-1 justify-center items-center bg-gray-300 
+                rounded-r-md hover:bg-gray-400"
         >
             {children}
         </span>

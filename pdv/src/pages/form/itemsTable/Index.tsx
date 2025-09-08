@@ -1,45 +1,58 @@
 import React from "react";
-import TFooter from "./TFooter";
-import TBody from "./TBody";
-import { Item } from "../Index";
+import Footer from "./Footer";
+import Body from "./Body";
+import { Item } from "../types/item.type";
+import { Summary } from "../types/summary.type";
 
 interface Props {
-    items: Item[];
-    setItems: React.Dispatch<React.SetStateAction<Item[]>>;
-    freight: number;
-    setFreight: React.Dispatch<React.SetStateAction<number>>;
-    orderTotalValue: number;
-    setOrderTotalValue: React.Dispatch<React.SetStateAction<number>>;
+    items: Item[],
+    setItems: React.Dispatch<React.SetStateAction<Item[]>>,
+    summary: Summary;
+    setSummary: React.Dispatch<React.SetStateAction<Summary>>
 }
 
-const itemsTable = ({ items, setItems, freight, setFreight, orderTotalValue, setOrderTotalValue }: Props) => {
+const Items = (
+    { items, setItems, summary, setSummary }: Props
+) => {
     const addItem = () => {
         setItems(prev => [...prev, { description: '', quantity: 1, price: 0, discount: 0, discountIsPercentage: false, itemTotalValue: 0 }]);
     }
 
     return (
-        <table >
-            <thead>
-                <tr>
-                    <th>Descrição do Produto</th>
-                    <th>Quantidade</th>
-                    <th>Preço Unitário</th>
-                    <th>Desconto Unitário</th>
-                    <th>Valor Total</th>
-                    <th><i onClick={addItem} className="bi bi-plus-lg" /></th>
-                </tr>
-            </thead>
+        <>
+            <table className="break-words w-full table-fixed border-collapse">
+                <colgroup>
+                    <col className="w-[40%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[2%]" />
+                </colgroup>
 
-            <TBody items={items} setItems={setItems} />
-            <TFooter 
-                items={items}
-                freight={freight}
-                setFreight={setFreight}
-                orderTotalValue={orderTotalValue}
-                setOrderTotalValue={setOrderTotalValue}
-            />
-        </table >
+                <thead>
+                    <tr>
+                        <th className="">Descrição do Produto/Serviço</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <th>Desconto Unitário</th>
+                        <th>Valor Total</th>
+                        <th><i onClick={addItem} className="bi bi-plus-lg" /></th>
+                    </tr>
+                </thead>
+
+                <Body items={items} setItems={setItems} />
+
+                <Footer
+                    items={items}
+                    summary={summary}
+                    setSummary={setSummary}
+                />
+
+            </table >
+
+        </>
 
     )
 }
-export default itemsTable;
+export default Items;

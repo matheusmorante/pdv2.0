@@ -1,37 +1,49 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import TBody from "./TBody";
+import TFoot from "./TFoot";
+import { Payment } from "./Payment.type";
+import { Summary } from "../types/summary.type";
+import AdditionalInformation from "../types/additionalInformation.type";
 
-export type Payment = {
-    value: number;
-    fee: number;
-    feeIsPercentage: boolean;
-    paymentTotalValue: number;
-    status: string;
+type Props = {
+    payments: Payment[],
+    setPayments: React.Dispatch<React.SetStateAction<Payment[]>>,
+    summary: Summary,
+    additionalInformation: AdditionalInformation
 }
-const Payments = () => {
-    const [payments, setPayments] = useState<Payment[]>([{ value: 0, fee: 0, feeIsPercentage: false, paymentTotalValue: 0, status: '' }])
 
-    
+const PaymentsTable = ({ payments, setPayments, summary, additionalInformation }: Props) => {
 
     const addPayment = () => {
-        setPayments(prev => [...prev, { value: 0, fee: 0, feeIsPercentage: false, paymentTotalValue: 0, status: '' }])
+        setPayments(prev => [...prev, { method: 'Verificar', amount: 0, status: '' }])
     }
 
-
     return (
-        <table>
+        <table className="w-[40%] mx-autohj">
+            <colgroup>
+                    <col className="w-[40%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[16%]" />
+                   
+                </colgroup>
             <thead>
+
                 <tr className="">
                     <th>Forma de Pagamento</th>
                     <th>Valor</th>
-                    <th>Juros</th>
                     <th>Status</th>
                     <th><i onClick={addPayment} className="bi bi-plus-lg" /></th>
                 </tr>
             </thead>
-            <TBody payments={payments} setPayments={setPayments}/>
-            
+            <TBody payments={payments} setPayments={setPayments} />
+            <TFoot
+                payments={payments}
+                summary={summary}
+                additionalInformation={additionalInformation}
+            />
+
         </table>
     )
 }
-export default Payments;
+export default PaymentsTable;
