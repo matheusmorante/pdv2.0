@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { Item } from "../types/item.type";
+import Item from "../types/item.type";
 import { NumericFormat } from 'react-number-format';
-import { sumKeyValues } from "./utils";
+import { sumKeyValues } from "../utils";
 import { Summary } from "../types/summary.type";
 
 interface Props {
@@ -16,16 +16,16 @@ const Footer = (
 
     useEffect(() => {
         const totalQuantity = sumKeyValues(items, 'quantity');
-        const totalDiscount = sumKeyValues(items, 'discount');
+        const totalDiscount = items.reduce((acc, item) => {
+            return acc + (item.fixedDiscount * item.quantity)
+        }, 0);
         const itemsTotalValue = sumKeyValues(items, 'itemTotalValue');
-        const itemsSubtotal = itemsTotalValue - totalDiscount;
 
         setSummary((prev) => {
             const newSummary = {...prev};
             newSummary.totalDiscount = totalDiscount;
             newSummary.totalQuantity = totalQuantity;
             newSummary.itemsTotalValue = itemsTotalValue;
-            newSummary.itemsSubtotal = itemsSubtotal;
             return newSummary;
         })
     }, [items])
@@ -35,12 +35,12 @@ const Footer = (
         <tfoot>
             <tr>
                 <th></th>
-                <th>Quant. total</th>
+                <th>Qt. total</th>
                 <th>Subtotal</th>
                 <th>Desc. Total</th>
                 <th>Valor Total</th>
             </tr>
-            <tr className="break-words">
+            <tr className="break-words [&_input]:bg-gray-300">
                 <td className="border-none"></td>
                 <td>
                     <NumericFormat
@@ -70,7 +70,7 @@ const Footer = (
                         value={summary.totalDiscount}
                         thousandSeparator="."
                         prefix={"R$ "}
-                        decimalScale={2}
+                        decimalScale={6}
                         decimalSeparator=","
                         disabled={true}
                     />

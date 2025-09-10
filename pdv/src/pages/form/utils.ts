@@ -10,7 +10,7 @@ export const percentToValue = (price: number, discountPercent: number) => {
         return discountPercent
     }
 
-    return +(p * (d / 100)).toFixed(2);
+    return +(p * (d / 100)).toFixed(4);
 };
 
 export const valueToPercent = (price: number, discountValue: number) => {
@@ -21,15 +21,27 @@ export const valueToPercent = (price: number, discountValue: number) => {
         return discountValue
     }
 
-    return +(d / p * 100).toFixed(2);
+    return +(d / p * 100).toFixed(4);
 };
 
 
-
-
+export function sumKeyValues<T extends Record<string, any>>(
+    array: T[],
+    key: keyof T
+): number {
+    return array.reduce((acc, item) => {
+        const value = item[key];
+        return acc + (typeof value === "number" ? value : 0);
+    }, 0);
+}
 
 export const currencyToNumber = (currency: string) => {
-  return Number(currency.replace('.', '')
-    .replace(',', '.').replace('R$ ', '').replace(' un', ''));
+  return Number(currency
+    .replace('.', '')
+    .replace(',', '.')
+    .replace('R$ ', '')
+    .replace(' un', '')
+    .replace(' %', '')
+);
 }
 

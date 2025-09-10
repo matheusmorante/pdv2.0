@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TBody from "./TBody";
 import TFoot from "./TFoot";
-import { Payment } from "./Payment.type";
+import { Payment } from "../types/Payment.type";
 import { Summary } from "../types/summary.type";
 import AdditionalInformation from "../types/additionalInformation.type";
 

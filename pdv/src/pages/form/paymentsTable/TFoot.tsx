@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Payment } from "./Payment.type";
+import { Payment } from "../types/Payment.type";
 import { NumericFormat } from 'react-number-format';
 import { Summary } from "../types/summary.type";
-import { sumKeyValues } from "../itemsTable/utils";
+import { sumKeyValues } from "../utils";
 import AdditionalInformation from "../types/additionalInformation.type";
 
 interface Props {

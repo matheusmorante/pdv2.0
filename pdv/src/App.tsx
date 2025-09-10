@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
-import Order from './pages/Order';
+import Order from './pages/PrintableWarrantyTerm';
 import Form from './pages/form/Index';
 
 function App() {

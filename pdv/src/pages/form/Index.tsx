@@ -1,9 +1,9 @@
-import ItemsTable from "./itemsTable/Index";
+import ItemsTable from "./ItemsTable/Index";
 import React, { useState } from "react";
-import PaymentsTable from "./paymentsTable/Index";
-import PersonalInfos from "./PersonalInfos";
-import { Item } from './types/item.type';
-import { Payment } from "./paymentsTable/Payment.type";
+import PaymentsTable from "./PaymentsTable/Index";
+import PersonalInfos from "./CustomerInfo";
+import Item from './types/item.type';
+import { Payment } from "./types/Payment.type";
 import { Summary } from "./types/summary.type";
 import AdditionalInformation from "./types/additionalInformation.type";
 import AdditionalInformationInput from "./AdditionalInformationInputs";
@@ -13,9 +13,9 @@ const Form = () => {
         {
             description: '',
             quantity: 1,
-            price: 0,
-            discount: 0,
-            discountIsPercentage: false,
+            unitPrice: 0,
+            fixedDiscount: 0,
+            percentDiscount: 0,
             itemTotalValue: 0
         }
     ]);
@@ -46,10 +46,10 @@ const Form = () => {
     }])
 
     return (
-        <form className="flex flex-col w-[900px] mx-auto p-4 shadow-md
-            [&_input]:bg-gray-200 [&_input]:rounded-md [&_input]:p-0.5
-            [&_input]:px-2
-             [&_select]:bg-gray-200 [&_select]:rounded-md ">
+        <form className="
+            flex flex-col w-[900px] mx-auto p-4 shadow-md gap-6
+            [&_input]:border-1 [&_input]:border-1 [&_input]:outline-blue-300 [&_input]:bg-white [&_input]:rounded-md [&_input]:p-0.5 [&_input]:px-2 [&_select]:rounded-md[&_select]:p-0.5 border-separate border-spacing-16 [&_th]:bg-gray-300
+        ">
             <ItemsTable
                 items={items}
                 setItems={setItems}

@@ -1,8 +1,10 @@
-export type Item = {
+type Item = {
     description: string;
     quantity: number;
-    price: number;
-    discount: number;
-    discountIsPercentage: boolean;
+    unitPrice: number;
+    fixedDiscount: number;
+    percentDiscount: number;
     itemTotalValue: number;
 }
+
+export default Item;

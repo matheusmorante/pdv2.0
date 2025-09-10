@@ -16,6 +16,17 @@ const AdditionalInformationInput = ({ additionalInformation, setAdditionalInform
         })
     }
 
+    const onChangeDeliveryScheduling = (
+        key: keyof AdditionalInformation['deliveryScheduling'],
+        value: string | Date) => {
+        setAdditionalInformation((prev: AdditionalInformation) => {
+            return {
+                ...prev, deliveryScheduling:
+                    { ...prev.deliveryScheduling, [key]: value }
+            };
+        })
+    } 
+
     return (
         <div className="flex w-full justify-end gap-3 mt-6 text-center">
             <div className="flex flex-col">
@@ -25,7 +36,7 @@ const AdditionalInformationInput = ({ additionalInformation, setAdditionalInform
                     value={additionalInformation.seller}
                     onChange={
                         (e: React.ChangeEvent<HTMLInputElement>) =>
-                            onChange('seller', currencyToNumber(e.target.value))
+                            onChange('seller', e.target.value)
                     }
                 />
             </div>
@@ -70,7 +81,7 @@ const AdditionalInformationInput = ({ additionalInformation, setAdditionalInform
                         className="!rounded-r-none !bg-gray-400"
                         onChange={
                             (e: React.ChangeEvent<HTMLInputElement>) =>
-                                onChange('fee', new Date(e.target.value))
+                                onChangeDeliveryScheduling("date", new Date(e.target.value))
                         }
                     />
 
@@ -80,7 +91,7 @@ const AdditionalInformationInput = ({ additionalInformation, setAdditionalInform
                         placeholder="Digite o horário/Período"
                         onChange={
                             (e: React.ChangeEvent<HTMLInputElement>) =>
-                                onChange('fee', e.target.value)
+                                onChangeDeliveryScheduling("time", e.target.value)
                         }
                     />
                 </div>

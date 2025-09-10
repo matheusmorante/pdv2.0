@@ -1,7 +1,7 @@
 import React from "react";
 import { currencyToNumber } from "../utils";
 import { NumericFormat } from 'react-number-format';
-import { Payment } from "../paymentsTable/Payment.type";
+import { Payment } from "../types/Payment.type";
 import paymentMethods from "./paymentMethods";
 
 interface Props {
@@ -65,7 +65,7 @@ const TBody = ({ payments, setPayments }: Props) => {
                     </td>
                     <td>
                         <i
-                            className="bi bi-x-lg"
+                            className="bi bi-trash"
                             onClick={() => setPayments(prev =>
                                 prev.filter((_, idxTarget) => idxTarget !== idx))
                             }
