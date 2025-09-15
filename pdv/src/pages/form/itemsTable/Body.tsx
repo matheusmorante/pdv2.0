@@ -1,6 +1,6 @@
 import React from "react";
 import BodyRow from "./BodyRow";
-import Item from "../types/item.type";
+import Item from "../../types/items.type";
 
 interface Props {
     items: Item[];
@@ -14,27 +14,26 @@ const Body = ({ items, setItems }: Props) => {
         value: string | number
     ) => {
         setItems((prev: Item[]) => {
-            let newItems = [...prev];
-            let item = { ...newItems[idx], [key]: value };
+            const newItems = [...prev];
+            const newItem = { ...newItems[idx], [key]: value };
 
             if (key === 'fixedDiscount' || key === 'unitPrice' || key === 'quantity') {
-                item.percentDiscount = item.fixedDiscount / item.unitPrice * 100;
+                newItem.percentDiscount = newItem.fixedDiscount / newItem.unitPrice * 100;
             }
 
             if (key === 'percentDiscount' || key === 'unitPrice' || key === 'quantity') {
-                item.fixedDiscount = item.unitPrice * item.percentDiscount / 100
+                newItem.fixedDiscount = newItem.unitPrice * newItem.percentDiscount / 100
             }
 
-            item.itemTotalValue = (item.unitPrice - item.fixedDiscount) * item.quantity;
-            newItems[idx] = item;
-            return newItems;
+            newItems[idx] = newItem;
+            return newItems
         });
     };
 
     const deleteItem = (idx: number) => {
-        setItems((prev: Item[]) => prev.filter((_, filterIdx) => {
-            return filterIdx !== idx
-        }))
+        setItems((prev: Item[]) => [...prev].filter((_, filterIdx) =>
+            filterIdx !== idx
+        ))
     }
 
     return (

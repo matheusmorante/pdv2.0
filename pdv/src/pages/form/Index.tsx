@@ -1,49 +1,24 @@
 import ItemsTable from "./ItemsTable/Index";
-import React, { useState } from "react";
-import PaymentsTable from "./PaymentsTable/Index";
-import PersonalInfos from "./CustomerInfo";
-import Item from './types/item.type';
-import { Payment } from "./types/Payment.type";
-import { Summary } from "./types/summary.type";
-import AdditionalInformation from "./types/additionalInformation.type";
-import AdditionalInformationInput from "./AdditionalInformationInputs";
+import { useState } from "react";
+import PaymentsTable from "./Payments/PaymentsTable/Index";
+import PersonalInfos from "./CustomerData";
+import useShipping from "./hooks/useShipping";
+import OrderActions from "./OrderActions";
+import useItems from "./hooks/useItems";
+import usePaymentsData from "./hooks/usePaymentsData";
+import { useCustomerData } from "./hooks/useCustomerData";
+import { calcItemsSummary, calcPaymentSummary } from "../utils";
+import ShippingInputs from "./ShippingInputs";
 
 const Form = () => {
-    const [items, setItems] = useState<Item[]>([
-        {
-            description: '',
-            quantity: 1,
-            unitPrice: 0,
-            fixedDiscount: 0,
-            percentDiscount: 0,
-            itemTotalValue: 0
-        }
-    ]);
-
-    const [summary, setSummary] = useState<Summary>({
-        totalQuantity: 0,
-        itemsSubtotal: 0,
-        totalDiscount: 0,
-        itemsTotalValue: 0
-    });
-
-    const [additionalInformation, setAdditionalInformation] =
-        useState<AdditionalInformation>(
-            {
-                freight: 0,
-                fee: 0,
-                deliveryScheduling: {
-                    date: new Date(),
-                    time: ""
-                },
-                seller: "",
-            }
-        )
-    const [payments, setPayments] = useState<Payment[]>([{
-        method: 'Verificar',
-        amount: 0,
-        status: ''
-    }])
+    const { items, setItems } = useItems();
+    const { shipping, setShipping } = useShipping();
+    const itemsSummary = calcItemsSummary(items);
+    const { paymentsData, setPaymentsData } = usePaymentsData();
+    const paymentsSummary = calcPaymentSummary(paymentsData, itemsSummary, shipping.value)
+    const { customerData, setCustomerData } = useCustomerData();
+    const [observation, setObservation] = useState('');
+    const [seller, setSeller] = useState('');
 
     return (
         <form className="
@@ -53,27 +28,55 @@ const Form = () => {
             <ItemsTable
                 items={items}
                 setItems={setItems}
-                summary={summary}
-                setSummary={setSummary}
+                summary={itemsSummary}
             />
 
-            <AdditionalInformationInput
-                additionalInformation={additionalInformation}
-                setAdditionalInformation={setAdditionalInformation}
+            <ShippingInputs
+                shipping={shipping}
+                setShipping={setShipping}
+            />
+
+            <input
+                className="text-right pr-2"
+                value={seller}
+                onChange={
+                    (e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSeller(e.target.value)
+                }
             />
 
             <PaymentsTable
-                payments={payments}
-                setPayments={setPayments}
-                summary={summary}
-                additionalInformation={additionalInformation}
+                paymentsData={paymentsData}
+                setPaymentsData={setPaymentsData}
+                summary={paymentsSummary}
             />
 
-            <PersonalInfos />
+            <PersonalInfos
+                customerData={customerData}
+                setCustomerData={setCustomerData}
+            />
+
             <div>
                 <label>Observações</label>
-                <input className="w-full min-h-[100px] border border-red-700" />
+                <input
+                    value={observation}
+                    onChange={e => setObservation(e.target.value)}
+                    className="w-full min-h-[100px] border border-red-700"
+                />
             </div>
+
+            <OrderActions order={{
+                items,
+                itemsSummary,
+                paymentsData,
+                paymentsSummary,
+                shipping,
+                seller,
+                customerData,
+                observation
+            }}
+
+            />
         </form>
     )
 }

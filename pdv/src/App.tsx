@@ -1,6 +1,7 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
-import Order from './pages/PrintableWarrantyTerm';
+
 import Form from './pages/form/Index';
+import PrintableReceipt from './pages/PrintableReceipt/Index';
 
 function App() {
   return (
@@ -8,7 +9,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Form />} />
-          <Route path='/order' element={<Order />}/>
+          <Route path='/printable-receipt' element={<PrintableReceipt />}/>
         </Routes>
       </BrowserRouter>
     </>

@@ -1,6 +1,7 @@
-import Item from '../types/item.type';
+import Item from '../../types/items.type';
 import { NumericFormat } from 'react-number-format';
-import { currencyToNumber } from '../utils';
+import { currencyToNumber } from '../../utils';
+import { calcItemTotalValue } from './utils';
 
 interface Props {
     item: Item,
@@ -99,7 +100,7 @@ const BodyRow = ({ item, onChange, onDelete, idx }: Props) => {
                     prefix="R$ "
                     decimalScale={2}
                     disabled={true}
-                    value={item.itemTotalValue}
+                    value={calcItemTotalValue(item)}
                 />
             </td>
             <td>

@@ -1,35 +1,11 @@
-import { useEffect } from "react";
-import Item from "../types/item.type";
 import { NumericFormat } from 'react-number-format';
-import { sumKeyValues } from "../utils";
-import { Summary } from "../types/summary.type";
+import { ItemsSummary } from "../../types/items.type";
 
 interface Props {
-    items: Item[],
-    summary: Summary,
-    setSummary: React.Dispatch<React.SetStateAction<Summary>>
+    summary: ItemsSummary,
 }
 
-const Footer = (
-    { items, summary, setSummary}: Props
-) => {
-
-    useEffect(() => {
-        const totalQuantity = sumKeyValues(items, 'quantity');
-        const totalDiscount = items.reduce((acc, item) => {
-            return acc + (item.fixedDiscount * item.quantity)
-        }, 0);
-        const itemsTotalValue = sumKeyValues(items, 'itemTotalValue');
-
-        setSummary((prev) => {
-            const newSummary = {...prev};
-            newSummary.totalDiscount = totalDiscount;
-            newSummary.totalQuantity = totalQuantity;
-            newSummary.itemsTotalValue = itemsTotalValue;
-            return newSummary;
-        })
-    }, [items])
-
+const Footer = ({ summary }: Props) => {
 
     return (
         <tfoot>

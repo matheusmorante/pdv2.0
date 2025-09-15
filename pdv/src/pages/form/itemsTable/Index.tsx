@@ -1,46 +1,35 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Footer from "./Footer";
 import Body from "./Body";
-import Item from "../types/item.type";
-import { Summary } from "../types/summary.type";
-import { sumKeyValues } from "../utils";
+import {Item, ItemsSummary } from "../../types/items.type";
 
 
 interface Props {
     items: Item[],
-    setItems: React.Dispatch<React.SetStateAction<Item[]>>,
-    summary: Summary;
-    setSummary: React.Dispatch<React.SetStateAction<Summary>>
+    setItems: React.Dispatch<React.SetStateAction<Item[]>>
+    summary: ItemsSummary
 }
 
-const Items = (
-    { items, setItems, summary, setSummary }: Props
-) => {
+const ItemsTable = ({ items, setItems, summary }: Props) => {
     const addItem = () => {
-        setItems(prev => [...prev,
-        {
-            description: '',
-            quantity: 1,
-            unitPrice: 0,
-            fixedDiscount: 0,
-            percentDiscount: 0,
-            itemTotalValue: 0
-        }]);
-    }
-
-    useEffect(() => {
-        setSummary((prev: Summary) => {
-            const newSummary = {...prev};
-            newSummary.itemsTotalValue = sumKeyValues(items, 'itemTotalValue');
-            newSummary.itemsSubtotal = summary.itemsTotalValue + summary.totalDiscount;
-            
-            return newSummary;
+        setItems((prev: Item[]) => {
+            return ([
+                ...prev,
+                {
+                    description: '',
+                    quantity: 1,
+                    unitPrice: 0,
+                    fixedDiscount: 0,
+                    percentDiscount: 0,
+                }
+            ])
         })
-    }, [items])
+    }
 
     return (
         <>
-            <table className="break-words w-full table-fixed border-collapse">
+            <table className="break-words w-full table-fixed border-collapse
+                ">
                 <colgroup>
                     <col className="w-[38%]" />
                     <col className="w-[10%]" />
@@ -64,9 +53,7 @@ const Items = (
                 <Body items={items} setItems={setItems} />
 
                 <Footer
-                    items={items}
                     summary={summary}
-                    setSummary={setSummary}
                 />
 
             </table >
@@ -75,4 +62,5 @@ const Items = (
 
     )
 }
-export default Items;
+
+export default ItemsTable
