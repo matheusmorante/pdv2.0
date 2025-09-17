@@ -1,23 +1,28 @@
-import { calcItemsTotalValue } from "./form/ItemsTable/utils";
+import CustomerData from "./types/customerData.type"
 import { Item, ItemsSummary } from "./types/items.type";
 import { PaymentsData } from "./types/payments.type";
 import Shipping from "./types/Shipping.type";
 
-export const calcItemsSummary = (items: Item[]) => {
-    const totalQuantity = sumKeyValues(items, 'quantity');
-    const totalDiscount = items.reduce((acc, item) => {
-        return acc + (item.fixedDiscount * item.quantity)
-    }, 0);
-    const itemsTotalValue = calcItemsTotalValue(items);
-    const itemsSubtotal = itemsTotalValue + totalDiscount;
+export const calcItemsTotalValue = (items: Item[]) => {
+    return items.reduce((acc, item) => {
+        return acc + calcItemTotalValue(item)
+    }, 0)
+};
 
-    return {
-        totalQuantity,
-        itemsSubtotal,
-        totalDiscount,
-        itemsTotalValue,
-    }
-}
+export const getFixedDiscount = (item: Item) => {
+    if(item.discountType === 'fixed') return item.discount;
+    else return (item.unitPrice * item.quantity * item.discount) / 100;
+};
+
+export function sumKeyValues<T extends Record<string, any>>(
+    array: T[],
+    key: keyof T
+): number {
+    return array.reduce((acc, item) => {
+        const value = item[key];
+        return acc + (typeof value === "number" ? value : 0);
+    }, 0);
+};
 
 export const calcPaymentSummary = (
     paymentsData: PaymentsData,
@@ -30,55 +35,56 @@ export const calcPaymentSummary = (
     const totalOrderValue = itemsSummary.itemsTotalValue + interest
         + shippingValue;
     const totalAmountPaid = sumKeyValues(payments, 'amount');
-    const amountRemaining = totalOrderValue;
+    const amountRemaining = totalOrderValue - totalAmountPaid;
 
     return {
         totalOrderValue,
         totalAmountPaid,
         amountRemaining
     }
-}
-
-export const percentToValue = (price: number, discountPercent: number) => {
-    const p = price || 0;
-    const d = discountPercent || 0;
-
-    if (discountPercent === 0) {
-        return discountPercent
-    }
-
-    return +(p * (d / 100)).toFixed(4);
 };
 
-export const valueToPercent = (price: number, discountValue: number) => {
-    const p = price || 0;
-    const d = discountValue || 0;
-
-    if (discountValue === 0) {
-        return discountValue
+export const calcItemTotalValue = (item: Item) => {
+   if (item.discountType === 'fixed') {
+        return (item.unitPrice - item.discount) * item.quantity;
+    } else if (item.discountType === 'percentage') {
+        return item.unitPrice * item.quantity * (1 - item.discount / 100);
+    } else {
+        return item.unitPrice * item.quantity;
     }
-
-    return +(d / p * 100).toFixed(4);
 };
 
+export const stringifyFullAddress = (
+    { street, number, complement, neighborhood, city }
+        : CustomerData['fullAddress']
+) => {
+    return [street, number, complement, neighborhood, city]
+        .filter(Boolean)
+        .join(', ')
+};
 
-export function sumKeyValues<T extends Record<string, any>>(
-    array: T[],
-    key: keyof T
-): number {
-    return array.reduce((acc, item) => {
-        const value = item[key];
-        return acc + (typeof value === "number" ? value : 0);
-    }, 0);
-}
+export const stringifyItems = (items: Item[]) => {
+    return items.map(item => `${item.description} (${item.quantity} UN)`)
+        .join(', ')
+};
 
-export const currencyToNumber = (currency: string) => {
-    return Number(currency
-        .replace('.', '')
-        .replace(',', '.')
-        .replace('R$ ', '')
-        .replace(' un', '')
-        .replace(' %', '')
-    );
-}
+export const dateNow = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+     const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = String(now.getFullYear());
+      
+      return `${day}/${month}/${year}`
+};
+
+export const formatDate = (value: Date) => {
+    const date = new Date(value);
+    return date.toLocaleDateString("pt-BR", {
+        weekday: "long",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+};
+
 
