@@ -6,7 +6,7 @@ interface Props {
 
 const CustomerDataInputs = ({customerData}:Props) => {
     return (
-        <section className="flex flex-wrap my-6 gap-x-6 gap-y-2">
+        <div className="flex flex-wrap my-6 gap-x-6 gap-y-2">
             <div>
                 <strong>Nome Completo: </strong>
                 {customerData.fullName}
@@ -35,7 +35,7 @@ const CustomerDataInputs = ({customerData}:Props) => {
                 <strong>Cidade: </strong>
                 {customerData.fullAddress.city}
             </div>
-        </section>
+        </div>
     )
 }
 export default CustomerDataInputs

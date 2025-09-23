@@ -1,16 +1,15 @@
+type FeeType = 'percentage' | 'fixed';
 
 export type Payment = {
     method: string;
     amount: number;
+    fee: number;
+    feeType: FeeType;
     status: string;
 }
 
-export type PaymentsData = {
-  interest: number
-  list: Payment[]
-}
-
 export type PaymentsSummary = {
+    totalPaymentsFee: number;
     totalOrderValue: number,
     totalAmountPaid: number,
     amountRemaining: number

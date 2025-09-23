@@ -1,7 +1,7 @@
 import React from "react";
 import Footer from "./Footer";
 import Body from "./Body";
-import {Item, ItemsSummary } from "../../types/items.type";
+import { Item, ItemsSummary } from "../../types/items.type";
 
 
 interface Props {
@@ -19,7 +19,7 @@ const ItemsTable = ({ items, setItems, summary }: Props) => {
                     description: '',
                     quantity: 1,
                     unitPrice: 0,
-                    discount: 0,
+                    unitDiscount: 0,
                     discountType: 'fixed'
                 }
             ])
@@ -28,25 +28,26 @@ const ItemsTable = ({ items, setItems, summary }: Props) => {
 
     return (
         <>
-            <table className="break-words w-full table-fixed border-collapse
-                ">
+            <table className="break-words w-full table-fixed border-collapse">
                 <colgroup>
                     <col className="w-[38%]" />
                     <col className="w-[10%]" />
-                    <col className="w-[12%]" />
-                    <col className="w-[22%]" />
-                    <col className="w-[12%]" />
+                    <col className="w-[15%]" />
+                    <col className="w-[20%]" />
+                    <col className="w-[15%]" />
                     <col className="w-[2%]" />
                 </colgroup>
 
                 <thead>
-                    <tr>
+                    <tr >
                         <th className="">Descrição do Produto/Serviço</th>
                         <th>Quant.</th>
                         <th>Preço Un.</th>
                         <th>Desconto Unitário</th>
                         <th>Valor Total</th>
-                        <th><i onClick={addItem} className="bi bi-plus-lg" /></th>
+                        <td className="border-none">
+                            <i onClick={addItem} className="bi bi-plus-lg" />
+                        </td>
                     </tr>
                 </thead>
 

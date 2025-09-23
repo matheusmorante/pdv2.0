@@ -1,58 +1,70 @@
 import ItemsTable from "./ItemsTable/Index";
 import { useState } from "react";
-import PaymentsTable from "./Payments/PaymentsTable/Index";
+import PaymentsTable from "./PaymentsTable/Index";
 import PersonalInfos from "./CustomerData";
 import useShipping from "./hooks/useShipping";
 import OrderActions from "./OrderActions";
 import useItems from "./hooks/useItems";
-import usePaymentsData from "./hooks/usePaymentsData";
+import usePaymentsData from "./hooks/usePayments";
 import { useCustomerData } from "./hooks/useCustomerData";
-import { calcItemsSummary } from "./pdvUtils"; 
-import { calcPaymentSummary } from "../utils"; 
+import { calcItemsSummary } from "./pdvUtils";
+import { calcPaymentsSummary } from "../utils/calculations";
 import ShippingInputs from "./ShippingData";
+import Seller from "./Seller";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const PdvPage = () => {
     const { items, setItems } = useItems();
     const { shipping, setShipping } = useShipping();
     const itemsSummary = calcItemsSummary(items);
-    const { paymentsData, setPaymentsData } = usePaymentsData();
-    const paymentsSummary = calcPaymentSummary(paymentsData, itemsSummary, shipping.value)
+    const { payments, setPayments } = usePaymentsData();
+    const paymentsSummary = calcPaymentsSummary(
+        payments, itemsSummary, shipping.value
+    );
     const { customerData, setCustomerData } = useCustomerData();
     const [observation, setObservation] = useState('');
     const [seller, setSeller] = useState('');
 
     return (
-        <form className="
-            flex flex-col w-[900px] mx-auto p-4 shadow-md gap-6
-            [&_input]:border-1 [&_input]:border-1 [&_input]:outline-blue-300 [&_input]:bg-white [&_input]:rounded-md [&_input]:p-0.5 [&_input]:px-2 [&_select]:rounded-md[&_select]:p-0.5 border-separate border-spacing-16 [&_th]:bg-gray-300
-        ">
+        <form
+            className="
+                flex flex-col w-[900px] mx-auto p-4 shadow-lg shadow-slate-400 
+                gap-6 [&_th]:border-2 [&_td]:border-2 [&_input]:bg-white [&_td]:px-1
+                [&_td]:border-gray-200 [&_th]:bg-gray-300 [&_th]:py-1
+                [&_td]:py-1 [&_input]:px-2 focus:[&_input]:outline-none
+                mt-2 
+            "
+        >
+            <ToastContainer
+                position="top-center"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                draggable
+            />
+
             <ItemsTable
                 items={items}
                 setItems={setItems}
                 summary={itemsSummary}
             />
 
-            <ShippingInputs
-                shipping={shipping}
-                setShipping={setShipping}
-            />
+            <div className="flex">
+                <Seller seller={seller} setSeller={setSeller} />
 
-            <input
-                className="text-right pr-2"
-                value={seller}
-                onChange={
-                    (e: React.ChangeEvent<HTMLInputElement>) =>
-                        setSeller(e.target.value)
-                }
-            />
+                <ShippingInputs
+                    shipping={shipping}
+                    setShipping={setShipping}
+                />
+            </div>
 
             <PaymentsTable
-                paymentsData={paymentsData}
-                setPaymentsData={setPaymentsData}
+                payments={payments}
+                setPayments={setPayments}
                 summary={paymentsSummary}
             />
-            
-           
 
             <PersonalInfos
                 customerData={customerData}
@@ -71,12 +83,13 @@ const PdvPage = () => {
             <OrderActions order={{
                 items,
                 itemsSummary,
-                paymentsData,
+                payments,
                 paymentsSummary,
                 shipping,
                 seller,
                 customerData,
-                observation
+                observation,
+                date: ''
             }} />
 
         </form>

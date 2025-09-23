@@ -1,7 +1,10 @@
 
 import Item from "../../types/items.type";
 import { NumericFormat } from "react-number-format";
-import { calcItemTotalValue, getFixedDiscount } from "../../utils";
+import { calcItemTotalValue, getFixedDiscount } from "../../utils/calculations";
+import CurrencyInput from "../../../components/CurrencyInput";
+import CurrencyDisplay from "../../../components/CurrencyDisplay";
+import UnitDisplay from "../../../components/UnitDisplay";
 
 interface Props {
     items: Item[];
@@ -13,47 +16,18 @@ const Body = ({ items }: Props) => {
             {
                 items.map((item, idx) => (
                     <tr key={idx}>
-                        <td className="pl-2">
-                            {item.description}
+                        <td className="pl-2">{item.description}</td>
+                        <td>
+                            <UnitDisplay value={item.quantity} />
                         </td>
                         <td>
-                            <NumericFormat
-                                className="w-full text-right pr-2"
-                                value={item.quantity}
-
-                                decimalSeparator=""
-                                suffix=" un"
-                            />
+                            <CurrencyDisplay value={item.unitPrice} />
                         </td>
                         <td>
-                            <NumericFormat
-                                value={item.unitPrice}
-                                thousandSeparator="."
-                                prefix="R$ "
-                                decimalScale={2}
-                                decimalSeparator=","
-                                className="w-full text-right pr-2"
-                            />
+                            <CurrencyDisplay value={getFixedDiscount(item)} />
                         </td>
                         <td>
-                            <NumericFormat
-                                value={getFixedDiscount(item)}
-                                thousandSeparator="."
-                                prefix={"R$ "}
-                                decimalScale={2}
-                                decimalSeparator=","
-                                className="w-full text-right pr-2"
-                            />
-                        </td>
-                        <td>
-                            <NumericFormat
-                                value={calcItemTotalValue(item)}
-                                thousandSeparator="."
-                                prefix="R$ "
-                                decimalScale={2}
-                                decimalSeparator=","
-                                className="w-full text-right pr-2"
-                            />
+                            <CurrencyDisplay value={calcItemTotalValue(item)} />
                         </td>
                     </tr>
                 ))

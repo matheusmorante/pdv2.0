@@ -23,11 +23,13 @@ const ShippingData = ({ shipping, setShipping }: Props) => {
                     { ...prev.scheduling, [key]: value }
             };
         })
-            
+
     };
 
     return (
-        <div className="flex w-full justify-end gap-3 mt-6 text-center">
+        <div className="flex w-full justify-end gap-6 text-center 
+            [&_input]:border-b-2 [&_input]:border-gray-300
+             focus:[&_input]:border-blue-400">
             <div className="flex flex-col">
                 <label>Frete</label>
                 <NumericFormat
@@ -45,14 +47,13 @@ const ShippingData = ({ shipping, setShipping }: Props) => {
                 />
             </div>
             <div className="flex flex-col">
-                <label>Agendamento da Entrega/Retirada</label>
-                <div className="flex w-full text-right pr-2 ">
+                <label>Agendamento da Entrega</label>
+                <div className="flex w-full text-right pr-2 gap-2">
                     <input
                         type='date'
-                        className="!rounded-r-none !bg-gray-400"
                         onChange={
                             (e: React.ChangeEvent<HTMLInputElement>) =>
-                                onChangeScheduling("date", new Date(e.target.value))
+                                onChangeScheduling("date", e.target.value)
                         }
                     />
 

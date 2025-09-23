@@ -1,5 +1,6 @@
 import { NumericFormat } from 'react-number-format';
 import { Payment }  from "../../types/payments.type";
+import CurrencyDisplay from '../../../components/CurrencyDisplay';
 
 interface Props {
     payments: Payment[];
@@ -10,21 +11,13 @@ const Body= ({ payments }: Props) => {
         <tbody>
             {payments.map((payment) => (
                 <tr>
-                    <td>
+                    <td className='pl-2'>
                         {payment.method}
                     </td>
                     <td>
-                        <NumericFormat
-                            className="w-full"
-                            value={payment.amount}
-                            allowNegative={false}
-                            thousandSeparator="."
-                            prefix={"R$ "}
-                            decimalScale={2}
-                            decimalSeparator=","
-                        />
+                        <CurrencyDisplay value={payment.amount}/>
                     </td>
-                    <td>
+                    <td className='pl-2'>
                         {payment.status}
                     </td>
                 </tr>

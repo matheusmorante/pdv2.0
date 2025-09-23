@@ -4,7 +4,7 @@ export type Item = {
     description: string;
     quantity: number;
     unitPrice: number;
-    discount: number;
+    unitDiscount: number;
     discountType: DiscountType;
 }
 

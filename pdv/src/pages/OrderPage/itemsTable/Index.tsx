@@ -14,11 +14,11 @@ const ItemsTable = ({ items, summary }: Props) => {
     return (
         <table className="break-words w-full [&_td]:border-2 [&_th]:border-2">
             <colgroup>
-                <col className="w-[48%]" />
+                <col className="w-[40%]" />
                 <col className="w-[10%]" />
+                <col className="w-[16%]" />
                 <col className="w-[12%]" />
-                <col className="w-[12%]" />
-                <col className="w-[12%]" />
+                <col className="w-[16%]" />
             </colgroup>
             <thead>
                 <tr>

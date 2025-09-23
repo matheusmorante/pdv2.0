@@ -7,7 +7,7 @@ const useShipping = () => {
             {
                 value: 0,
                 scheduling: {
-                    date: new Date(),
+                    date: "",
                     time: ""
                 },
             }

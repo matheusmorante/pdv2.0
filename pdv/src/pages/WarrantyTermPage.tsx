@@ -1,4 +1,4 @@
-import { dateNow, stringifyFullAddress, stringifyItems } from './utils';
+import { dateNow, stringifyFullAddress, stringifyItems} from './utils/fomatters';
 
 const WarrantyTermPage = () => {
     const storedOrder = sessionStorage.getItem('order');
@@ -19,7 +19,10 @@ const WarrantyTermPage = () => {
                 }
             </p>
             <p><strong>Telefone: </strong> {order.customerData.phone}</p>
-            <p><strong>Produto(s): </strong>{stringifyItems(order.items)}</p>
+            <p>
+                <strong>Produto(s): </strong>
+                {stringifyItems(order.items)}
+            </p>
             <p><strong>Data da Compra:</strong> {date}</p>
             <br />
             <p><strong>Garantia:</strong></p>

@@ -11,7 +11,7 @@ const ShippingData = ({ shipping }: Props) => {
 
 
     return (
-        <section className='h-[100px] w-[40%]'>
+        <section className='flex flex-col h-[100px] gap-2'>
             <div>
                 <strong>Valor do frete: </strong>
                 <NumericFormat
@@ -21,6 +21,7 @@ const ShippingData = ({ shipping }: Props) => {
                     prefix={"R$ "}
                     decimalScale={2}
                     decimalSeparator=","
+                    disabled={true}
                 />
             </div>
             <div>

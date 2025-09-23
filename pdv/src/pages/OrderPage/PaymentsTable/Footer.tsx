@@ -1,5 +1,5 @@
 import { PaymentsSummary } from "../../types/payments.type";
-import { NumericFormat } from 'react-number-format';
+import CurrencyDisplay from "../../../components/CurrencyDisplay";
 
 interface Props {
     summary: PaymentsSummary,
@@ -7,20 +7,17 @@ interface Props {
 
 const TFoot = ({ summary }: Props) => {
     return (
-        <tfoot>
+         <tfoot>
             <tr>
-                <td>Valor do Pedido</td>
+                <th>Valor Total de Juros</th>
+                <th>Valor do Pedido</th>
             </tr>
             <tr>
                 <td>
-                    <NumericFormat
-                        value={summary.totalOrderValue}
-                        thousandSeparator="."
-                        prefix={"R$ "}
-                        decimalScale={2}
-                        decimalSeparator=","
-                        disabled={false}
-                    />
+                    <CurrencyDisplay value={summary.totalPaymentsFee} />
+                </td>
+                <td>
+                    <CurrencyDisplay value={summary.totalOrderValue} />
                 </td>
             </tr>
         </tfoot>

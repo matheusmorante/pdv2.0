@@ -7,7 +7,7 @@ const useItems = () => {
                 description: '',
                 quantity: 1,
                 unitPrice: 0,
-                discount: 0,
+                unitDiscount: 0,
                 discountType: 'fixed',
             }
         ])

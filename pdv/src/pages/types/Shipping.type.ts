@@ -1,7 +1,7 @@
 type Shipping= {
     value: number,
     scheduling: {
-        date: Date,
+        date: string,
         time: string;
     }
 };

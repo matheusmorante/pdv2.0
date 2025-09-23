@@ -1,22 +1,25 @@
 import Item from '../../types/items.type';
-import { NumericFormat } from 'react-number-format';
-import { currencyToNumber } from '../pdvUtils';
-import { calcItemTotalValue } from '../../utils';
+import { calcItemTotalValue } from '../../utils/calculations';
+import CurrencyOrPercentInput from '../../../components/CurrencyOrPercentInput';
+import UnitInput from './UnitInput';
+import CurrencyInput from '../../../components/CurrencyInput';
+import ToggleValueTypeBtn from '../ToggleValueTypeBtn';
+import CurrencyDisplay from '../../../components/CurrencyDisplay';
 
 interface Props {
     item: Item,
     onChange: (idx: number, key: keyof Item, value: number | string) => void,
-    toggleDiscountType: (idx: number) => void,
+    onToggleDiscountType: () => void,
     onDelete: () => void,
     idx: number
 }
 
-const BodyRow = ({ item, onChange, toggleDiscountType, onDelete, idx }: Props) => {
+const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx }: Props) => {
     return (
         <tr key={idx}>
-            <td className=" ">
+            <td>
                 <input
-                    className="w-full"
+                    className="w-full pl-2"
                     value={item.description}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         onChange(idx, 'description', e.target.value)
@@ -24,79 +27,49 @@ const BodyRow = ({ item, onChange, toggleDiscountType, onDelete, idx }: Props) =
                 />
             </td>
             <td>
-                <NumericFormat
-                    className="w-full text-right"
+                <UnitInput
                     value={item.quantity}
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    decimalScale={0}
-                    suffix=" un"
-                    onChange={
-                        (e: React.ChangeEvent<HTMLInputElement>) =>
-                            onChange(idx, 'quantity', currencyToNumber(e.target.value))
+                     onChange={
+                        (value: number) => onChange(idx, 'quantity', value)
                     }
                 />
             </td>
             <td>
-                <NumericFormat
-                    className="w-full text-right"
+                <CurrencyInput
                     value={item.unitPrice}
-                    thousandSeparator="."
-                    prefix="R$ "
-                    decimalScale={2}
-                    decimalSeparator=","
                     onChange={
-                        (e: React.ChangeEvent<HTMLInputElement>) =>
-                            onChange(
-                                idx,
-                                'unitPrice',
-                                currencyToNumber(e.target.value)
-                            )
+                        (
+                            value: number
+                        ) => onChange(
+                            idx, 'unitPrice', value
+                        )
                     }
                 />
             </td>
             <td>
-                <div className="flex w-full">
-                    <NumericFormat
-                        className="w-[50%] text-right !rounded-r-none"
-                        thousandSeparator="."
-                        decimalSeparator=","
-                        prefix={
-                            item.discountType === "fixed" ? "R$ " : ""
-                        }
-                        suffix={
-                            item.discountType === "fixed" ? "" : " %"
-                        }
-                        decimalScale={2}
-                        value={item.discount}
+                <div className="flex pr-2">
+                    <CurrencyOrPercentInput
+                        prefix={item.discountType === "fixed" ? "R$ " : ""}
+                        suffix={item.discountType === "fixed" ? "" : " %"}
+                        value={item.unitDiscount}
                         onChange={
-                            (e: React.ChangeEvent<HTMLInputElement>) =>
-                                onChange(
-                                    idx,
-                                    'discount',
-                                    currencyToNumber(e.target.value)
-                                )
+                            (
+                                value: number
+                            ) => onChange(
+                                idx, 'unitDiscount', value
+                            )
                         }
                     />
-                    <div className='w-[50%]'
-                        onClick={() => toggleDiscountType(idx)}
-                    >
+
+                    <ToggleValueTypeBtn onClick={onToggleDiscountType}>
                         {item.discountType === 'fixed' ? 'R$' : '%'}
-                    </div>
+                    </ToggleValueTypeBtn>
                 </div>
             </td>
             <td>
-                <NumericFormat
-                    className="w-full text-right"
-                    thousandSeparator="."
-                    decimalSeparator=","
-                    prefix="R$ "
-                    decimalScale={2}
-                    disabled={true}
-                    value={calcItemTotalValue(item)}
-                />
+                <CurrencyDisplay value={calcItemTotalValue(item)} />
             </td>
-            <td>
+            <td className='!border-none text-center'>
                 <i className='bi bi-trash' onClick={onDelete} />
             </td>
         </tr>
