@@ -12,7 +12,6 @@ const CurrencyOrPercentInput = ({ value, onChange, prefix, suffix }: Props) => {
         <NumericFormat
             className="w-full text-right"
             value={value}
-            allowNegative={false}
             thousandSeparator="."
             decimalScale={2}
             decimalSeparator=","

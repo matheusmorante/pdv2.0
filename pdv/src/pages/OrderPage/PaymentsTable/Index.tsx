@@ -10,7 +10,7 @@ type Props = {
 const PaymentsTable = ({ payments, summary }: Props) => {
 
     return (
-        <table className="break-words w-full [&_td]:border-2 [&_th]:border-2
+        <table className="break-words w-[70%] [&_td]:border-2 [&_th]:border-2
             [&_th]:font-bold [&_th]:text-center">
             <colgroup>
                     <col className="w-[35%]" />

@@ -11,7 +11,7 @@ const ShippingData = ({ shipping }: Props) => {
 
 
     return (
-        <section className='flex flex-col h-[100px] gap-2'>
+        <section className='flex flex-col h-[100px] gap-2 w-[30%]'>
             <div>
                 <strong>Valor do frete: </strong>
                 <NumericFormat

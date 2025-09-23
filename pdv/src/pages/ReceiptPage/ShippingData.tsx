@@ -11,7 +11,7 @@ const ShippingData = ({ shipping }: Props) => {
 
 
     return (
-        <section className='h-[100px]'>
+        <section className='h-[100px] w-[40%]'>
             <div>
                 <strong>Valor do frete: </strong>
                 <NumericFormat

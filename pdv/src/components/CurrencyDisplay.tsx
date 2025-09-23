@@ -9,7 +9,6 @@ const CurrencyDisplay = ({ value }: Props) => {
         <NumericFormat
             className="w-full text-end"
             value={value}
-            allowNegative={false}
             disabled={true}
             thousandSeparator="."
             prefix={"R$ "}

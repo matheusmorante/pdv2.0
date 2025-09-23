@@ -10,7 +10,6 @@ const CurrencyInput = ({ value, onChange }: Props) => {
         <NumericFormat
             className="w-full text-right"
             value={value}
-            allowNegative={false}
             disabled={false}
             thousandSeparator="."
             prefix={"R$ "}

@@ -15,7 +15,7 @@ const PaymentsTable = ({ payments, summary }: Props) => {
     }, []);
 
     return (
-        <table className=" w-300px break-words [&_td]:border-2 [&_th]:border-2">
+        <table className=" w-[60%] break-words [&_td]:border-2 [&_th]:border-2">
             <colgroup>
                 <col className="w-[40%]" />
                 <col className="w-[30%]" />
