@@ -9,13 +9,12 @@ const ReceiptPage = () => {
     const order = storedOrder ? JSON.parse(storedOrder) : null;
 
     return (
-        <div className="flex flex-col gap-2 [&_th]:bg-gray-400 [&_td]:bg-white
+        <div className="flex flex-col gap-5 [&_th]:bg-gray-400 [&_td]:bg-white
          [&_input]:px-2 [&_input]:bg-white">
-            <Header />
-            <div><strong>Vendedor:</strong> {order.seller}</div>
+            <Header seller={order.seller}/>
             <CustomerData customerData={order.customerData} />
             <ItemsTable items={order.items} summary={order.itemsSummary} />
-            <div className="flex flex-row justify-around gap-6">
+            <div className="flex w-full justify-between gap-6">
                 {
                     order.shipping.scheduling.time &&
                     <ShippingData shipping={order.shipping} />

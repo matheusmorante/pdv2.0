@@ -1,12 +1,16 @@
 import logo from '../../assets/logo.jpeg';
 
-const Header = () => {
+interface Props {
+  seller: string;
+}
+
+const Header = ({seller}:Props ) => {
     return (
-        <header className='flex justify-between h-[100px]'>
+        <header className='flex justify-between '>
             <div>
-                <img src={logo} className='h-full' />
+                <img src={logo} className='h-[150px]' />
             </div>
-            <div>
+            <div className='h-full'>
                 <p>Móveis Morante</p>
                 <p>
                     <strong>CNPJ: </strong>
@@ -20,6 +24,7 @@ const Header = () => {
                     <strong>Contato: </strong>
                     41997493547 | 41992244631
                 </p>
+                <p><strong>Vendedor:</strong> {seller}</p>
             </div>
         </header>
     )

@@ -1,5 +1,6 @@
 import Item from "../../types/items.type";
 import Footer from "./Footer";
+import { useEffect } from "react";
 import { ItemsSummary } from "../../types/items.type";
 import Body from "./Body";
 
@@ -9,6 +10,11 @@ interface Props {
 }
 
 const ItemsTable = ({ items, summary }: Props) => {
+
+    useEffect(() => {
+        window.print();
+    }, []);
+
     return (
         <table className="break-words w-full [&_td]:border-2 [&_th]:border-2">
             <colgroup>
