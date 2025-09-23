@@ -22,11 +22,16 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
     }
 
     return (
-        <div className="[&_div_input]:border-b-2
-         [&_div_input]:border-gray-300 focus:[&_input]:border-blue-400">
+        <div className="[&_div_input]:border-b-2 [&_div_input]:border-gray-300 
+        focus:[&_input]:border-blue-400">
             <a href={route} target="_blank" className="bg-red-600 p-2 font-bold">
                 <i className="bi bi-geo-alt-fill mr-2 " />
                 Ver Endereço no Google Maps
+            </a>
+
+             <a href={`http://wa.me/${customerData.phone}`} target="_blank" className="bg-green-600 p-2 font-bold">
+                <i className="bi bi-phone mr-2 " />
+                Verificar Whatsapp
             </a>
             <div className="flex justify-between flex-wrap gap-4 my-6">
 
