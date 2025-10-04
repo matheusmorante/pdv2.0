@@ -1,7 +1,7 @@
 import CustomerData from "../types/customerData.type"
 import { Item} from "../types/items.type";
 import { Payment} from "../types/payments.type";
-import { calcItemTotalValue } from "./calculations";
+import { calcItemTotalValue, calcPaymentTotalValue } from "./calculations";
 
 export const stringifyFullAddress = (
     { street, number, complement, neighborhood, city }
@@ -36,7 +36,8 @@ export const stringifyItemsWithValues = (items: Item[]) => {
 
 export const stringifyPayments = (payments: Payment[]) => {
     return payments.map(payment => {
-        return `${payment.method} | R$ ${payment.amount} | Status: ${payment.status}`
+        const totalValue = calcPaymentTotalValue(payment);
+        return `${payment.method} | R$ ${totalValue} | Status: ${payment.status}`
     }).join('\n')
 }
 

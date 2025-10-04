@@ -33,9 +33,14 @@ export function sumKeyValues<T extends Record<string, any>>(
     }, 0);
 };
 
+export const calcPaymentTotalValue = (payment: Payment): number => {
+    const fixedFee = getFixedFee(payment);
+    return payment.amount + fixedFee
+};
+
 export const calcPaymentsTotalValue = (payments: Payment[]): number => {
     return payments.reduce((acc, payment) => {
-        return acc + payment.amount
+        return acc + calcPaymentTotalValue(payment)
     }, 0)
 }
 

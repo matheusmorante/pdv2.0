@@ -4,6 +4,8 @@ import paymentMethods from "./paymentMethods";
 import CurrencyInput from '../../../components/CurrencyInput';
 import ToggleValueTypeBtn from '../ToggleValueTypeBtn';
 import CurrencyOrPercentInput from '../../../components/CurrencyOrPercentInput';
+import CurrencyDisplay from '../../../components/CurrencyDisplay';
+import { calcPaymentTotalValue } from '../../utils/calculations';
 
 interface Props {
     payment: Payment,
@@ -57,6 +59,9 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                         {payment.feeType === 'fixed' ? 'R$' : '%'}
                     </ToggleValueTypeBtn>
                 </div>
+            </td>
+            <td>
+                <CurrencyDisplay value={calcPaymentTotalValue(payment)}/>
             </td>
             <td>
                 <input

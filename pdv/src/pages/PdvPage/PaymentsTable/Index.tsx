@@ -29,6 +29,7 @@ const PaymentsTable = ({ payments, setPayments, summary }: Props) => {
                 <col className="w-[30%]" />
                 <col className="w-[15%]" />
                 <col className="w-[15%]" />
+                <col className="w-[15%]" />
                 <col className="w-[35%]" />
                 <col className="w-[5%] [&_td]:bg-white [&_td]:border-white" />
             </colgroup>
@@ -37,6 +38,7 @@ const PaymentsTable = ({ payments, setPayments, summary }: Props) => {
                     <th>Forma de Pagamento</th>
                     <th>Valor</th>
                     <th>Taxa</th>
+                    <th>Total a Pagar</th>
                     <th>Status</th>
                     <th className='border-none !bg-white'>
                         <i onClick={addPayment} className="bi bi-plus-lg" />

@@ -10,6 +10,9 @@ export const shippingOrderWhatsappUrl = (order: Order) => {
     const time = order.shipping.scheduling.time;
     const customer = order.customerData;
     const message = `
+____________________
+
+
 *Novo Pedido para ${order.customerData.fullName}* 📦
 
 𝐈𝐌𝐏𝐎𝐑𝐓𝐀𝐍𝐓:
@@ -64,5 +67,5 @@ R$ ${order.paymentsSummary.totalOrderValue}
 ${stringifyPayments(order.payments)}
 `;
 
-    return `https://api.whatsapp.com/send?phone=${customer.phone}&text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${customer.phone}&text=${encodeURIComponent(message)}`;
 }
