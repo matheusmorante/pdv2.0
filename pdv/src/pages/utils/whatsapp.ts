@@ -60,6 +60,9 @@ ${stringifyFullAddress(customer.fullAddress)}
 🛒 *Itens:*
 ${stringifyItemsWithValues(order.items)}
 
+🚛 *Valor do Frete:*
+${order.shipping.value}
+
 *Valor Total do Pedido:* 
 R$ ${order.paymentsSummary.totalOrderValue}
 
@@ -67,5 +70,5 @@ R$ ${order.paymentsSummary.totalOrderValue}
 ${stringifyPayments(order.payments)}
 `;
 
-    return `https://wa.me/${customer.phone}&text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${customer.phone.trim()}?text=${encodeURIComponent(message)}`;
 }
