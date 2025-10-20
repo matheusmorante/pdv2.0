@@ -13,6 +13,9 @@ export const shippingOrderWhatsappUrl = (order: Order) => {
 ____________________
 
 
+
+
+
 *Novo Pedido para ${order.customerData.fullName}* 📦
 
 𝐈𝐌𝐏𝐎𝐑𝐓𝐀𝐍𝐓:
@@ -48,27 +51,28 @@ export const customerOrderWhatsappUrl = (order: Order) => {
     const date = formatDate(order.shipping.scheduling.date);
     const time = order.shipping.scheduling.time;
     const customer = order.customerData;
+    const phone = order.customerData.phone.replace(/[^0-9]/g, '');
     const message = `
 *Ola ${order.customerData.fullName}, seu pedido foi confirmado!* 📦
 
-🗓️ *Anote ai, a sua entrega está agendada para:* 
+*Anote ai, a sua entrega está agendada para:* 
 ${date} | ${time}
 
-🏠 *Endereço:*
+*Endereço:*
 ${stringifyFullAddress(customer.fullAddress)}
 
-🛒 *Itens:*
+*Itens:*
 ${stringifyItemsWithValues(order.items)}
 
-🚛 *Valor do Frete:*
-${order.shipping.value}
+*Valor do Frete:*
+R$ ${order.shipping.value}
 
 *Valor Total do Pedido:* 
 R$ ${order.paymentsSummary.totalOrderValue}
 
-💳 *Pagamento:* 
+*Pagamento:* 
 ${stringifyPayments(order.payments)}
 `;
 
-    return `https://wa.me/${customer.phone.trim()}?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
