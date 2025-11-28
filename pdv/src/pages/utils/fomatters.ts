@@ -41,7 +41,6 @@ export const stringifyPayments = (payments: Payment[]) => {
     }).join('\n')
 }
 
-
 export const formatDate = (value: string) => {
     const date = new Date(value);
     return date.toLocaleDateString("pt-BR", {

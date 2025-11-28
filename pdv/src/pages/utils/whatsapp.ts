@@ -13,9 +13,6 @@ export const shippingOrderWhatsappUrl = (order: Order) => {
 ____________________
 
 
-
-
-
 *Novo Pedido para ${order.customerData.fullName}* 📦
 
 𝐈𝐌𝐏𝐎𝐑𝐓𝐀𝐍𝐓:
@@ -35,6 +32,12 @@ ${getShippingRouteUrl(customer.fullAddress)}
 
 🛒 *Itens:*
 ${stringifyItemsWithValues(order.items)}
+
+*Valor do Frete:*
+R$ ${order.shipping.value}
+
+*Valor do Juros:*
+R$ ${order.paymentsSummary.totalPaymentsFee}
 
 💰 *Total:* R$ ${order.paymentsSummary.totalOrderValue}
 
@@ -66,6 +69,9 @@ ${stringifyItemsWithValues(order.items)}
 
 *Valor do Frete:*
 R$ ${order.shipping.value}
+
+*Valor do Juros:*
+R$ ${order.paymentsSummary.totalPaymentsFee}
 
 *Valor Total do Pedido:* 
 R$ ${order.paymentsSummary.totalOrderValue}

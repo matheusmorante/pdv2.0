@@ -15,6 +15,7 @@ const Seller = ({ seller, setSeller }: props) => {
                     (e: React.ChangeEvent<HTMLInputElement>) =>
                         setSeller(e.target.value)
                 }
+                name="seller"
             />
         </div>
     )

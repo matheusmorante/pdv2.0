@@ -23,7 +23,7 @@ const OrderPage = () => {
             </div>
             <div>
                 <h1 className="font-bold">OBSERVAÇÕES SOBRE A ENTREGA</h1>
-                <div className="min-h-[100px] border-2 border-red-600">
+                <div className="min-h-[50px] border-2 border-red-600">
                     {order.observation}
                 </div>
             </div>

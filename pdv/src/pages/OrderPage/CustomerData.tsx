@@ -1,4 +1,5 @@
 import CustomerData from "../types/customerData.type"
+import { stringifyFullAddress } from "../utils/fomatters"
 
 interface Props {
     customerData: CustomerData 
@@ -16,28 +17,12 @@ const CustomerDataInputs = ({customerData}:Props) => {
                 {customerData.phone}
             </div>
             <div>
-                <strong>Logradouro: </strong>
-                {customerData.fullAddress.street}
+                <strong>Endereço Completo: </strong>
+                {stringifyFullAddress(customerData.fullAddress)}
             </div>
             <div>
-                <strong>Nº: </strong>
-                {customerData.fullAddress.number}
-            </div>
-            <div>
-                <strong>Complemento: </strong>
-                {customerData.fullAddress.complement}
-            </div>
-             <div>
                 <strong>Observação Sobre o Endereço: </strong>
                 {customerData.fullAddress.observation}
-            </div>
-            <div>
-                <strong>Bairro: </strong>
-                {customerData.fullAddress.neighborhood}
-            </div>
-            <div>
-                <strong>Cidade: </strong>
-                {customerData.fullAddress.city}
             </div>
         </section>
     )
