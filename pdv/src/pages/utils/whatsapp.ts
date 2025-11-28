@@ -27,9 +27,6 @@ ${customer.phone}
 🏠 *Endereço:*
 ${stringifyFullAddressWithObservation(customer.fullAddress)}
 
-📍🗺️ *Google Maps Rota:*
-${getShippingRouteUrl(customer.fullAddress)}
-
 🛒 *Itens:*
 ${stringifyItemsWithValues(order.items)}
 
@@ -43,6 +40,9 @@ R$ ${order.paymentsSummary.totalPaymentsFee}
 
 💳 *Pagamento:* 
 ${stringifyPayments(order.payments)}
+
+📍🗺️ *Google Maps Rota:*
+${getShippingRouteUrl(customer.fullAddress)}
 
 Vendido por ${order.seller}
 `;
