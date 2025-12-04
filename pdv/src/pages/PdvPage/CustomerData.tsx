@@ -25,7 +25,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
         <div className="[&_div_input]:border-b-2 [&_div_input]:border-gray-300 
         focus:[&_input]:border-blue-400">
             <a href={route} target="_blank" className="bg-red-600 p-2 font-bold">
-                <i className="bi bi-geo-alt-fill mr-2 " />
+                <i className="bi bi-geo-alt-fill mr-2" />
                 Ver Endereço no Google Maps
             </a>
 
@@ -89,6 +89,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     <input
                         name="observation"
                         onChange={e => onChangeAddress('observation', e.target.value)}
+                       
                     />
                 </div>
             </div>

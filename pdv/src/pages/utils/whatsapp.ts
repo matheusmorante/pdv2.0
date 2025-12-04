@@ -82,3 +82,17 @@ ${stringifyPayments(order.payments)}
 
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
+
+
+export const customerReviewsWhatsappUrl = (order: Order) => {
+    const customer = order.customerData;
+    const message = `
+Muito obrigado pela sua compra *${customer}*!
+
+avalie a sua compra para que possamos estar sempre melhorando a nossa qualidade. Para isso, clique no link abaixo:
+https://g.page/r/CctxeFYzY2o8EBE/review
+
+`;
+
+    return `https://api.whatsapp.com/send?phone=&text=${encodeURIComponent(message)}`;
+}

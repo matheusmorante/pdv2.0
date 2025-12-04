@@ -76,7 +76,8 @@ const PdvPage = () => {
                 <input
                     value={observation}
                     onChange={e => setObservation(e.target.value)}
-                    className="w-full min-h-[100px] border border-red-700"
+                    className="w-full min-h-[100px] border border-red-700
+                    p-0 text-start"
                 />
             </div>
 
