@@ -3,7 +3,7 @@ import { useState } from "react";
 import PaymentsTable from "./PaymentsTable/Index";
 import PersonalInfos from "./CustomerData";
 import useShipping from "./hooks/useShipping";
-import OrderActions from "./OrderActions";
+import PdvActions from "./PdvActions/Index";
 import useItems from "./hooks/useItems";
 import usePaymentsData from "./hooks/usePayments";
 import { useCustomerData } from "./hooks/useCustomerData";
@@ -81,7 +81,7 @@ const PdvPage = () => {
                 />
             </div>
 
-            <OrderActions order={{
+            <PdvActions order={{
                 items,
                 itemsSummary,
                 payments,

@@ -4,7 +4,7 @@ import { Item } from "../types/items.type"
 import { Payment, PaymentsSummary } from "../types/payments.type";
 import { toast } from 'react-toastify';
 import Shipping from "../types/Shipping.type";
-import Order from "../types/order.type";
+import Order from "../types/pdvAction.type";
 import { calcItemsSummary } from "../PdvPage/pdvUtils";
 
 export const validateItems = (items: Item[]) => {
@@ -37,34 +37,34 @@ export const validatePayments = (
     return true
 }
 
-export const validateCustomerData = (customer: CustomerData) => {
-     if (!customer.fullName) {
-        toast.error("O campo 'Nome Completo' é obrigatório.")
+export const validateCustomerData = (customer: CustomerData, mode: 'order' | 'receipt') => {
+    if (!customer.fullName) {
+        toast.error("O campo 'Nome Completo' é obrigatório para o pedido de entrega.")
         return false
     }
 
     if (!customer.phone) {
-        toast.error("O campo 'Celular/Telefone' é obrigatório.")
+        toast.error("O campo 'Celular/Telefone' é obrigatório para o pedido de entrega.")
         return false
     }
 
     if (!customer.fullAddress.street) {
-        toast.error("O campo 'Rua' do endereço é obrigatório.")
+        toast.error("O campo 'Rua' do endereço é obrigatório para o pedido de entrega.")
         return false
     }
 
     if (!customer.fullAddress.number) {
-        toast.error("O campo 'Número' do endereço é obrigatório.")
+        toast.error("O campo 'Número' do endereço é obrigatório para o pedido de entrega.")
         return false
     }
 
     if (!customer.fullAddress.neighborhood) {
-        toast.error("O campo 'Bairro' do endereço é obrigatório.")
+        toast.error("O campo 'Bairro' do endereço é obrigatório para o pedido de entrega.")
         return false
     }
 
     if (!customer.fullAddress.city) {
-        toast.error("O campo 'Cidade' do endereço é obrigatório.")
+        toast.error("O campo 'Cidade' do endereço é obrigatório para o pedido de entrega.")
         return false
     }
 
@@ -111,6 +111,32 @@ export const validateOrder = (order: Order) => {
         !validatePayments(order.payments, amountRemaining) ||
         !validateCustomerData(order.customerData)
     ) return false
+
+    return true
+}
+
+export const validateReceipt = (order: Order) => {
+    const itemsSummary = calcItemsSummary(order.items);
+    const { amountRemaining } = calcPaymentsSummary(
+        order.payments, itemsSummary, order.shipping.value
+    );
+
+    if (
+        !validateItems(order.items) ||
+        !validateSeller(order.seller) ||
+        !validateShipping(order.shipping) ||
+        !validatePayments(order.payments, amountRemaining) ||
+        !validateCustomerData(order.customerData)
+    ) return false
+
+    return true
+}
+
+export const validateReviews = (order: Order) => {
+    if (!order.customerData.fullName) {
+        toast.error("O campo 'Nome Completo' é obrigatório para o Recibo.")
+        return false
+    }
 
     return true
 }

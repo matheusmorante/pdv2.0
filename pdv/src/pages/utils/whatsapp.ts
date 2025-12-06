@@ -1,4 +1,4 @@
-import Order from "../types/order.type";
+import Order from "../types/pdvAction.type";
 import {
     stringifyFullAddress, stringifyFullAddressWithObservation,
     stringifyPayments, stringifyItemsWithValues, formatDate
@@ -88,7 +88,7 @@ export const customerReviewsWhatsappUrl = (order: Order) => {
     const customer = order.customerData;
     const phone = order.customerData.phone.replace(/[^0-9]/g, '');
     const message = `
-Muito obrigado pela sua compra *${customer}*!
+Muito obrigado pela sua compra *${customer.fullName}*!
 
 avalie a sua compra para que possamos estar sempre melhorando a nossa qualidade. Para isso, clique no link abaixo:
 https://g.page/r/CctxeFYzY2o8EBE/review
