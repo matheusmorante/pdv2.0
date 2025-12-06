@@ -90,8 +90,8 @@ export const customerReviewsWhatsappUrl = (order: Order) => {
     const message = `
 Muito obrigado pela sua compra *${customer.fullName}*!
 
-avalie a sua compra para que possamos estar sempre melhorando a nossa qualidade. Para isso, clique no link abaixo:
-https://g.page/r/CctxeFYzY2o8EBE/review
+Avalie a sua compra para que possamos estar sempre melhorando a nossa qualidade. Para isso, clique no link abaixo:
+https://g.page/r/CctxeFYzY2o8EBE/review.
 
 `;
 
