@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Order, { PdvAction, IsButtonsClicked } from "../../types/pdvAction.type";
 import { dateNow } from "../../utils/fomatters";
-import { validateOrder } from "../../utils/validations";
 import { buttons, actionsMap } from "./pdvActionsConfig";
 
 
@@ -20,12 +19,9 @@ const PdvActions = ({ order }: { order: Order }) => {
   }
 
   function handleAction(action: PdvAction) {
-    if (!validateOrder(order)) return;
-
+    
     const updated = { ...order, date: dateNow() };
-
     sessionStorage.setItem("order", JSON.stringify(updated));
-
     actionsMap[action](updated);
   }
 
@@ -42,6 +38,7 @@ const PdvActions = ({ order }: { order: Order }) => {
           }}
         >
           <i className="bi bi-whatsapp mr-1" /> {btn.label}
+          {isButtonsClicked[btn.key] && <i className="bi bi-check" />}
         </button>
       ))}
     </div>
