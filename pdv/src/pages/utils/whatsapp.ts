@@ -86,7 +86,7 @@ ${stringifyPayments(order.payments)}
 
 export const customerReviewsWhatsappUrl = (order: Order) => {
     const customer = order.customerData;
-    const phone = order.customerData.phone.replace(/[^0-9]/g, '');
+    const phone = customer.phone.replace(/[^0-9]/g, '');
     const message = `
 Muito obrigado pela sua compra *${customer.fullName}*!
 
@@ -95,5 +95,5 @@ https://g.page/r/CctxeFYzY2o8EBE/review.
 
 `;
 
-    return `https://api.whatsapp.com/send?phone${phone}=&text=${encodeURIComponent(message)}`;
+    return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
 }
