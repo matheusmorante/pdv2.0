@@ -38,7 +38,7 @@ const PdvActions = ({ order }: { order: Order }) => {
           }}
         >
           <i className="bi bi-whatsapp mr-1" /> {btn.label}
-          {isButtonsClicked[btn.key] && <i className="bi bi-check" />}
+          {isButtonsClicked[btn.key] && <i className="bi bi-check text-md" />}
         </button>
       ))}
     </div>

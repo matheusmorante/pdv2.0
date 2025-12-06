@@ -8,22 +8,26 @@ import {
 
 export const actionsMap: Record<PdvAction, (order: Order) => void> = {
     PRINT_RECEIPT: (o) => {
-        if (validateBase(o)) return;
+        if (!validateBase(o)) return;
         window.open("/receipt", "_blank")
     },
     PRINT_SHIPPING_ORDER: (o) => {
-        if (validateBase(o)) return;
+        if (!validateBase(o)) return;
         window.open("/order", "_blank")
     },
     PRINT_WARRANTY_TERM: (o) => {
-        if (validateBase(o)) return;
+        if (!validateBase(o)) return;
         window.open("/warranty-term", "_blank")
     },
-    SEND_SHIPPING_ORDER: (o) => shippingOrderWhatsappUrl(o),
-    SEND_CUSTOMER_ORDER: (o) => customerOrderWhatsappUrl(o),
+    SEND_SHIPPING_ORDER: (o) => {
+        window.open(shippingOrderWhatsappUrl(o))
+    },
+    SEND_CUSTOMER_ORDER: (o) => {
+        window.open(customerOrderWhatsappUrl(o))
+    },
     SEND_CUSTOMER_REVIEWS: (o) => {
-        if (validateReviews(o)) return;
-        customerReviewsWhatsappUrl(o)
+        if (!validateReviews(o)) return;
+        window.open(customerReviewsWhatsappUrl(o))
     }
 }
 
