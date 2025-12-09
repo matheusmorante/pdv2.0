@@ -18,10 +18,12 @@ const requiredField = (value: any, msg: string) => {
 export const validateItems = (items: Item[]) => {
     for (const item of items) {
         if (!requiredField(
-            item.description, "O campo 'Descrição' do item é obrigatório."
+            item.description, 
+            "O campo 'Descrição' do item é obrigatório."
         )) {
             return false
         }
+
         return true
     };
     return true
@@ -32,13 +34,11 @@ export const validatePayments = (
 ) => {
     for (const payment of payments) {
         if (!requiredField(
-            payment.status, "O campo 'Status' do pagamento é obrigatório."
+            payment.status, 
+            "O campo 'Status' do pagamento é obrigatório."
         )) {
             return false
         }
-
-        
-        return true
     };
 
     if (amountRemaining >= 0) {
@@ -46,6 +46,16 @@ export const validatePayments = (
             `Ainda há R$ ${amountRemaining} a ser declarado para o
              pagamento.`
         )
+
+        return false
+    }
+
+     if (amountRemaining <= 0) {
+        toast.error(
+            `O valor de pagamento ultrapassou R$ ${-amountRemaining} 
+            em relação ao valor total do pedido.`
+        )
+        
         return false
     }
 
@@ -78,16 +88,16 @@ export const validateSeller = (seller: Order['seller']) => {
 export const validateBase = (order: Order) => {
     const itemsSummary = calcItemsSummary(order.items);
     const { amountRemaining } = calcPaymentsSummary(
-        order.payments, 
-        itemsSummary, 
+        order.payments,
+        itemsSummary,
         order.shipping.value
     );
 
     return (
-        validateItems(order.items) ||
-        validateSeller(order.seller) ||
-        validateShipping(order.shipping) ||
-        validatePayments(order.payments, amountRemaining) ||
+        validateItems(order.items) &&
+        validateSeller(order.seller) &&
+        validateShipping(order.shipping) &&
+        validatePayments(order.payments, amountRemaining) &&
         validateCustomerData(order.customerData)
     )
 }
