@@ -20,9 +20,11 @@ export const actionsMap: Record<PdvAction, (order: Order) => void> = {
         window.open("/warranty-term", "_blank")
     },
     SEND_SHIPPING_ORDER: (o) => {
+        if (!validateBase(o)) return;
         window.open(shippingOrderWhatsappUrl(o))
     },
     SEND_CUSTOMER_ORDER: (o) => {
+        if (!validateBase(o)) return;
         window.open(customerOrderWhatsappUrl(o))
     },
     SEND_CUSTOMER_REVIEWS: (o) => {

@@ -12,6 +12,7 @@ const requiredField = (value: any, msg: string) => {
         toast.error(msg)
         return false
     }
+
     return true
 }
 
@@ -26,6 +27,7 @@ export const validateItems = (items: Item[]) => {
 
         return true
     };
+
     return true
 }
 
@@ -41,7 +43,7 @@ export const validatePayments = (
         }
     };
 
-    if (amountRemaining >= 0) {
+    if (amountRemaining > 0) {
         toast.error(
             `Ainda há R$ ${amountRemaining} a ser declarado para o
              pagamento.`
@@ -50,7 +52,7 @@ export const validatePayments = (
         return false
     }
 
-     if (amountRemaining <= 0) {
+     if (amountRemaining < 0) {
         toast.error(
             `O valor de pagamento ultrapassou R$ ${-amountRemaining} 
             em relação ao valor total do pedido.`
