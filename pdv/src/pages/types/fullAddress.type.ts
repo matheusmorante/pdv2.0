@@ -8,4 +8,13 @@ type FullAddress = {
     city: string
 }
 
+export type AddressViaCep = {
+    cep: string,
+    state: string,
+    city: string,
+    neighborhood: string,
+    street: string,
+    service: string
+}
+
 export default FullAddress

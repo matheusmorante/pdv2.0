@@ -1,5 +1,6 @@
 import CustomerData from "../types/customerData.type";
-import { getShippingRouteUrl } from "../utils/maps";
+import { getAddressByCep, getShippingRouteUrl } from "../utils/maps";
+import { sanitizeNumber } from "../utils/sanitization";
 
 interface Props {
     customerData: CustomerData,
@@ -12,14 +13,35 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
         setCustomerData((prev: CustomerData) => ({ ...prev, [key]: value }))
     }
 
-    const onChangeAddress = (
+    const onChangeAddress = async (
         key: keyof CustomerData['fullAddress'],
         value: string
     ) => {
-        setCustomerData((prev: CustomerData) => {
-            return { ...prev, fullAddress: { ...prev.fullAddress, [key]: value } }
-        })
-    }
+       
+         const newCep = key === 'cep' ? sanitizeNumber(value) : value;
+
+        setCustomerData(prev => ({
+            ...prev,
+            fullAddress: {
+                ...prev.fullAddress,
+                [key]: value,
+            },
+        }));
+
+      
+        if (key === 'cep' && newCep.length === 8) {
+            const addressViaCep = await getAddressByCep(newCep);
+            setCustomerData(prev => ({
+                ...prev,
+                fullAddress: {
+                    ...prev.fullAddress,
+                    street: addressViaCep.street,
+                    neighborhood: addressViaCep.neighborhood,
+                    city: addressViaCep.city,
+                },
+            })); 
+        }
+    };
 
     return (
         <div className="[&_div_input]:border-b-2 [&_div_input]:border-gray-300 
@@ -29,7 +51,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                 Ver Endereço no Google Maps
             </a>
 
-             <a href={`http://wa.me/${customerData.phone}`} target="_blank" className="bg-green-600 p-2 font-bold">
+            <a href={`http://wa.me/${customerData.phone}`} target="_blank" className="bg-green-600 p-2 font-bold">
                 <i className="bi bi-phone mr-2 " />
                 Verificar Whatsapp
             </a>
@@ -48,6 +70,14 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                         name="phone"
                         value={customerData.phone}
                         onChange={e => onChangeCustomerData('phone', e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>CEP</label>
+                    <input
+                        name="cep"
+                        value={customerData.fullAddress.cep}
+                        onChange={e => onChangeAddress('cep', e.target.value)}
                     />
                 </div>
                 <div className="flex flex-col">
@@ -75,12 +105,14 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                 <div className="flex flex-col">
                     <label>Bairro</label>
                     <input
+                        value={customerData.fullAddress.neighborhood}
                         onChange={e => onChangeAddress('neighborhood', e.target.value)}
                     />
                 </div>
                 <div className="flex flex-col">
                     <label>Cidade</label>
                     <input
+                        value={customerData.fullAddress.city}
                         onChange={e => onChangeAddress('city', e.target.value)}
                     />
                 </div>
@@ -89,7 +121,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     <input
                         name="observation"
                         onChange={e => onChangeAddress('observation', e.target.value)}
-                       
+
                     />
                 </div>
             </div>
