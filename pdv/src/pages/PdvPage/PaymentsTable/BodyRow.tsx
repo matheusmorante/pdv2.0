@@ -1,11 +1,11 @@
 import { Payment } from '../../types/payments.type'
-import { currencyToNumber } from '../pdvUtils';
 import paymentMethods from "./paymentMethods";
 import CurrencyInput from '../../../components/CurrencyInput';
 import ToggleValueTypeBtn from '../ToggleValueTypeBtn';
 import CurrencyOrPercentInput from '../../../components/CurrencyOrPercentInput';
 import CurrencyDisplay from '../../../components/CurrencyDisplay';
 import { calcPaymentTotalValue } from '../../utils/calculations';
+import { useState } from 'react';
 
 interface Props {
     payment: Payment,
@@ -15,7 +15,24 @@ interface Props {
     idx: number
 }
 
+
 const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) => {
+    const [ newStatus, setNewStatus ] = useState(payment.status);
+    
+    const onBlur = () => {
+        if(payment.status === newStatus) return;
+        
+        const result = window.confirm(
+            `Tem certeza que quer alterar o status para "${newStatus}"`
+        );
+        if (result) {
+            onChange(idx, 'status', newStatus)
+        } else {
+            setNewStatus(payment.status)
+        }
+    }
+
+
     return (
         <tr>
             <td>
@@ -52,21 +69,22 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                             ) => onChange(
                                 idx, 'fee', value
                             )
-                            
+
                         }
                     />
-                   <ToggleValueTypeBtn onClick={onToggleFeeType}> 
+                    <ToggleValueTypeBtn onClick={onToggleFeeType}>
                         {payment.feeType === 'fixed' ? 'R$' : '%'}
                     </ToggleValueTypeBtn>
                 </div>
             </td>
             <td>
-                <CurrencyDisplay value={calcPaymentTotalValue(payment)}/>
+                <CurrencyDisplay value={calcPaymentTotalValue(payment)} />
             </td>
             <td>
                 <input
-                    value={payment.status}
-                    onChange={e => onChange(idx, 'status', e.target.value)}
+                    value={newStatus}
+                    onChange={e => setNewStatus(e.target.value)}
+                    onBlur={onBlur}
                 />
             </td>
             <td className='border-none text-center'>
