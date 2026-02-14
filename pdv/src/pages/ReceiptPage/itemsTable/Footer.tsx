@@ -1,4 +1,3 @@
-import { NumericFormat } from 'react-number-format';
 import { ItemsSummary } from "../../types/items.type";
 import CurrencyDisplay from '../../../components/CurrencyDisplay';
 import UnitDisplay from '../../../components/UnitDisplay';

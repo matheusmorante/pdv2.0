@@ -1,8 +1,6 @@
 
 import Item from "../../types/items.type";
-import { NumericFormat } from "react-number-format";
 import { calcItemTotalValue, getFixedDiscount } from "../../utils/calculations";
-import CurrencyInput from "../../../components/CurrencyInput";
 import CurrencyDisplay from "../../../components/CurrencyDisplay";
 import UnitDisplay from "../../../components/UnitDisplay";
 
