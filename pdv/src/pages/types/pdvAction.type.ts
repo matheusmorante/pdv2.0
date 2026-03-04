@@ -12,8 +12,9 @@ export type Order = {
     payments: Payment[],
     paymentsSummary: PaymentsSummary
     customerData: CustomerData,
-    observation: string
-    date: string
+    observation: string,
+    date: string,
+    orderIndex?: number
 }
 
 export type PdvAction =
