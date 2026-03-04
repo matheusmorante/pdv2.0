@@ -19,7 +19,7 @@ const PdvActions = ({ order }: { order: Order }) => {
   }
 
   function handleAction(action: PdvAction) {
-    
+
     const updated = { ...order, date: dateNow() };
     sessionStorage.setItem("order", JSON.stringify(updated));
     actionsMap[action](updated);

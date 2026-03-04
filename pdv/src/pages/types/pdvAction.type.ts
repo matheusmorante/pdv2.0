@@ -4,6 +4,7 @@ import { Payment, PaymentsSummary } from "./payments.type";
 import Shipping from "./Shipping.type";
 
 export type Order = {
+    id?: string,
     items: Item[],
     itemsSummary: ItemsSummary,
     shipping: Shipping,
@@ -24,12 +25,12 @@ export type PdvAction =
     'SEND_CUSTOMER_REVIEWS'
 
 export type IsButtonsClicked = {
-        printReceipt: boolean,
-        printShippingOrder: boolean,
-        printWarrantyTerm: boolean,
-        sendShippingOrder: boolean,
-        sendCustomerOrder: boolean,
-        sendCustomerReviews: boolean
-    }
+    printReceipt: boolean,
+    printShippingOrder: boolean,
+    printWarrantyTerm: boolean,
+    sendShippingOrder: boolean,
+    sendCustomerOrder: boolean,
+    sendCustomerReviews: boolean
+}
 
 export default Order;

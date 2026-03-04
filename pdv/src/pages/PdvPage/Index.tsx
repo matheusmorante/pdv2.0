@@ -11,8 +11,12 @@ import { calcItemsSummary } from "./pdvUtils";
 import { calcPaymentsSummary } from "../utils/calculations";
 import ShippingInputs from "./ShippingData";
 import Seller from "./Seller";
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import OrderHistoryList from "./OrderHistoryList/Index";
+import Order from "../types/pdvAction.type";
+import { saveOrder } from "../utils/orderHistoryService";
 
 const PdvPage = () => {
     const { items, setItems } = useItems();
@@ -26,16 +30,47 @@ const PdvPage = () => {
     const [observation, setObservation] = useState('');
     const [seller, setSeller] = useState('');
 
+    const [activeTab, setActiveTab] = useState<'pdv' | 'history'>('pdv');
+    const [currentOrderId, setCurrentOrderId] = useState<string | undefined>(undefined);
+
+    const loadOrderForEditing = (order: Order) => {
+        setItems(order.items);
+        setShipping(order.shipping);
+        setPayments(order.payments);
+        setCustomerData(order.customerData);
+        setObservation(order.observation);
+        setSeller(order.seller as string);
+        setCurrentOrderId(order.id);
+        setActiveTab('pdv');
+        toast.info("Pedido carregado para edição.");
+    };
+
+    const handleSaveOrder = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const orderData: Order = {
+            id: currentOrderId,
+            items,
+            itemsSummary,
+            shipping,
+            payments,
+            paymentsSummary,
+            customerData,
+            observation,
+            seller,
+            date: ''
+        };
+        saveOrder(orderData);
+        toast.success("Pedido salvo no histórico!");
+    };
+
+    const clearForm = () => {
+        if (window.confirm("Deseja limpar o formulário para um novo pedido?")) {
+            window.location.reload();
+        }
+    }
+
     return (
-        <form
-            className="
-                flex flex-col w-[900px] mx-auto p-4 shadow-lg shadow-slate-400 
-                gap-6 [&_th]:border-2 [&_td]:border-2 [&_input]:bg-white [&_td]:px-1
-                [&_td]:border-gray-200 [&_th]:bg-gray-300 [&_th]:py-1
-                [&_td]:py-1 [&_input]:px-2 focus:[&_input]:outline-none
-                mt-2 
-            "
-        >
+        <div className="flex flex-col mx-auto w-full items-center mb-10">
             <ToastContainer
                 position="top-center"
                 autoClose={3000}
@@ -45,55 +80,111 @@ const PdvPage = () => {
                 draggable
             />
 
-            <ItemsTable
-                items={items}
-                setItems={setItems}
-                summary={itemsSummary}
-            />
-
-            <div className="flex">
-                <Seller seller={seller} setSeller={setSeller} />
-
-                <ShippingInputs
-                    shipping={shipping}
-                    setShipping={setShipping}
-                />
+            {/* TABS */}
+            <div className="flex gap-4 mt-4 w-[900px]">
+                <button
+                    onClick={() => setActiveTab('pdv')}
+                    className={`px-4 py-2 font-bold rounded-t-lg transition-colors ${activeTab === 'pdv' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                    PDV / Edição
+                </button>
+                <button
+                    onClick={() => setActiveTab('history')}
+                    className={`px-4 py-2 font-bold rounded-t-lg transition-colors ${activeTab === 'history' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                    Histórico de Pedidos
+                </button>
             </div>
 
-            <PaymentsTable
-                payments={payments}
-                setPayments={setPayments}
-                summary={paymentsSummary}
-            />
+            {activeTab === 'pdv' && (
+                <form
+                    className="
+                        flex flex-col w-[900px] mx-auto p-4 shadow-lg shadow-slate-400 
+                        gap-6 [&_th]:border-2 [&_td]:border-2 [&_input]:bg-white [&_td]:px-1
+                        [&_td]:border-gray-200 [&_th]:bg-gray-300 [&_th]:py-1
+                        [&_td]:py-1 [&_input]:px-2 focus:[&_input]:outline-none
+                        bg-white
+                    "
+                >
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-xl font-bold text-gray-700">
+                            {currentOrderId ? "Editando Pedido" : "Novo Pedido"}
+                        </h2>
+                        {currentOrderId && (
+                            <button
+                                onClick={(e) => { e.preventDefault(); clearForm(); }}
+                                className="text-sm bg-gray-500 hover:bg-gray-600 text-white py-1 px-3 rounded"
+                            >
+                                <i className="bi bi-plus-circle mr-1" /> Criar Novo (Limpar)
+                            </button>
+                        )}
+                    </div>
 
-            <PersonalInfos
-                customerData={customerData}
-                setCustomerData={setCustomerData}
-            />
+                    <ItemsTable
+                        items={items}
+                        setItems={setItems}
+                        summary={itemsSummary}
+                    />
 
-            <div>
-                <label>Observações</label>
-                <input
-                    value={observation}
-                    onChange={e => setObservation(e.target.value)}
-                    className="w-full min-h-[100px] border border-red-700
-                    p-0 text-start"
-                />
-            </div>
+                    <div className="flex">
+                        <Seller seller={seller} setSeller={setSeller} />
 
-            <PdvActions order={{
-                items,
-                itemsSummary,
-                payments,
-                paymentsSummary,
-                shipping,
-                seller,
-                customerData,
-                observation,
-                date: ''
-            }} />
+                        <ShippingInputs
+                            shipping={shipping}
+                            setShipping={setShipping}
+                        />
+                    </div>
 
-        </form>
+                    <PaymentsTable
+                        payments={payments}
+                        setPayments={setPayments}
+                        summary={paymentsSummary}
+                    />
+
+                    <PersonalInfos
+                        customerData={customerData}
+                        setCustomerData={setCustomerData}
+                    />
+
+                    <div>
+                        <label>Observações</label>
+                        <input
+                            value={observation}
+                            onChange={e => setObservation(e.target.value)}
+                            className="w-full min-h-[100px] border border-red-700
+                            p-0 text-start"
+                        />
+                    </div>
+
+                    <div className="flex justify-between items-center border-t-2 pt-4 mt-2">
+                        <button
+                            onClick={handleSaveOrder}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow"
+                        >
+                            <i className="bi bi-save mr-2" /> Salvar Pedido
+                        </button>
+                    </div>
+
+                    <PdvActions order={{
+                        id: currentOrderId,
+                        items,
+                        itemsSummary,
+                        payments,
+                        paymentsSummary,
+                        shipping,
+                        seller,
+                        customerData,
+                        observation,
+                        date: ''
+                    }} />
+
+                </form>
+            )}
+
+            {activeTab === 'history' && (
+                <OrderHistoryList onEdit={loadOrderForEditing} />
+            )}
+        </div>
     )
 }
 export default PdvPage;
