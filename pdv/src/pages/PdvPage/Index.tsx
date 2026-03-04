@@ -18,6 +18,8 @@ import DeliverySchedule from "./DeliverySchedule/Index";
 import OrderHistoryList from "./OrderHistoryList/Index";
 import Order from "../types/pdvAction.type";
 import { saveOrder } from "../utils/orderHistoryService";
+import { validateBase } from "../utils/validations";
+import { dateNow } from "../utils/fomatters";
 
 const PdvPage = () => {
     const { items, setItems } = useItems();
@@ -51,9 +53,6 @@ const PdvPage = () => {
     const handleSaveOrder = async (e: React.MouseEvent) => {
         e.preventDefault();
 
-        if (isSaving) return;
-        setIsSaving(true);
-
         const orderData: Order = {
             id: currentOrderId,
             items,
@@ -64,9 +63,16 @@ const PdvPage = () => {
             customerData,
             observation,
             seller,
-            date: ''
+            date: dateNow()
         };
+
+        if (!validateBase(orderData)) return;
+
+        if (isSaving) return;
+        setIsSaving(true);
+
         try {
+            sessionStorage.setItem("order", JSON.stringify(orderData));
             await saveOrder(orderData);
             toast.success("Pedido salvo no histórico da nuvem!");
         } catch (error) {
@@ -180,8 +186,8 @@ const PdvPage = () => {
                             onClick={handleSaveOrder}
                             disabled={isSaving}
                             className={`font-bold py-2 px-4 rounded shadow flex items-center ${isSaving
-                                    ? 'bg-gray-400 cursor-not-allowed text-gray-200'
-                                    : 'bg-green-600 hover:bg-green-700 text-white'
+                                ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                                : 'bg-green-600 hover:bg-green-700 text-white'
                                 }`}
                         >
                             {isSaving ? (
