@@ -14,6 +14,7 @@ import Seller from "./Seller";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import DeliverySchedule from "./DeliverySchedule/Index";
 import OrderHistoryList from "./OrderHistoryList/Index";
 import Order from "../types/pdvAction.type";
 import { saveOrder } from "../utils/orderHistoryService";
@@ -30,7 +31,7 @@ const PdvPage = () => {
     const [observation, setObservation] = useState('');
     const [seller, setSeller] = useState('');
 
-    const [activeTab, setActiveTab] = useState<'pdv' | 'history'>('pdv');
+    const [activeTab, setActiveTab] = useState<'pdv' | 'history' | 'schedule'>('pdv');
     const [currentOrderId, setCurrentOrderId] = useState<string | undefined>(undefined);
 
     const loadOrderForEditing = (order: Order) => {
@@ -45,8 +46,14 @@ const PdvPage = () => {
         toast.info("Pedido carregado para edição.");
     };
 
-    const handleSaveOrder = (e: React.MouseEvent) => {
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSaveOrder = async (e: React.MouseEvent) => {
         e.preventDefault();
+
+        if (isSaving) return;
+        setIsSaving(true);
+
         const orderData: Order = {
             id: currentOrderId,
             items,
@@ -59,8 +66,14 @@ const PdvPage = () => {
             seller,
             date: ''
         };
-        saveOrder(orderData);
-        toast.success("Pedido salvo no histórico!");
+        try {
+            await saveOrder(orderData);
+            toast.success("Pedido salvo no histórico da nuvem!");
+        } catch (error) {
+            toast.error("Erro ao salvar pedido na nuvem.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const clearForm = () => {
@@ -94,12 +107,18 @@ const PdvPage = () => {
                 >
                     Histórico de Pedidos
                 </button>
+                <button
+                    onClick={() => setActiveTab('schedule')}
+                    className={`px-4 py-2 font-bold rounded-t-lg transition-colors ${activeTab === 'schedule' ? 'bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                    Cronograma de Entregas
+                </button>
             </div>
 
             {activeTab === 'pdv' && (
                 <form
                     className="
-                        flex flex-col w-[900px] mx-auto p-4 shadow-lg shadow-slate-400 
+                        flex flex-col w-[900px] mx-auto p-4 shadow-lg shadow-slate-400
                         gap-6 [&_th]:border-2 [&_td]:border-2 [&_input]:bg-white [&_td]:px-1
                         [&_td]:border-gray-200 [&_th]:bg-gray-300 [&_th]:py-1
                         [&_td]:py-1 [&_input]:px-2 focus:[&_input]:outline-none
@@ -159,9 +178,17 @@ const PdvPage = () => {
                     <div className="flex justify-between items-center border-t-2 pt-4 mt-2">
                         <button
                             onClick={handleSaveOrder}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow"
+                            disabled={isSaving}
+                            className={`font-bold py-2 px-4 rounded shadow flex items-center ${isSaving
+                                    ? 'bg-gray-400 cursor-not-allowed text-gray-200'
+                                    : 'bg-green-600 hover:bg-green-700 text-white'
+                                }`}
                         >
-                            <i className="bi bi-save mr-2" /> Salvar Pedido
+                            {isSaving ? (
+                                <><i className="bi bi-arrow-repeat animate-spin mr-2" /> Salvando...</>
+                            ) : (
+                                <><i className="bi bi-save mr-2" /> Salvar Pedido</>
+                            )}
                         </button>
                     </div>
 
@@ -183,6 +210,10 @@ const PdvPage = () => {
 
             {activeTab === 'history' && (
                 <OrderHistoryList onEdit={loadOrderForEditing} />
+            )}
+
+            {activeTab === 'schedule' && (
+                <DeliverySchedule />
             )}
         </div>
     )

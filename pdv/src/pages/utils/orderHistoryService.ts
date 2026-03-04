@@ -1,41 +1,72 @@
 import Order from "../types/pdvAction.type";
+import { db } from "./firebaseConfig";
+import { collection, doc, setDoc, deleteDoc, query, onSnapshot } from "firebase/firestore";
 
-const STORAGE_KEY = "pdv_order_history";
+const COLLECTION_NAME = "orders";
 
-export const getOrders = (): Order[] => {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
+    const q = query(collection(db, COLLECTION_NAME));
+
+    // Return the unsubscribe function
+    return onSnapshot(q, (querySnapshot) => {
+        const orders: Order[] = [];
+        querySnapshot.forEach((doc) => {
+            orders.push(doc.data() as Order);
+        });
+
+        // Let's sort locally by date descending
+        orders.sort((a, b) => {
+            return b.date.localeCompare(a.date);
+        });
+
+        callback(orders);
+    }, (error) => {
+        console.error("Erro no listener do Firebase:", error);
+        callback([]);
+    });
 };
 
-export const saveOrder = (order: Order): void => {
-    const orders = getOrders();
-    // If it doesn't have an id, we create a new one, else we're updating existing
-    // But saveOrder should only handle new or update?
-    // Let's generate an ID if it's completely new. And update if exists.
-
+export const saveOrder = async (order: Order): Promise<void> => {
     if (order.id) {
-        updateOrder(order);
+        await updateOrder(order);
         return;
     }
 
+    // Creating a new order
+    const newId = crypto.randomUUID();
     const newOrder = {
         ...order,
-        id: crypto.randomUUID(), // Generates a unique ID
-        date: new Date().toLocaleString('pt-BR') // Use readable date
+        id: newId,
+        date: new Date().toLocaleString('pt-BR')
     };
 
-    orders.unshift(newOrder); // Add to the front
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+    try {
+        await setDoc(doc(db, COLLECTION_NAME, newId), newOrder);
+    } catch (error) {
+        console.error("Erro ao salvar o pedido: ", error);
+        throw error;
+    }
 };
 
-export const updateOrder = (orderToUpdate: Order): void => {
-    let orders = getOrders();
-    orders = orders.map(order => order.id === orderToUpdate.id ? { ...orderToUpdate, date: new Date().toLocaleString('pt-BR') } : order);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+export const updateOrder = async (orderToUpdate: Order): Promise<void> => {
+    if (!orderToUpdate.id) return;
+    try {
+        const updated = {
+            ...orderToUpdate,
+            date: new Date().toLocaleString('pt-BR')
+        }
+        await setDoc(doc(db, COLLECTION_NAME, orderToUpdate.id), updated, { merge: true });
+    } catch (error) {
+        console.error("Erro ao atualizar o pedido: ", error);
+        throw error;
+    }
 };
 
-export const deleteOrder = (id: string): void => {
-    let orders = getOrders();
-    orders = orders.filter(o => o.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+export const deleteOrder = async (id: string): Promise<void> => {
+    try {
+        await deleteDoc(doc(db, COLLECTION_NAME, id));
+    } catch (error) {
+        console.error("Erro ao deletar o pedido: ", error);
+        throw error;
+    }
 };

@@ -51,6 +51,7 @@ const ShippingData = ({ shipping, setShipping }: Props) => {
                 <div className="flex w-full text-right pr-2 gap-2">
                     <input
                         type='date'
+                        value={shipping.scheduling.date}
                         onChange={
                             (e: React.ChangeEvent<HTMLInputElement>) =>
                                 onChangeScheduling("date", e.target.value)

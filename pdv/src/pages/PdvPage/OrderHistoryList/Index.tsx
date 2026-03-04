@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Order from "../../types/pdvAction.type";
-import { getOrders, deleteOrder } from "../../utils/orderHistoryService";
+import { subscribeToOrders, deleteOrder } from "../../utils/orderHistoryService";
 import { actionsMap, buttons } from "../PdvActions/pdvActionsConfig";
 
 type OrderHistoryListProps = {
@@ -9,19 +9,21 @@ type OrderHistoryListProps = {
 
 const OrderHistoryList = ({ onEdit }: OrderHistoryListProps) => {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadOrders();
+        const unsubscribe = subscribeToOrders((data) => {
+            setOrders(data);
+            setLoading(false);
+        });
+
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
     }, []);
 
-    const loadOrders = () => {
-        setOrders(getOrders());
-    };
-
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (window.confirm("Certeza que deseja excluir este pedido?")) {
-            deleteOrder(id);
-            loadOrders();
+            await deleteOrder(id);
         }
     };
 
@@ -36,7 +38,9 @@ const OrderHistoryList = ({ onEdit }: OrderHistoryListProps) => {
     return (
         <div className="w-[900px] mx-auto mt-4 p-4 shadow-lg shadow-slate-400 bg-white">
             <h2 className="text-xl font-bold mb-4">Histórico de Pedidos</h2>
-            {orders.length === 0 ? (
+            {loading ? (
+                <p className="text-blue-500 text-center py-4"><i className="bi bi-arrow-repeat animate-spin inline-block mr-2" /> Carregando pedidos da nuvem...</p>
+            ) : orders.length === 0 ? (
                 <p className="text-gray-500 text-center">Nenhum pedido salvo.</p>
             ) : (
                 <div className="overflow-x-auto">
