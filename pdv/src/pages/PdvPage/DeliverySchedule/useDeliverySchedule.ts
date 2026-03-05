@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import html2canvas from "html2canvas";
+import { useState, useEffect, useCallback } from "react";
 import Order from "../../types/pdvAction.type";
 import { subscribeToOrders, updateOrder } from "../../utils/orderHistoryService";
 import { DropResult } from "@hello-pangea/dnd";
@@ -45,7 +44,6 @@ export const useDeliverySchedule = () => {
     const [schedule, setSchedule] = useState<Record<string, Order[]>>({});
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<"card" | "table">("card");
-    const scheduleRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const unsubscribe = subscribeToOrders((orders) => {
@@ -57,51 +55,14 @@ export const useDeliverySchedule = () => {
         return () => unsubscribe();
     }, []);
 
-    const handleShare = async () => {
-        if (!scheduleRef.current) return;
+    const handleShare = () => {
+        const scheduleUrl = `${window.location.origin}/schedule`;
+        const shareText = encodeURIComponent(
+            `📦 Cronograma de Entregas (${viewMode === "card" ? "Lista" : "Grade"})\n` +
+            `🔗 Acesse online agora: ${scheduleUrl}`
+        );
 
-        const toastId = toast.loading("Gerando imagem do cronograma...");
-
-        try {
-            const canvas = await html2canvas(scheduleRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: "#ffffff",
-                logging: false,
-            });
-
-            const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-            const link = document.createElement("a");
-            const fileName = `Cronograma_${viewMode}_${new Date().toLocaleDateString().replace(/\//g, "-")}`;
-
-            link.download = `${fileName}.jpeg`;
-            link.href = dataUrl;
-            link.click();
-
-            const scheduleUrl = `${window.location.origin}/schedule`;
-            const shareText = encodeURIComponent(
-                `📦 Cronograma de Entregas (${viewMode === "card" ? "Lista" : "Grade"})\n` +
-                `🔗 Acesse online: ${scheduleUrl}\n\n` +
-                `🔔 (Por favor, anexe a imagem JPEG que acabou de ser baixada para visualização rápida)`
-            );
-
-            window.open(`https://api.whatsapp.com/send?text=${shareText}`, "_blank");
-
-            toast.update(toastId, {
-                render: "Imagem gerada com sucesso! Verifique sua pasta de downloads.",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        } catch (error) {
-            console.error("Erro ao gerar imagem: ", error);
-            toast.update(toastId, {
-                render: "Falha ao gerar imagem do cronograma.",
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        }
+        window.open(`https://api.whatsapp.com/send?text=${shareText}`, "_blank");
     };
 
     const handleDragEnd = useCallback(async (result: DropResult) => {
@@ -137,7 +98,6 @@ export const useDeliverySchedule = () => {
         loading,
         viewMode,
         setViewMode,
-        scheduleRef,
         handleShare,
         handleDragEnd,
     };

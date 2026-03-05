@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import { useDeliverySchedule } from "./useDeliverySchedule";
 import ScheduleCardView from "./ScheduleCardView/Index";
 import ScheduleTableView from "./ScheduleTableView/Index";
@@ -9,23 +10,25 @@ const DeliverySchedule = () => {
         loading,
         viewMode,
         setViewMode,
-        scheduleRef,
         handleShare,
         handleDragEnd
     } = useDeliverySchedule();
 
+    const location = useLocation();
+    const isStandalone = location.pathname === "/schedule";
+
     const renderHeader = () => (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className={`flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 ${isStandalone ? 'bg-white p-6 rounded-3xl shadow-sm border border-slate-100' : ''}`}>
             <div className="flex items-center gap-4">
                 <div className="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-200">
                     <i className="bi bi-calendar-week text-white text-xl" />
                 </div>
                 <div>
                     <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-none">
-                        Cronograma
+                        Cronograma de Entregas
                     </h2>
                     <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
-                        Gestão de Entregas
+                        {isStandalone ? "Visualização em Tempo Real" : "Gestão de Logística"}
                     </p>
                 </div>
             </div>
@@ -52,13 +55,15 @@ const DeliverySchedule = () => {
                     </button>
                 </div>
 
-                <button
-                    onClick={handleShare}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest py-3 px-6 rounded-xl shadow-lg shadow-emerald-100 flex items-center transition-all active:scale-95 group"
-                >
-                    <i className="bi bi-whatsapp mr-2 text-lg group-hover:rotate-12 transition-transform" />
-                    Compartilhar
-                </button>
+                {!isStandalone && (
+                    <button
+                        onClick={handleShare}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest py-3 px-6 rounded-xl shadow-lg shadow-emerald-100 flex items-center transition-all active:scale-95 group"
+                    >
+                        <i className="bi bi-whatsapp mr-2 text-lg group-hover:rotate-12 transition-transform" />
+                        Compartilhar Link
+                    </button>
+                )}
             </div>
         </div>
     );
@@ -80,7 +85,7 @@ const DeliverySchedule = () => {
 
         if (Object.keys(schedule).length === 0) {
             return (
-                <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50/50">
+                <div className="flex flex-col items-center justify-center py-32 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50/50 mx-4">
                     <div className="bg-white p-6 rounded-full shadow-sm mb-6">
                         <i className="bi bi-calendar-x text-5xl text-slate-200" />
                     </div>
@@ -92,30 +97,7 @@ const DeliverySchedule = () => {
         }
 
         return (
-            <div
-                ref={scheduleRef}
-                className="bg-white p-2 md:p-8 rounded-2xl"
-                id="schedule-capture-area"
-            >
-                {/* Header exclusivo para exportação de imagem */}
-                <div className="hidden visible-on-capture text-center mb-12 pb-8 border-b-4 border-double border-slate-100">
-                    <div className="inline-block bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-                        Relatório de Logística
-                    </div>
-                    <h1 className="text-4xl font-black uppercase text-slate-900 tracking-tighter mb-2">
-                        Cronograma de Entregas
-                    </h1>
-                    <div className="flex justify-center items-center gap-6 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
-                        <span className="flex items-center gap-2">
-                            <i className="bi bi-clock" /> {new Date().toLocaleString('pt-BR')}
-                        </span>
-                        <span className="w-1.5 h-1.5 bg-slate-200 rounded-full"></span>
-                        <span className="flex items-center gap-2">
-                            <i className="bi bi-layers" /> Visão: {viewMode === 'card' ? 'Listagem' : 'Grade Horária'}
-                        </span>
-                    </div>
-                </div>
-
+            <div className="bg-white p-2 md:p-8 rounded-2xl">
                 <div className="transition-all duration-500 ease-in-out">
                     {viewMode === "card" ? (
                         <ScheduleCardView schedule={schedule} handleDragEnd={handleDragEnd} />
@@ -123,32 +105,25 @@ const DeliverySchedule = () => {
                         <ScheduleTableView schedule={schedule} />
                     )}
                 </div>
-
-                {/* Footer exclusivo para exportação */}
-                <div className="hidden visible-on-capture mt-12 pt-8 border-t border-slate-100 text-center">
-                    <p className="text-slate-300 text-[9px] font-black uppercase tracking-[0.2em]">
-                        Sistema PDV - Gestão Inteligente de Pedidos
-                    </p>
-                </div>
             </div>
         );
     };
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto mt-8 p-1 sm:p-4 md:p-8">
+        <div className={`w-full mx-auto transition-all duration-300 ${isStandalone ? 'max-w-none p-4' : 'max-w-[1600px] mt-8 p-1 sm:p-4 md:p-8'}`}>
             {renderHeader()}
-            <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                <div className="p-1 md:p-2 bg-slate-50/50 border-b border-slate-100">
-                    {/* Espaçador decorativo */}
-                </div>
+
+            <div className={`bg-white shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden ${isStandalone ? 'rounded-3xl' : 'rounded-[2.5rem]'}`}>
+                {!isStandalone && (
+                    <div className="p-1 md:p-2 bg-slate-50/50 border-b border-slate-100">
+                        {/* Espaçador decorativo */}
+                    </div>
+                )}
                 {renderContent()}
             </div>
 
             <style dangerouslySetInnerHTML={{
                 __html: `
-                @media screen {
-                    .visible-on-capture { display: none !important; }
-                }
                 #schedule-capture-area {
                     font-family: 'Inter', system-ui, -apple-system, sans-serif;
                 }
