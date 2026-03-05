@@ -8,7 +8,10 @@ const useShipping = () => {
                 value: 0,
                 scheduling: {
                     date: "",
-                    time: ""
+                    time: "",
+                    startTime: "",
+                    endTime: "",
+                    type: "fixed"
                 },
             }
         );

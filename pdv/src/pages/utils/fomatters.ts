@@ -1,6 +1,6 @@
 import CustomerData from "../types/customerData.type"
-import { Item} from "../types/items.type";
-import { Payment} from "../types/payments.type";
+import { Item } from "../types/items.type";
+import { Payment } from "../types/payments.type";
 import { calcItemTotalValue, calcPaymentTotalValue } from "./calculations";
 
 export const stringifyFullAddress = (
@@ -52,10 +52,25 @@ export const formatDate = (value: string) => {
     });
 };
 
+export const toTitleCase = (text: string) => {
+    if (!text) return "";
+    const exceptions = ["de", "da", "do", "das", "dos", "com", "em"];
+    return text
+        .toLowerCase()
+        .split(" ")
+        .map((word, index) => {
+            if (exceptions.includes(word) && index !== 0) {
+                return word;
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        })
+        .join(" ");
+};
+
 export const dateNow = () => {
     const now = new Date();
 
-      return now.toLocaleDateString("pt-BR", {
+    return now.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",

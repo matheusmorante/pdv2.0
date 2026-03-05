@@ -1,6 +1,7 @@
 import CustomerData from "../types/customerData.type";
 import { getAddressByCep, getShippingRouteUrl } from "../utils/maps";
 import { sanitizeNumber } from "../utils/sanitization";
+import { toTitleCase } from "../utils/fomatters";
 
 interface Props {
     customerData: CustomerData,
@@ -10,36 +11,39 @@ interface Props {
 const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
     const route = getShippingRouteUrl(customerData.fullAddress)
     const onChangeCustomerData = (key: keyof CustomerData, value: string) => {
-        setCustomerData((prev: CustomerData) => ({ ...prev, [key]: value }))
+        const formattedValue = key === 'fullName' ? toTitleCase(value) : value;
+        setCustomerData((prev: CustomerData) => ({ ...prev, [key]: formattedValue }))
     }
 
     const onChangeAddress = async (
         key: keyof CustomerData['fullAddress'],
         value: string
     ) => {
-       
-         const newCep = key === 'cep' ? sanitizeNumber(value) : value;
+        const fieldsToCapitalize: (keyof CustomerData['fullAddress'])[] =
+            ['street', 'complement', 'neighborhood', 'city', 'observation'];
+
+        const formattedValue = fieldsToCapitalize.includes(key) ? toTitleCase(value) : value;
+        const finalValue = key === 'cep' ? sanitizeNumber(formattedValue) : formattedValue;
 
         setCustomerData(prev => ({
             ...prev,
             fullAddress: {
                 ...prev.fullAddress,
-                [key]: value,
+                [key]: finalValue,
             },
         }));
 
-      
-        if (key === 'cep' && newCep.length === 8) {
-            const addressViaCep = await getAddressByCep(newCep);
+        if (key === 'cep' && finalValue.length === 8) {
+            const addressViaCep = await getAddressByCep(finalValue);
             setCustomerData(prev => ({
                 ...prev,
                 fullAddress: {
                     ...prev.fullAddress,
-                    street: addressViaCep.street,
-                    neighborhood: addressViaCep.neighborhood,
-                    city: addressViaCep.city,
+                    street: toTitleCase(addressViaCep.street),
+                    neighborhood: toTitleCase(addressViaCep.neighborhood),
+                    city: toTitleCase(addressViaCep.city),
                 },
-            })); 
+            }));
         }
     };
 
