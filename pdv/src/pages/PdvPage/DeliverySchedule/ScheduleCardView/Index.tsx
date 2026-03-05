@@ -4,17 +4,18 @@ import Order from "../../../types/pdvAction.type";
 import {
     stringifyFullAddressWithObservation,
     stringifyItemsWithValues,
-} from "../../../utils/fomatters";
+} from "../../../utils/formatters";
 
 interface Props {
     schedule: Record<string, Order[]>;
     handleDragEnd: (result: DropResult) => void;
+    onOrderClick: (order: Order) => void;
 }
 
 /**
  * Renders an individual delivery order as a draggable card
  */
-const DeliveryOrderCard = ({ order, index }: { order: Order; index: number }) => {
+const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index: number; onOrderClick: (order: Order) => void }) => {
     const { scheduling } = order.shipping;
     const isRange = scheduling.type === "range";
     const displayTime = isRange
@@ -27,9 +28,10 @@ const DeliveryOrderCard = ({ order, index }: { order: Order; index: number }) =>
                 <div
                     ref={provided.innerRef}
                     {...provided.draggableProps}
-                    className={`group border rounded-2xl shadow-sm overflow-hidden transition-all duration-300 border-slate-200 bg-white hover:border-blue-400 hover:shadow-xl ${snapshot.isDragging
-                            ? "shadow-2xl shadow-blue-300 scale-[1.05] ring-2 ring-blue-600 z-50 ring-offset-4"
-                            : "hover:-translate-y-1"
+                    onClick={() => onOrderClick(order)}
+                    className={`group border rounded-2xl shadow-sm overflow-hidden transition-all duration-300 border-slate-200 bg-white hover:border-blue-400 hover:shadow-xl cursor-pointer ${snapshot.isDragging
+                        ? "shadow-2xl shadow-blue-300 scale-[1.05] ring-2 ring-blue-600 z-50 ring-offset-4"
+                        : "hover:-translate-y-1"
                         }`}
                 >
                     {/* Card Header: Drag Handle & Time */}
@@ -37,6 +39,7 @@ const DeliveryOrderCard = ({ order, index }: { order: Order; index: number }) =>
                         <div className="flex items-center gap-4">
                             <div
                                 {...provided.dragHandleProps}
+                                onClick={(e) => e.stopPropagation()}
                                 className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-blue-600 transition-colors p-1.5 bg-white rounded-lg shadow-sm"
                                 title="Mover pedido"
                             >
@@ -103,7 +106,7 @@ const DeliveryOrderCard = ({ order, index }: { order: Order; index: number }) =>
 /**
  * Main component for the Card Visualization of the Delivery Schedule
  */
-const ScheduleCardView = ({ schedule, handleDragEnd }: Props) => {
+const ScheduleCardView = ({ schedule, handleDragEnd, onOrderClick }: Props) => {
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             <div className="flex flex-col gap-12">
@@ -135,7 +138,12 @@ const ScheduleCardView = ({ schedule, handleDragEnd }: Props) => {
                                     ref={provided.innerRef}
                                 >
                                     {orders.map((order, index) => (
-                                        <DeliveryOrderCard key={order.id || `order-${index}`} order={order} index={index} />
+                                        <DeliveryOrderCard
+                                            key={order.id || `order-${index}`}
+                                            order={order}
+                                            index={index}
+                                            onOrderClick={onOrderClick}
+                                        />
                                     ))}
                                     {provided.placeholder}
                                 </div>
@@ -147,5 +155,6 @@ const ScheduleCardView = ({ schedule, handleDragEnd }: Props) => {
         </DragDropContext>
     );
 };
+
 
 export default ScheduleCardView;

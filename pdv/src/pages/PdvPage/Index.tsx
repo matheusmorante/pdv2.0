@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Order from "../types/pdvAction.type";
-import DeliverySchedule from "./DeliverySchedule/Index";
-import OrderHistoryList from "./OrderHistoryList/Index";
+import DeliverySchedule from "./DeliverySchedule/index";
+import OrderHistoryList from "./OrderHistoryList/index";
 import { usePdvForm } from "./usePdvForm";
 import PdvTabs from "./PdvTabs";
 import PdvFormSection from "./PdvFormSection";

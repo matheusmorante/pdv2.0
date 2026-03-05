@@ -2,7 +2,7 @@ import Order from "../types/pdvAction.type";
 import {
     stringifyFullAddress, stringifyFullAddressWithObservation,
     stringifyPayments, stringifyItemsWithValues, formatDate
-} from "./fomatters";
+} from "./formatters";
 import { getShippingRouteUrl } from "./maps";
 
 export const shippingOrderWhatsappUrl = (order: Order) => {

@@ -1,9 +1,9 @@
-import ItemsTable from "./ItemsTable/Index";
+import ItemsTable from "./ItemsTable/index";
 import Seller from "./Seller";
 import ShippingInputs from "./ShippingData";
-import PaymentsTable from "./PaymentsTable/Index";
+import PaymentsTable from "./PaymentsTable/index";
 import PersonalInfos from "./CustomerData";
-import PdvActions from "./PdvActions/Index";
+import PdvActions from "./PdvActions/index";
 import { usePdvForm } from "./usePdvForm";
 
 type PdvFormSectionProps = {
@@ -79,8 +79,8 @@ const PdvFormSection = ({ form }: PdvFormSectionProps) => {
                     onClick={actions.handleSaveOrder}
                     disabled={state.isSaving}
                     className={`font-bold py-2 px-4 rounded shadow flex items-center ${state.isSaving
-                            ? "bg-gray-400 cursor-not-allowed text-gray-200"
-                            : "bg-green-600 hover:bg-green-700 text-white"
+                        ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                        : "bg-green-600 hover:bg-green-700 text-white"
                         }`}
                 >
                     {state.isSaving ? (

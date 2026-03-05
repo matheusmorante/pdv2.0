@@ -1,4 +1,4 @@
-import { dateNow, stringifyFullAddress, stringifyItems} from './utils/fomatters';
+import { dateNow, stringifyFullAddress, stringifyItems } from './utils/formatters';
 
 const WarrantyTermPage = () => {
     const storedOrder = sessionStorage.getItem('order');
@@ -46,7 +46,7 @@ const WarrantyTermPage = () => {
             <p>
                 Declaro que recebi as informações sobre o produto e os termos de garantia.
             </p>
-    
+
             <div className="flex text-center gap-10 justify-center mt-10">
                 <div className="assinatura">
                     <div>________________________________________________</div>

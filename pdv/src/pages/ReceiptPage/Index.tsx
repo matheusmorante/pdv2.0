@@ -1,7 +1,7 @@
 import CustomerData from "./CustomerData";
 import Header from "./Header";
-import ItemsTable from "./itemsTable/Index";
-import PaymentsTable from "./PaymentsTable/Index";
+import ItemsTable from "./itemsTable/index";
+import PaymentsTable from "./PaymentsTable/index";
 import ShippingData from "./ShippingData";
 
 const ReceiptPage = () => {
@@ -11,7 +11,7 @@ const ReceiptPage = () => {
     return (
         <div className="flex flex-col gap-5 [&_th]:bg-gray-400 [&_td]:bg-white
          [&_input]:px-2 [&_input]:bg-white">
-            <Header seller={order.seller}/>
+            <Header seller={order.seller} />
             <CustomerData customerData={order.customerData} />
             <ItemsTable items={order.items} summary={order.itemsSummary} />
             <div className="flex w-full justify-between gap-6">

@@ -2,11 +2,11 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import PdvPage from './pages/PdvPage/Index';
-import ReceiptPage from './pages/ReceiptPage/Index';
+import PdvPage from './pages/PdvPage/index';
+import ReceiptPage from './pages/ReceiptPage/index';
 import WarrantyTermPage from './pages/WarrantyTermPage';
-import OrderPage from './pages/OrderPage/Index';
-import DeliverySchedule from './pages/PdvPage/DeliverySchedule/Index';
+import OrderPage from './pages/OrderPage/index';
+import DeliverySchedule from './pages/PdvPage/DeliverySchedule/index';
 
 function App() {
   return (

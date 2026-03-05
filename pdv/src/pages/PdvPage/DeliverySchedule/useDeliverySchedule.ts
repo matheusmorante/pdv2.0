@@ -44,6 +44,7 @@ export const useDeliverySchedule = () => {
     const [schedule, setSchedule] = useState<Record<string, Order[]>>({});
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<"card" | "table">("card");
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
     useEffect(() => {
         const unsubscribe = subscribeToOrders((orders) => {
@@ -93,11 +94,17 @@ export const useDeliverySchedule = () => {
         }
     }, [schedule, viewMode]);
 
+    const openOrderDetails = (order: Order) => setSelectedOrder(order);
+    const closeOrderDetails = () => setSelectedOrder(null);
+
     return {
         schedule,
         loading,
         viewMode,
         setViewMode,
+        selectedOrder,
+        openOrderDetails,
+        closeOrderDetails,
         handleShare,
         handleDragEnd,
     };

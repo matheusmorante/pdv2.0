@@ -1,7 +1,7 @@
 import CustomerData from "../types/customerData.type";
 import { getAddressByCep, getShippingRouteUrl } from "../utils/maps";
 import { sanitizeNumber } from "../utils/sanitization";
-import { toTitleCase } from "../utils/fomatters";
+import { toTitleCase } from "../utils/formatters";
 
 interface Props {
     customerData: CustomerData,

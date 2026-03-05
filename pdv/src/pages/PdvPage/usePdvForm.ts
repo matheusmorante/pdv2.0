@@ -9,7 +9,7 @@ import { calcPaymentsSummary } from "../utils/calculations";
 import { toast } from "react-toastify";
 import { saveOrder } from "../utils/orderHistoryService";
 import { validateBase } from "../utils/validations";
-import { dateNow } from "../utils/fomatters";
+import { dateNow } from "../utils/formatters";
 
 export const usePdvForm = () => {
     const { items, setItems } = useItems();

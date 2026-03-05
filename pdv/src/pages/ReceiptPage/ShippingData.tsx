@@ -1,5 +1,5 @@
 import Shipping from "../types/Shipping.type";
-import { formatDate } from "../utils/fomatters";
+import { formatDate } from "../utils/formatters";
 import { NumericFormat } from "react-number-format";
 
 interface Props {

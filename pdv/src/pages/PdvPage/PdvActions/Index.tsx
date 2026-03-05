@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Order, { PdvAction, IsButtonsClicked } from "../../types/pdvAction.type";
-import { dateNow } from "../../utils/fomatters";
+import { dateNow } from "../../utils/formatters";
 import { buttons, actionsMap } from "./pdvActionsConfig";
 
 

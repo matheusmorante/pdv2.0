@@ -1,6 +1,6 @@
 import CustomerData from "./CustomerData";
-import ItemsTable from "./itemsTable/Index";
-import PaymentsTable from "./PaymentsTable/Index";
+import ItemsTable from "./itemsTable/index";
+import PaymentsTable from "./PaymentsTable/index";
 import ShippingData from "./ShippingData";
 import { useEffect } from "react";
 
@@ -8,7 +8,7 @@ const OrderPage = () => {
     const storedOrder = sessionStorage.getItem('order');
     const order = storedOrder ? JSON.parse(storedOrder) : null;
 
-       useEffect(() => {
+    useEffect(() => {
         window.print();
     }, []);
 

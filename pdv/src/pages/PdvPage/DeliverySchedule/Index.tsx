@@ -1,8 +1,9 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { useDeliverySchedule } from "./useDeliverySchedule";
-import ScheduleCardView from "./ScheduleCardView/Index";
-import ScheduleTableView from "./ScheduleTableView/Index";
+import ScheduleCardView from "./ScheduleCardView";
+import ScheduleTableView from "./ScheduleTableView";
+import OrderDetailsModal from "./OrderDetailsModal";
 
 const DeliverySchedule = () => {
     const {
@@ -10,6 +11,9 @@ const DeliverySchedule = () => {
         loading,
         viewMode,
         setViewMode,
+        selectedOrder,
+        openOrderDetails,
+        closeOrderDetails,
         handleShare,
         handleDragEnd
     } = useDeliverySchedule();
@@ -100,9 +104,16 @@ const DeliverySchedule = () => {
             <div className="bg-white p-2 md:p-8 rounded-2xl">
                 <div className="transition-all duration-500 ease-in-out">
                     {viewMode === "card" ? (
-                        <ScheduleCardView schedule={schedule} handleDragEnd={handleDragEnd} />
+                        <ScheduleCardView
+                            schedule={schedule}
+                            handleDragEnd={handleDragEnd}
+                            onOrderClick={openOrderDetails}
+                        />
                     ) : (
-                        <ScheduleTableView schedule={schedule} />
+                        <ScheduleTableView
+                            schedule={schedule}
+                            onOrderClick={openOrderDetails}
+                        />
                     )}
                 </div>
             </div>
@@ -121,6 +132,13 @@ const DeliverySchedule = () => {
                 )}
                 {renderContent()}
             </div>
+
+            {selectedOrder && (
+                <OrderDetailsModal
+                    order={selectedOrder}
+                    onClose={closeOrderDetails}
+                />
+            )}
 
             <style dangerouslySetInnerHTML={{
                 __html: `

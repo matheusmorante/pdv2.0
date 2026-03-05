@@ -1,11 +1,11 @@
 import CustomerData from "../types/customerData.type"
-import { stringifyFullAddress } from "../utils/fomatters"
+import { stringifyFullAddress } from "../utils/formatters"
 
 interface Props {
-    customerData: CustomerData 
+    customerData: CustomerData
 }
 
-const CustomerDataInputs = ({customerData}:Props) => {
+const CustomerDataInputs = ({ customerData }: Props) => {
     return (
         <section className="flex flex-wrap my-6 gap-x-6 gap-y-2">
             <div>
