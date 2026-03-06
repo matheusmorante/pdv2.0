@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
-import ReceiptPage from './pages/ReceiptPage/index';
+import ReceiptPage from './pages/ReceiptPage';
 import WarrantyTermPage from './pages/WarrantyTermPage';
 import DeliverySchedule from './pages/App/DeliverySchedule';; 
 import SalesOrder from './pages/App/SalesOrder';

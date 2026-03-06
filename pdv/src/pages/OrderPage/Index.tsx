@@ -1,5 +1,5 @@
 import CustomerData from "./CustomerData";
-import ItemsTable from "./itemsTable/index";
+import ItemsTable from "./ItemsTable/32ndex";
 import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
 import { useEffect } from "react";
