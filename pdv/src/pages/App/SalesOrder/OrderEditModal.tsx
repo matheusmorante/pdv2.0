@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import PdvFormSection from "./PdvFormSection";
 import { usePdvForm } from "./usePdvForm";
 import Order from "../../types/pdvAction.type";
@@ -15,13 +15,13 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
     const form = usePdvForm();
 
     // Load order data into form on mount
-    React.useEffect(() => {
+    useEffect(() => {
         if (order) {
             form.actions.loadOrderForEditing(order);
         }
-    }, [order]);
+    }, [order, form.actions]);
 
-    const handleUpdate = async (e?: React.MouseEvent) => {
+    const handleUpdate = useCallback(async (e?: React.MouseEvent) => {
         e?.preventDefault();
         try {
             const updatedOrder = { ...form.state.currentOrder, id: order.id, date: order.date };
@@ -33,7 +33,7 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
             console.error("Erro ao atualizar pedido:", error);
             toast.error("Falha ao atualizar pedido.");
         }
-    };
+    }, [form.state.currentOrder, order.id, order.date, onSaveSuccess, onClose]);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">

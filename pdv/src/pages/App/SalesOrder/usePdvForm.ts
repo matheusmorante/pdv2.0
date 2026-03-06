@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Order from "../../types/pdvAction.type";
 import useItems from "./hooks/useItems";
 import useShipping from "./hooks/useShipping";
@@ -30,7 +30,7 @@ export const usePdvForm = () => {
     const itemsSummary = calcItemsSummary(items);
     const paymentsSummary = calcPaymentsSummary(payments, itemsSummary, shipping.value);
 
-    const getOrderData = (newStatus?: 'draft' | 'scheduled' | 'fulfilled' | 'cancelled'): Order => ({
+    const getOrderData = useCallback((newStatus?: 'draft' | 'scheduled' | 'fulfilled' | 'cancelled'): Order => ({
         id: currentOrderId,
         status: newStatus || status,
         items,
@@ -42,7 +42,7 @@ export const usePdvForm = () => {
         observation,
         seller,
         date: dateNow(),
-    });
+    }), [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller]);
 
     // AUTO-SAVE LOGIC
     useEffect(() => {
@@ -72,7 +72,7 @@ export const usePdvForm = () => {
         };
     }, [items, shipping, payments, customerData, observation, seller]);
 
-    const loadOrderForEditing = (order: Order) => {
+    const loadOrderForEditing = useCallback((order: Order) => {
         setItems(order.items);
         setShipping(order.shipping);
         setPayments(order.payments);
@@ -83,9 +83,9 @@ export const usePdvForm = () => {
         setStatus(order.status || 'draft');
         setActiveModal(true);
         toast.info("Pedido carregado para edição.");
-    };
+    }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setCurrentOrderId, setStatus]);
 
-    const handleCompleteOrder = async (e?: React.MouseEvent) => {
+    const handleCompleteOrder = useCallback(async (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
 
         const orderData = getOrderData('scheduled');
@@ -107,45 +107,46 @@ export const usePdvForm = () => {
         } finally {
             setIsSaving(false);
         }
-    };
+    }, [getOrderData, isSaving]);
 
-    const clearForm = () => {
+    const clearForm = useCallback(() => {
         if (window.confirm("Deseja limpar o formulário para um novo pedido?")) {
             window.location.reload();
         }
-    };
+    }, []);
 
-    const currentOrder = getOrderData(currentOrderId ? 'scheduled' : 'draft');
+    const currentOrder = useMemo(() => getOrderData(currentOrderId ? 'scheduled' : 'draft'), [getOrderData, currentOrderId]);
 
-    const isValidForCompletion = validateBase(getOrderData('scheduled'));
+    const isValidForCompletion = useMemo(() => validateBase(getOrderData('scheduled')), [getOrderData]);
 
-    return {
-        state: {
-            items,
-            shipping,
-            payments,
-            customerData,
-            observation,
-            seller,
-            currentOrderId,
-            status,
-            isSaving,
-            itemsSummary,
-            paymentsSummary,
-            currentOrder,
-            isValidForCompletion,
-        },
-        actions: {
-            setItems,
-            setShipping,
-            setPayments,
-            setCustomerData,
-            setObservation,
-            setSeller,
-            loadOrderForEditing,
-            handleSaveOrder: handleCompleteOrder,
-            handleCompleteOrder,
-            clearForm,
-        },
-    };
+    const state = useMemo(() => ({
+        items,
+        shipping,
+        payments,
+        customerData,
+        observation,
+        seller,
+        currentOrderId,
+        status,
+        isSaving,
+        itemsSummary,
+        paymentsSummary,
+        currentOrder,
+        isValidForCompletion,
+    }), [items, shipping, payments, customerData, observation, seller, currentOrderId, status, isSaving, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion]);
+
+    const actions = useMemo(() => ({
+        setItems,
+        setShipping,
+        setPayments,
+        setCustomerData,
+        setObservation,
+        setSeller,
+        loadOrderForEditing,
+        handleSaveOrder: handleCompleteOrder,
+        handleCompleteOrder,
+        clearForm,
+    }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, loadOrderForEditing, handleCompleteOrder, clearForm]);
+
+    return { state, actions };
 };

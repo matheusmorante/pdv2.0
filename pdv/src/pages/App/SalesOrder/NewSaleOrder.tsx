@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import PdvFormSection from "./PdvFormSection";
 import { usePdvForm } from "./usePdvForm";
 
@@ -12,12 +12,12 @@ const NewSaleOrder = ({ onClose, onSaveSuccess }: NewSaleOrderProps) => {
 
     // Wrap handleSaveOrder to include onClose and onSaveSuccess
     const originalHandleSaveOrder = form.actions.handleSaveOrder;
-    const handleSave = async (e?: React.MouseEvent) => {
+    const handleSave = useCallback(async (e?: React.MouseEvent) => {
         e?.preventDefault();
         await originalHandleSaveOrder(e);
         onSaveSuccess();
         onClose();
-    };
+    }, [originalHandleSaveOrder, onSaveSuccess, onClose]);
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
