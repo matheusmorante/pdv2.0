@@ -5,7 +5,7 @@ import { Payment, PaymentsSummary } from "../types/payments.type";
 import { toast } from 'react-toastify';
 import Shipping from "../types/Shipping.type";
 import Order from "../types/pdvAction.type";
-import { calcItemsSummary } from "../PdvPage/pdvUtils";
+import { calcItemsSummary } from "../App/SalesOrder/pdvUtils";
 
 const requiredField = (value: any, msg: string) => {
     if (!value) {

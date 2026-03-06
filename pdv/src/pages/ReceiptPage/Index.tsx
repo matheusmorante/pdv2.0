@@ -1,7 +1,7 @@
 import CustomerData from "./CustomerData";
 import Header from "./Header";
-import ItemsTable from "./itemsTable/index";
-import PaymentsTable from "./PaymentsTable/index";
+import ItemsTable from "./itemsTable";
+import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
 
 const ReceiptPage = () => {

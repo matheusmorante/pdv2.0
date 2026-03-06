@@ -22,7 +22,7 @@ const PaymentsTable = ({ payments, summary }: Props) => {
             </colgroup>
             <thead>
                 <tr className="">
-                    <th>Forma de Pagamento</th>
+                    <th>Forma de Pa gamento</th>
                     <th>Valor</th>
                 </tr>
             </thead>

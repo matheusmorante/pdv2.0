@@ -1,6 +1,6 @@
 import CustomerData from "./CustomerData";
 import ItemsTable from "./itemsTable/index";
-import PaymentsTable from "./PaymentsTable/index";
+import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
 import { useEffect } from "react";
 

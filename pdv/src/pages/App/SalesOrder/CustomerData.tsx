@@ -1,0 +1,136 @@
+import React from "react";
+import CustomerData from "../../types/customerData.type";
+import { getAddressByCep, getShippingRouteUrl } from "../../utils/maps";
+import { sanitizeNumber } from "../../utils/sanitization";
+import { toTitleCase } from "../../utils/formatters";
+
+interface Props {
+    customerData: CustomerData,
+    setCustomerData: React.Dispatch<React.SetStateAction<CustomerData>>
+}
+
+const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
+    const route = getShippingRouteUrl(customerData.fullAddress)
+    const onChangeCustomerData = (key: keyof CustomerData, value: string) => {
+        const formattedValue = key === 'fullName' ? toTitleCase(value) : value;
+        setCustomerData((prev: CustomerData) => ({ ...prev, [key]: formattedValue }))
+    }
+
+    const onChangeAddress = async (
+        key: keyof CustomerData['fullAddress'],
+        value: string
+    ) => {
+        const fieldsToCapitalize: (keyof CustomerData['fullAddress'])[] =
+            ['street', 'complement', 'neighborhood', 'city', 'observation'];
+
+        const formattedValue = fieldsToCapitalize.includes(key) ? toTitleCase(value) : value;
+        const finalValue = key === 'cep' ? sanitizeNumber(formattedValue) : formattedValue;
+
+        setCustomerData(prev => ({
+            ...prev,
+            fullAddress: {
+                ...prev.fullAddress,
+                [key]: finalValue,
+            },
+        }));
+
+        if (key === 'cep' && finalValue.length === 8) {
+            const addressViaCep = await getAddressByCep(finalValue);
+            setCustomerData(prev => ({
+                ...prev,
+                fullAddress: {
+                    ...prev.fullAddress,
+                    street: toTitleCase(addressViaCep.street),
+                    neighborhood: toTitleCase(addressViaCep.neighborhood),
+                    city: toTitleCase(addressViaCep.city),
+                },
+            }));
+        }
+    };
+
+    return (
+        <div className="[&_div_input]:border-b-2 [&_div_input]:border-gray-300 
+        focus:[&_input]:border-blue-400">
+            <a href={route} target="_blank" className="bg-red-600 p-2 font-bold">
+                <i className="bi bi-geo-alt-fill mr-2" />
+                Ver Endereço no Google Maps
+            </a>
+
+            <a href={`http://wa.me/${customerData.phone}`} target="_blank" className="bg-green-600 p-2 font-bold">
+                <i className="bi bi-phone mr-2 " />
+                Verificar Whatsapp
+            </a>
+            <div className="flex justify-between flex-wrap gap-4 my-6">
+
+                <div className="flex flex-col">
+                    <label>Nome Completo</label>
+                    <input
+                        value={customerData.fullName}
+                        onChange={e => onChangeCustomerData('fullName', e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>Celular/Telefone</label>
+                    <input
+                        name="phone"
+                        value={customerData.phone}
+                        onChange={e => onChangeCustomerData('phone', e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>CEP</label>
+                    <input
+                        name="cep"
+                        value={customerData.fullAddress.cep}
+                        onChange={e => onChangeAddress('cep', e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>Logradouro</label>
+                    <input
+                        name="street"
+                        value={customerData.fullAddress.street}
+                        onChange={e => onChangeAddress('street', e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>Nº</label>
+                    <input
+                        onChange={e => onChangeAddress('number', e.target.value)}
+                        className="w-[50px]"
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>Complemento</label>
+                    <input
+                        onChange={e => onChangeAddress('complement', e.target.value)}
+                    />
+                </div>
+
+                <div className="flex flex-col">
+                    <label>Bairro</label>
+                    <input
+                        value={customerData.fullAddress.neighborhood}
+                        onChange={e => onChangeAddress('neighborhood', e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>Cidade</label>
+                    <input
+                        value={customerData.fullAddress.city}
+                        onChange={e => onChangeAddress('city', e.target.value)}
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label>Observações sobre o endereço</label>
+                    <input
+                        name="observation"
+                        onChange={e => onChangeAddress('observation', e.target.value)}
+
+                    />
+                </div>
+            </div>
+        </div>
+    )
+}
+export default CustomerDataInputs;

@@ -50,8 +50,8 @@
   "devDependencies": {
     "@storybook/preset-create-react-app": "^9.1.12",
     "@storybook/react-webpack5": "^9.1.12",
-    "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.7",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",
     "eslint-plugin-storybook": "^9.1.12",
     "postcss": "^8.5.6",
