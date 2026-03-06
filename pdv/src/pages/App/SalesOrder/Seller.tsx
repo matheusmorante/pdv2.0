@@ -6,17 +6,17 @@ interface props {
 
 const Seller = ({ seller, setSeller }: props) => {
     return (
-        <div className="[&_input]:border-b-2 focus:[&_input]:border-blue-400
-         [&_input]:border-gray-300">
-            <label>Vendedor</label>
+        <div className="flex flex-col">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Vendedor</label>
             <input
-                className="text-right pr-2"
+                className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                 value={seller}
                 onChange={
                     (e: React.ChangeEvent<HTMLInputElement>) =>
                         setSeller(e.target.value)
                 }
                 name="seller"
+                placeholder="Nome do Vendedor"
             />
         </div>
     )

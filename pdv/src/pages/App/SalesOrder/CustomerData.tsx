@@ -54,7 +54,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                 <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Nome Completo</label>
                     <input
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                         value={customerData.fullName}
                         onChange={e => onChangeCustomerData('fullName', e.target.value)}
                         placeholder="Nome do Cliente"
@@ -74,7 +74,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     </div>
                     <input
                         name="phone"
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                         value={customerData.phone}
                         onChange={e => onChangeCustomerData('phone', e.target.value)}
                         placeholder="(00) 00000-0000"
@@ -87,7 +87,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">CEP</label>
                     <input
                         name="cep"
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                         value={customerData.fullAddress.cep}
                         onChange={e => onChangeAddress('cep', e.target.value)}
                         placeholder="00000-000"
@@ -107,7 +107,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     </div>
                     <input
                         name="street"
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                         value={customerData.fullAddress.street}
                         onChange={e => onChangeAddress('street', e.target.value)}
                         placeholder="Rua, Avenida, etc."
@@ -121,7 +121,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     <input
                         value={customerData.fullAddress.number}
                         onChange={e => onChangeAddress('number', e.target.value)}
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                     />
                 </div>
                 <div className="col-span-2 md:col-span-3 flex flex-col">
@@ -129,7 +129,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     <input
                         value={customerData.fullAddress.complement}
                         onChange={e => onChangeAddress('complement', e.target.value)}
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                         placeholder="Apto, Bloco, etc."
                     />
                 </div>
@@ -139,7 +139,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                 <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Bairro</label>
                     <input
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                         value={customerData.fullAddress.neighborhood}
                         onChange={e => onChangeAddress('neighborhood', e.target.value)}
                     />
@@ -147,7 +147,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                 <div className="flex flex-col">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Cidade</label>
                     <input
-                        className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                        className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                         value={customerData.fullAddress.city}
                         onChange={e => onChangeAddress('city', e.target.value)}
                     />
@@ -158,7 +158,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Observações sobre o endereço</label>
                 <input
                     name="observation"
-                    className="bg-slate-50 border border-slate-100 p-4 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all text-sm outline-none placeholder:text-slate-300 shadow-sm"
+                    className="bg-transparent border-0 border-b border-slate-200 px-1 py-3 focus:border-blue-600 transition-all text-sm outline-none placeholder:text-slate-300"
                     onChange={e => onChangeAddress('observation', e.target.value)}
                     placeholder="Ponto de referência, etc."
                     value={customerData.fullAddress.observation}

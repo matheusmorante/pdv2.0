@@ -46,7 +46,7 @@ const PdvFormSection = ({ form }: PdvFormSectionProps) => {
             </div>
 
             {/* Main Form Content - Wide Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-10 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-10 items-start">
 
                 {/* Left Column - Main Tables (Items & Payments) */}
                 <div className="lg:col-span-2 2xl:col-span-3 flex flex-col gap-10">
@@ -92,8 +92,8 @@ const PdvFormSection = ({ form }: PdvFormSectionProps) => {
                 </div>
 
                 {/* Right Column - Customer & Shipping Info - MATCHED HEIGHT WITH SCROLL */}
-                <div className="flex flex-col gap-10 h-full max-h-[1400px]"> {/* Altura máxima generosa para desktop */}
-                    <div className="flex-1 flex flex-col gap-10 overflow-y-auto pr-2 custom-scrollbar lg:max-h-[1200px]">
+                <div className="flex flex-col gap-10 lg:sticky lg:top-8 h-full max-h-[calc(100vh-320px)] lg:max-h-[calc(100vh-250px)]">
+                    <div className="flex-1 flex flex-col gap-10 overflow-y-auto pr-4 custom-scrollbar rounded-[2.5rem]">
                         {/* Customer Info */}
                         <section className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm shrink-0">
                             <div className="flex items-center gap-3 mb-6">
@@ -137,7 +137,7 @@ const PdvFormSection = ({ form }: PdvFormSectionProps) => {
                             <textarea
                                 value={state.observation}
                                 onChange={(e) => actions.setObservation(e.target.value)}
-                                className="w-full min-h-[140px] bg-slate-50 border border-slate-100 p-4 text-slate-600 focus:ring-2 focus:ring-blue-500 outline-none transition-all rounded-3xl resize-none text-sm placeholder:text-slate-300"
+                                className="w-full min-h-[120px] bg-transparent border-0 border-b border-slate-200 p-2 text-slate-600 focus:border-blue-600 outline-none transition-all resize-none text-sm placeholder:text-slate-300"
                                 placeholder="Notas importantes deste pedido..."
                             />
                         </section>
