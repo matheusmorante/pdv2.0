@@ -12,7 +12,7 @@ const ItemsTable = ({ items, summary }: Props) => {
 
 
     return (
-        <table className="break-words w-full [&_td]:border-2 [&_th]:border-2">
+        <table className="break-words w-full [&_td]:border-2 [&_th]:border-2 dark:[&_td]:border-slate-800 dark:[&_th]:border-slate-800 transition-colors duration-300">
             <colgroup>
                 <col className="w-[40%]" />
                 <col className="w-[10%]" />

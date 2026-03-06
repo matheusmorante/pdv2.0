@@ -11,8 +11,8 @@ interface Props {
 
 const OrderDetailsModal = ({ order, onClose }: Props) => {
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in">
-            <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in transition-colors duration-300">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 transition-colors duration-300">
                 <ModalHeader
                     reference={order.id?.slice(-8).toUpperCase() || "N/A"}
                     onClose={onClose}
@@ -46,19 +46,19 @@ const OrderDetailsModal = ({ order, onClose }: Props) => {
                     </div>
 
                     {order.observation && (
-                        <div className="mt-12 p-8 bg-amber-50/50 border border-amber-100 rounded-[2rem]">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-3 flex items-center gap-2">
+                        <div className="mt-12 p-8 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-[2rem] transition-colors duration-300">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 mb-3 flex items-center gap-2">
                                 <i className="bi bi-chat-left-dots-fill" /> Observações Internas
                             </h4>
-                            <p className="text-sm font-bold text-amber-900/70 italic leading-relaxed">
+                            <p className="text-sm font-bold text-amber-900/70 dark:text-amber-200/50 italic leading-relaxed">
                                 "{order.observation}"
                             </p>
                         </div>
                     )}
                 </div>
 
-                <div className="px-10 py-6 border-t border-slate-100 bg-slate-50 flex justify-center">
-                    <p className="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">
+                <div className="px-10 py-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 flex justify-center transition-colors duration-300">
+                    <p className="text-[9px] font-black uppercase text-slate-300 dark:text-slate-500 tracking-[0.3em]">
                         Sistema PDV Inteligente • Logística v2.0
                     </p>
                 </div>

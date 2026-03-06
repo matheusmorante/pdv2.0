@@ -20,9 +20,9 @@ const SalesOrder = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     return (
-        <div className="flex -m-8 h-[calc(100vh-80px)] overflow-hidden bg-slate-50">
+        <div className="flex -m-8 h-[calc(100vh-80px)] overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
             {/* Sidebar for Filters */}
-            <div className={`transition-all duration-300 ease-in-out border-r border-slate-100 bg-white ${isSidebarOpen ? 'w-80' : 'w-0 overflow-hidden border-none'}`}>
+            <div className={`transition-all duration-300 ease-in-out border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 ${isSidebarOpen ? 'w-80' : 'w-0 overflow-hidden border-none'}`}>
                 <OrderFilters filters={filters} setFilters={setFilters} />
             </div>
 
@@ -34,7 +34,7 @@ const SalesOrder = () => {
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                             className={`flex items-center gap-3 px-5 py-3 rounded-2xl transition-all shadow-lg font-black uppercase tracking-widest text-[10px] border ${isSidebarOpen
                                 ? 'bg-white text-slate-400 border-slate-100 hover:bg-slate-50 shadow-slate-200/50'
-                                : 'bg-blue-600 text-white border-blue-500 shadow-blue-200'
+                                : 'bg-blue-600 text-white border-blue-500 shadow-blue-200 dark:shadow-none'
                                 }`}
                             title={isSidebarOpen ? "Fechar Filtros" : "Abrir Filtros"}
                         >
@@ -42,14 +42,14 @@ const SalesOrder = () => {
                             {!isSidebarOpen && <span>Filtros</span>}
                         </button>
                         <div>
-                            <h1 className="text-4xl font-black text-slate-800 tracking-tight">Pedidos de Venda</h1>
-                            <p className="text-slate-500 font-medium text-lg">Gerencie e acompanhe todos os pedidos realizados</p>
+                            <h1 className="text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tight transition-colors">Pedidos de Venda</h1>
+                            <p className="text-slate-500 dark:text-slate-400 font-medium text-lg">Gerencie e acompanhe todos os pedidos realizados</p>
                         </div>
                     </div>
 
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 transition-all active:scale-95"
+                        className="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95"
                     >
                         <i className="bi bi-plus-lg text-xl" />
                         Novo Pedido
@@ -57,7 +57,7 @@ const SalesOrder = () => {
                 </div>
 
                 <div className="flex flex-col gap-8">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden border border-slate-100 dark:border-slate-800">
                         <OrderHistoryList
                             onEdit={setEditingOrder}
                             filters={filters}

@@ -43,8 +43,8 @@ const NewSaleOrder = ({ onClose, onSaveSuccess }: NewSaleOrderProps) => {
                     </button>
                 </div>
 
-                {/* Modal Content - Scrollable Area */}
-                <div className="flex-1 overflow-y-auto p-8 bg-white">
+                {/* Modal Content - Internal Scroll handled by PdvFormSection */}
+                <div className="flex-1 overflow-hidden bg-white dark:bg-slate-900">
                     <PdvFormSection form={{
                         ...form,
                         actions: {

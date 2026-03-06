@@ -11,14 +11,14 @@ interface Props {
 const TableCell = ({ order, duration, onOrderClick }: Props) => (
     <td
         colSpan={duration}
-        className="p-1.5 align-top bg-blue-50/40 border-r border-slate-200"
+        className="p-1.5 align-top bg-blue-50/40 dark:bg-blue-900/10 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300"
     >
         <div
             onClick={() => onOrderClick(order)}
-            className="h-full bg-white border-2 border-blue-200 rounded-xl p-3 shadow-sm hover:shadow-md hover:border-blue-400 transition-all group overflow-hidden flex flex-col gap-2 cursor-pointer"
+            className="h-full bg-white dark:bg-slate-900 border-2 border-blue-200 dark:border-blue-900/30 rounded-xl p-3 shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all group overflow-hidden flex flex-col gap-2 cursor-pointer"
         >
-            <div className="flex justify-between items-start mb-1 pb-1 border-b border-slate-100">
-                <span className="font-black text-[9px] text-blue-700 uppercase tracking-widest whitespace-nowrap">
+            <div className="flex justify-between items-start mb-1 pb-1 border-b border-slate-100 dark:border-slate-800">
+                <span className="font-black text-[9px] text-blue-700 dark:text-blue-400 uppercase tracking-widest whitespace-nowrap">
                     {order.shipping.scheduling.startTime || order.shipping.scheduling.time}
                     {order.shipping.scheduling.type === 'range' && ` → ${order.shipping.scheduling.endTime}`}
                 </span>
@@ -29,21 +29,21 @@ const TableCell = ({ order, duration, onOrderClick }: Props) => (
                 )}
             </div>
 
-            <div className="font-black text-slate-800 text-[11px] uppercase truncate leading-none">
+            <div className="font-black text-slate-800 dark:text-slate-100 text-[11px] uppercase truncate leading-none">
                 {order.customerData?.fullName || "Consumidor"}
             </div>
 
             <div
-                className="text-[8px] text-slate-400 font-bold leading-snug truncate"
+                className="text-[8px] text-slate-400 dark:text-slate-500 font-bold leading-snug truncate"
                 title={stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
             >
                 <i className="bi bi-geo-alt-fill text-red-400 mr-0.5" />
                 {stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
             </div>
 
-            <div className="mt-1 bg-slate-50/80 p-1.5 rounded-lg border border-slate-100 group-hover:bg-blue-50/30 transition-colors">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 opacity-60">Itens</p>
-                <p className="text-[9px] font-mono text-slate-600 leading-tight line-clamp-2">
+            <div className="mt-1 bg-slate-50/80 dark:bg-slate-800/50 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 group-hover:bg-blue-50/30 dark:group-hover:bg-blue-900/20 transition-colors">
+                <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 opacity-60">Itens</p>
+                <p className="text-[9px] font-mono text-slate-600 dark:text-slate-400 leading-tight line-clamp-2">
                     {stringifyItems(order.items || [])}
                 </p>
             </div>

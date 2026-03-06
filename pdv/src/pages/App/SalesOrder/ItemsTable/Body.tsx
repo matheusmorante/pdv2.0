@@ -3,12 +3,16 @@ import BodyRow from "./BodyRow";
 import Item from "../../../types/items.type";
 import { sanitizeItem } from "../../../utils/sanitization";
 
+import { ValidationErrors } from "../../../utils/validations";
+
 interface Props {
     items: Item[];
     setItems: React.Dispatch<React.SetStateAction<Item[]>>;
+    deliveryMethod: 'delivery' | 'pickup';
+    errors: ValidationErrors;
 }
 
-const Body = ({ items, setItems }: Props) => {
+const Body = ({ items, setItems, deliveryMethod, errors }: Props) => {
     const toggleDiscountType = (idx: number) => {
         setItems((prev: Item[]) => {
             const newItems = [...prev];
@@ -54,6 +58,8 @@ const Body = ({ items, setItems }: Props) => {
                         onChange={changeItems}
                         onToggleDiscountType={() => toggleDiscountType(idx)}
                         onDelete={() => deleteItem(idx)}
+                        deliveryMethod={deliveryMethod}
+                        errors={errors}
                     />
                 ))
             }

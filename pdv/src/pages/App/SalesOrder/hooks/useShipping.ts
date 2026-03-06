@@ -6,6 +6,8 @@ const useShipping = () => {
         useState<Shipping>(
             {
                 value: 0,
+                deliveryMethod: 'delivery',
+                orderType: 'Entrega com montagem no local',
                 scheduling: {
                     date: "",
                     time: "",

@@ -9,8 +9,8 @@ const ReceiptPage = () => {
     const order = storedOrder ? JSON.parse(storedOrder) : null;
 
     return (
-        <div className="flex flex-col gap-5 [&_th]:bg-gray-400 [&_td]:bg-white
-         [&_input]:px-2 [&_input]:bg-white">
+        <div className="flex flex-col gap-5 text-slate-900 dark:text-slate-100 [&_th]:bg-slate-100 dark:[&_th]:bg-slate-800 [&_td]:bg-white dark:[&_td]:bg-slate-900
+         [&_input]:px-2 [&_input]:bg-white dark:[&_input]:bg-slate-900">
             <Header seller={order.seller} />
             <CustomerData customerData={order.customerData} />
             <ItemsTable items={order.items} summary={order.itemsSummary} />

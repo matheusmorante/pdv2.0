@@ -1,6 +1,8 @@
 type Shipping = {
     value: number,
     distance?: number,
+    deliveryMethod: 'delivery' | 'pickup',
+    orderType: string,
     scheduling: {
         date: string,
         time: string, // legacy/display

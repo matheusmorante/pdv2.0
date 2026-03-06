@@ -3,15 +3,16 @@ import Item from "../../../types/items.type";
 
 const useItems = () => {
     const [items, setItems] = useState<Item[]>([
-            {
-                description: '',
-                quantity: 1,
-                unitPrice: 0,
-                unitDiscount: 0,
-                discountType: 'fixed',
-            }
-        ])
-     
+        {
+            description: '',
+            quantity: 1,
+            unitPrice: 0,
+            unitDiscount: 0,
+            discountType: 'fixed',
+            handlingType: 'Entrega com montagem no local'
+        }
+    ])
+
 
     return { items, setItems }
 }

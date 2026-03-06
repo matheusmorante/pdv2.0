@@ -11,7 +11,7 @@ const Footer = ({ summary }: Props) => {
     return (
         <tfoot>
             <tr>
-                <th className="border-none !bg-white"></th>
+                <th className="border-none bg-transparent"></th>
                 <th>Qt. total</th>
                 <th>Subtotal</th>
                 <th>Desc. Total</th>

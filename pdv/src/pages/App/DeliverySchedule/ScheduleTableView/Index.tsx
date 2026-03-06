@@ -12,22 +12,22 @@ const HOURS = Array.from({ length: 13 }, (_, i) => i + 8); // 8:00 to 20:00
 
 const ScheduleTableView = ({ schedule, onOrderClick }: Props) => {
     return (
-        <div className="bg-white p-2">
-            <div className="overflow-x-auto rounded-3xl border-2 border-slate-100 shadow-2xl shadow-slate-200/50">
+        <div className="bg-white dark:bg-slate-950 p-2 transition-colors duration-300">
+            <div className="overflow-x-auto rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none">
                 <table className="w-full border-collapse min-w-[1200px]">
                     <thead>
-                        <tr className="bg-slate-900 text-white">
-                            <th className="p-6 w-40 text-xs font-black uppercase tracking-[0.2em] border-r border-slate-800">
+                        <tr className="bg-slate-900 dark:bg-slate-950 text-white">
+                            <th className="p-6 w-40 text-xs font-black uppercase tracking-[0.2em] border-r border-slate-800 dark:border-slate-900">
                                 Cronograma
                             </th>
                             {HOURS.map((h) => (
-                                <th key={h} className="p-4 text-[10px] font-black border-r border-slate-800 last:border-0 opacity-70 tracking-widest">
+                                <th key={h} className="p-4 text-[10px] font-black border-r border-slate-800 dark:border-slate-900 last:border-0 opacity-70 tracking-widest">
                                     {String(h).padStart(2, '0')}:00
                                 </th>
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {Object.entries(schedule).map(([date, orders]) => {
                             const lanes = calculateLanes(orders);
 
@@ -36,21 +36,21 @@ const ScheduleTableView = ({ schedule, onOrderClick }: Props) => {
                                 const coveredUntil = { value: -1 };
 
                                 return (
-                                    <tr key={`${date}-${laneIdx}`} className="h-32 group hover:bg-slate-50/50 transition-colors">
+                                    <tr key={`${date}-${laneIdx}`} className="h-32 group hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors">
                                         {/* Date Column - Only render on the first lane of the day */}
                                         {laneIdx === 0 && (
                                             <td
                                                 rowSpan={lanes.length}
-                                                className="p-6 font-black text-center bg-slate-50/80 border-r-2 border-slate-100 align-middle sticky left-0 z-10"
+                                                className="p-6 font-black text-center bg-slate-50/80 dark:bg-slate-900/80 border-r-2 border-slate-100 dark:border-slate-800 align-middle sticky left-0 z-10"
                                             >
                                                 <div className="flex flex-col items-center">
-                                                    <span className="text-3xl text-slate-900 tracking-tighter">
+                                                    <span className="text-3xl text-slate-900 dark:text-slate-100 tracking-tighter transition-colors">
                                                         {new Date(date + "T00:00:00").toLocaleDateString("pt-BR", { day: '2-digit' })}
                                                     </span>
-                                                    <span className="text-[10px] uppercase text-blue-600 font-black tracking-[0.2em] -mt-1 mb-1">
+                                                    <span className="text-[10px] uppercase text-blue-600 dark:text-blue-400 font-black tracking-[0.2em] -mt-1 mb-1">
                                                         {new Date(date + "T00:00:00").toLocaleDateString("pt-BR", { month: 'short' })}
                                                     </span>
-                                                    <span className="text-[9px] text-slate-400 uppercase font-black">
+                                                    <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black">
                                                         {new Date(date + "T00:00:00").toLocaleDateString("pt-BR", { weekday: 'short' })}
                                                     </span>
                                                 </div>
@@ -75,7 +75,7 @@ const ScheduleTableView = ({ schedule, onOrderClick }: Props) => {
                                                 return <TableCell key={hour} order={order} duration={duration} onOrderClick={onOrderClick} />;
                                             }
 
-                                            return <td key={hour} className="border-r border-slate-50 last:border-0" />;
+                                            return <td key={hour} className="border-r border-slate-50 dark:border-slate-900 last:border-0" />;
                                         })}
                                     </tr>
                                 );
@@ -85,18 +85,18 @@ const ScheduleTableView = ({ schedule, onOrderClick }: Props) => {
                 </table>
             </div>
 
-            <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6 px-4">
+            <div className="mt-8 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6 px-4">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-blue-50 border border-blue-200"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Entrega Única</span>
+                        <div className="w-3 h-3 rounded bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800"></div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Entrega Única</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-blue-600 shadow-sm"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Entrega por Período</span>
+                        <div className="w-3 h-3 rounded bg-blue-600 shadow-sm shadow-blue-200 dark:shadow-none"></div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Entrega por Período</span>
                     </div>
                 </div>
-                <div className="text-[10px] text-slate-300 font-black uppercase tracking-[0.1em]">
+                <div className="text-[10px] text-slate-300 dark:text-slate-700 font-black uppercase tracking-[0.1em]">
                     Visualização Avançada v2.0
                 </div>
             </div>

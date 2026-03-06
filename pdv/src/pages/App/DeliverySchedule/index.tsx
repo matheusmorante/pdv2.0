@@ -32,16 +32,16 @@ const DeliverySchedule = () => {
     ];
 
     const renderHeader = () => (
-        <div className={`flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8 ${isStandalone ? 'bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100' : ''}`}>
+        <div className={`flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8 ${isStandalone ? 'bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300' : ''}`}>
             <div className="flex items-center gap-4">
-                <div className="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-100">
+                <div className="bg-blue-600 p-3 rounded-2xl shadow-xl shadow-blue-100 dark:shadow-blue-900/20">
                     <i className="bi bi-truck text-white text-2xl" />
                 </div>
                 <div>
-                    <h2 className="text-3xl font-black text-slate-800 tracking-tight leading-none">
+                    <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">
                         Cronograma de Entregas
                     </h2>
-                    <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mt-2">
+                    <p className="text-slate-400 dark:text-slate-500 text-xs font-black uppercase tracking-[0.2em] mt-2">
                         {isStandalone ? "Visualização em Tempo Real" : "Gestão Logística v2.0"}
                     </p>
                 </div>
@@ -49,30 +49,30 @@ const DeliverySchedule = () => {
 
             {/* FILTERS TOOLBAR */}
             <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
-                <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1 w-full sm:w-auto">
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl gap-1 w-full sm:w-auto transition-colors duration-300">
                     {filters.map((f) => (
                         <button
                             key={f.id}
                             onClick={() => setFilter(f.id)}
                             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === f.id
-                                ? "bg-white text-blue-600 shadow-lg shadow-blue-100/50 scale-105"
-                                : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
+                                ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-lg shadow-blue-100/50 dark:shadow-blue-900/20 scale-105"
+                                : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50"
                                 }`}
                         >
-                            <i className={`bi ${f.icon} ${filter === f.id ? 'text-blue-500' : ''}`} />
+                            <i className={`bi ${f.icon} ${filter === f.id ? 'text-blue-500 dark:text-blue-400' : ''}`} />
                             <span className="inline">{f.label}</span>
                         </button>
                     ))}
                 </div>
 
-                <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
 
-                <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1 w-full sm:w-auto">
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl gap-1 w-full sm:w-auto transition-colors duration-300">
                     <button
                         onClick={() => setViewMode("card")}
                         className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === "card"
-                            ? "bg-white text-blue-600 shadow-lg"
-                            : "text-slate-400 hover:text-slate-600"
+                            ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-lg dark:shadow-blue-900/20"
+                            : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                             }`}
                     >
                         <i className="bi bi-grid-fill mr-2" /> Cards
@@ -80,8 +80,8 @@ const DeliverySchedule = () => {
                     <button
                         onClick={() => setViewMode("table")}
                         className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === "table"
-                            ? "bg-white text-blue-600 shadow-lg"
-                            : "text-slate-400 hover:text-slate-600"
+                            ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-lg dark:shadow-blue-900/20"
+                            : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                             }`}
                     >
                         <i className="bi bi-table mr-2" /> Tabela
@@ -91,7 +91,7 @@ const DeliverySchedule = () => {
                 {!isStandalone && (
                     <button
                         onClick={handleShare}
-                        className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-2xl shadow-xl shadow-emerald-100 flex items-center justify-center transition-all active:scale-95 group"
+                        className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-2xl shadow-xl shadow-emerald-100 dark:shadow-emerald-900/20 flex items-center justify-center transition-all active:scale-95 group"
                     >
                         <i className="bi bi-whatsapp mr-2 text-lg group-hover:rotate-12 transition-transform" />
                         Compartilhar
@@ -104,12 +104,12 @@ const DeliverySchedule = () => {
     const renderContent = () => {
         if (loading) {
             return (
-                <div className="flex flex-col items-center justify-center py-40 bg-white rounded-[3rem] border border-slate-100 shadow-sm">
+                <div className="flex flex-col items-center justify-center py-40 bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-300">
                     <div className="relative w-20 h-20">
-                        <div className="absolute inset-0 border-[6px] border-slate-50 rounded-full"></div>
-                        <div className="absolute inset-0 border-[6px] border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                        <div className="absolute inset-0 border-[6px] border-slate-50 dark:border-slate-800 rounded-full"></div>
+                        <div className="absolute inset-0 border-[6px] border-blue-600 dark:border-blue-500 rounded-full border-t-transparent animate-spin"></div>
                     </div>
-                    <p className="mt-8 text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] animate-pulse">
+                    <p className="mt-8 text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.3em] text-[10px] animate-pulse">
                         Sincronizando Entregas...
                     </p>
                 </div>
@@ -118,17 +118,17 @@ const DeliverySchedule = () => {
 
         if (Object.keys(schedule).length === 0) {
             return (
-                <div className="flex flex-col items-center justify-center py-40 border-2 border-dashed border-slate-100 rounded-[3rem] bg-slate-50/30 mx-4">
-                    <div className="bg-white p-10 rounded-full shadow-2xl shadow-slate-100 mb-8 border border-slate-50">
-                        <i className="bi bi-calendar-x text-6xl text-slate-200" />
+                <div className="flex flex-col items-center justify-center py-40 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[3rem] bg-slate-50/30 dark:bg-slate-950/30 mx-4 transition-colors duration-300">
+                    <div className="bg-white dark:bg-slate-900 p-10 rounded-full shadow-2xl shadow-slate-100 dark:shadow-none mb-8 border border-slate-50 dark:border-slate-800">
+                        <i className="bi bi-calendar-x text-6xl text-slate-200 dark:text-slate-800" />
                     </div>
-                    <h3 className="text-slate-800 font-black text-xl mb-2">Nada por aqui!</h3>
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                    <h3 className="text-slate-800 dark:text-slate-100 font-black text-xl mb-2">Nada por aqui!</h3>
+                    <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">
                         Nenhum agendamento para o período selecionado
                     </p>
                     <button
                         onClick={() => setFilter('all')}
-                        className="mt-8 text-blue-600 font-black text-[10px] uppercase tracking-widest hover:underline"
+                        className="mt-8 text-blue-600 dark:text-blue-400 font-black text-[10px] uppercase tracking-widest hover:underline"
                     >
                         Ver todos os agendamentos
                     </button>

@@ -24,27 +24,27 @@ const PaymentsTable = ({ payments, setPayments, summary }: Props) => {
     }
 
     return (
-        <table className="w-[full]">
+        <table className="w-full border-collapse">
             <colgroup>
-                <col className="w-[30%]" />
-                <col className="w-[15%]" />
-                <col className="w-[15%]" />
-                <col className="w-[15%]" />
-                <col className="w-[35%]" />
-                <col className="w-[5%] [&_td]:bg-white [&_td]:border-white" />
+                <col className="w-auto" />
+                <col className="w-[110px]" />
+                <col className="w-[120px]" />
+                <col className="w-[110px]" />
+                <col className="w-auto" />
+                <col className="w-[60px]" />
             </colgroup>
-            <thead className="bg-slate-50/50">
+            <thead className="bg-slate-50/50 dark:bg-slate-800/40">
                 <tr>
-                    <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Forma de Pagamento</th>
-                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
-                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Taxa</th>
-                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Total a Pagar</th>
-                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Forma de Pagamento</th>
+                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Valor</th>
+                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Taxa</th>
+                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Total a Pagar</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Status</th>
                     <th className="px-4 py-3 text-center border-none bg-transparent">
                         <button
                             type="button"
                             onClick={addPayment}
-                            className="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-indigo-100"
+                            className="w-8 h-8 flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 transition-all shadow-sm border border-indigo-100 dark:border-indigo-800"
                             title="Adicionar Pagamento"
                         >
                             <i className="bi bi-plus-lg" />

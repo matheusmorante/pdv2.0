@@ -6,6 +6,7 @@ export type Item = {
     unitPrice: number;
     unitDiscount: number;
     discountType: DiscountType;
+    handlingType: string;
 }
 
 export type ItemsSummary = {

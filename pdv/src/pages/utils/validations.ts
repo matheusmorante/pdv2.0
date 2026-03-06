@@ -2,92 +2,77 @@ import { calcPaymentsSummary } from "./calculations";
 import CustomerData from "../types/customerData.type";
 import { Item } from "../types/items.type"
 import { Payment, PaymentsSummary } from "../types/payments.type";
-import { toast } from 'react-toastify';
 import Shipping from "../types/Shipping.type";
 import Order from "../types/pdvAction.type";
 import { calcItemsSummary } from "../App/SalesOrder/pdvUtils";
 
-const requiredField = (value: any, msg: string) => {
-    if (!value) {
-        toast.error(msg)
-        return false
-    }
+export type ValidationErrors = Record<string, string>;
 
-    return true
-}
-
-export const validateItems = (items: Item[]) => {
-    for (const item of items) {
-        if (!requiredField(
-            item.description,
-            "O campo 'Descrição' do item é obrigatório."
-        )) {
-            return false
+export const validateItems = (items: Item[]): ValidationErrors => {
+    const errors: ValidationErrors = {};
+    items.forEach((item, idx) => {
+        if (!item.description) {
+            errors[`item_${idx}_description`] = "A descrição do item é obrigatória.";
         }
-
-        return true
-    };
-
-    return true
+    });
+    return errors;
 }
 
 export const validatePayments = (
-    payments: Payment[], amountRemaining: PaymentsSummary['amountRemaining']
-) => {
-    for (const payment of payments) {
-        if (!requiredField(
-            payment.status,
-            "O campo 'Status' do pagamento é obrigatório."
-        )) {
-            return false
+    payments: Payment[],
+    amountRemaining: number
+): ValidationErrors => {
+    const errors: ValidationErrors = {};
+
+    payments.forEach((payment, idx) => {
+        if (!payment.status) {
+            errors[`payment_${idx}_status`] = "O status do pagamento é obrigatório.";
         }
-    };
+    });
 
-    if (amountRemaining > 0) {
-        toast.error(
-            `Ainda há R$ ${amountRemaining} a ser declarado para o
-             pagamento.`
-        )
-
-        return false
+    if (Math.abs(amountRemaining) > 0.01) {
+        if (amountRemaining > 0) {
+            errors['payments_summary'] = `Ainda há R$ ${amountRemaining.toFixed(2).replace('.', ',')} a ser declarado.`;
+        } else {
+            errors['payments_summary'] = `O valor ultrapassou R$ ${Math.abs(amountRemaining).toFixed(2).replace('.', ',')}.`;
+        }
     }
 
-    if (amountRemaining < 0) {
-        toast.error(
-            `O valor de pagamento ultrapassou R$ ${-amountRemaining} 
-            em relação ao valor total do pedido.`
-        )
-
-        return false
-    }
-
-    return true
+    return errors;
 }
 
-export const validateCustomerData = (customer: CustomerData) => {
-    return (
-        requiredField(customer.fullName, "O campo 'Nome Completo' é obrigatório.") &&
-        requiredField(customer.phone, "O campo 'Celular/Telefone' é obrigatório.") &&
-        requiredField(customer.fullAddress.street, "O campo 'Rua' do endereço é obrigatório.") &&
-        requiredField(customer.fullAddress.number, "O campo 'Número' do endereço é obrigatório.") &&
-        requiredField(customer.fullAddress.neighborhood, "O campo 'Bairro' do endereço é obrigatório.") &&
-        requiredField(customer.fullAddress.city, "O campo 'Cidade' do endereço é obrigatório.")
-    )
+export const validateCustomerData = (customer: CustomerData): ValidationErrors => {
+    const errors: ValidationErrors = {};
+
+    if (!customer.fullName) errors['customer_fullName'] = "Nome completo é obrigatório.";
+    if (!customer.phone) errors['customer_phone'] = "Celular/WhatsApp é obrigatório.";
+
+    const addr = customer.fullAddress;
+    if (!addr.street) errors['customer_street'] = "Rua é obrigatória.";
+    if (!addr.number) errors['customer_number'] = "Número é obrigatório.";
+    if (!addr.neighborhood) errors['customer_neighborhood'] = "Bairro é obrigatório.";
+    if (!addr.city) errors['customer_city'] = "Cidade é obrigatória.";
+
+    return errors;
 }
 
-export const validateShipping = (shipping: Shipping) => {
-    const scheduling = shipping.scheduling;
-    return (
-        requiredField(scheduling.date, "O campo 'Data' é obrigatório.") &&
-        requiredField(scheduling.time, "O campo 'Período' é obrigatório.")
-    )
+export const validateShipping = (shipping: Shipping): ValidationErrors => {
+    const errors: ValidationErrors = {};
+    const { date, startTime } = shipping.scheduling;
+
+    if (!date) errors['shipping_date'] = "Data de entrega é obrigatória.";
+    if (!startTime) errors['shipping_time'] = "Horário/Período é obrigatório.";
+
+    return errors;
 }
 
-export const validateSeller = (seller: Order['seller']) => {
-    return requiredField(seller, "O campo 'Vendedor' é obrigatório.")
+export const validateSeller = (seller: Order['seller']): ValidationErrors => {
+    const errors: ValidationErrors = {};
+    if (!seller) errors['seller'] = "Vendedor é obrigatório.";
+    return errors;
 }
 
-export const validateBase = (order: Order) => {
+export const validateOrder = (order: Order): ValidationErrors => {
     const itemsSummary = calcItemsSummary(order.items);
     const { amountRemaining } = calcPaymentsSummary(
         order.payments,
@@ -95,40 +80,29 @@ export const validateBase = (order: Order) => {
         order.shipping.value
     );
 
-    return (
-        validateItems(order.items) &&
-        validateSeller(order.seller) &&
-        validateShipping(order.shipping) &&
-        validatePayments(order.payments, amountRemaining) &&
-        validateCustomerData(order.customerData)
-    )
+    return {
+        ...validateItems(order.items),
+        ...validateSeller(order.seller),
+        ...validateShipping(order.shipping),
+        ...validatePayments(order.payments, amountRemaining),
+        ...validateCustomerData(order.customerData)
+    };
+}
+
+// Keeping legacy validateBase for compatibility if needed, but updated to use new logic
+export const validateBase = (order: Order) => {
+    const errors = validateOrder(order);
+    return Object.keys(errors).length === 0;
 }
 
 export const isOrderIncomplete = (order: Order) => {
-    if (!order.items || order.items.length === 0) return true;
-    if (!order.seller) return true;
-    if (!order.shipping?.scheduling?.date || !order.shipping?.scheduling?.time) return true;
-
-    // Customer checks
-    const c = order.customerData;
-    if (!c?.fullName || !c?.phone) return true;
-    if (!c?.fullAddress?.street || !c?.fullAddress?.number || !c?.fullAddress?.neighborhood || !c?.fullAddress?.city) return true;
-
-    // Payments check
-    const itemsSummary = calcItemsSummary(order.items);
-    const { amountRemaining } = calcPaymentsSummary(
-        order.payments,
-        itemsSummary,
-        order.shipping?.value || 0
-    );
-    if (Math.abs(amountRemaining) > 0.01) return true;
-
-    return false;
+    return !validateBase(order);
 }
 
-export const validateReviews = (order: Order) => {
-    return requiredField(
-        order.customerData.fullName,
-        "O campo 'Nome Completo' é obrigatório para o pedido de avaliação."
-    )
+export const validateReviews = (order: Order): ValidationErrors => {
+    const errors: ValidationErrors = {};
+    if (!order.customerData.fullName) {
+        errors['customer_fullName'] = "Nome completo é obrigatório para o pedido de avaliação.";
+    }
+    return errors;
 }

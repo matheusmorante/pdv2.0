@@ -7,21 +7,21 @@ interface Props {
 
 const CustomerDataInputs = ({ customerData }: Props) => {
     return (
-        <section className="flex flex-wrap my-6 gap-x-6 gap-y-2">
+        <section className="flex flex-wrap my-6 gap-x-6 gap-y-2 text-sm">
             <div>
-                <strong>Nome Completo: </strong>
+                <strong className="text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Nome Completo: </strong>
                 {customerData.fullName}
             </div>
             <div>
-                <strong>Celular: </strong>
+                <strong className="text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Celular: </strong>
                 {customerData.phone}
             </div>
             <div>
-                <strong>Endereço Completo: </strong>
+                <strong className="text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Endereço Completo: </strong>
                 {stringifyFullAddress(customerData.fullAddress)}
             </div>
             <div>
-                <strong>Observação Sobre o Endereço: </strong>
+                <strong className="text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Observação Sobre o Endereço: </strong>
                 {customerData.fullAddress.observation}
             </div>
         </section>

@@ -34,9 +34,9 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
 
 
     return (
-        <tr key={idx} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
+        <tr key={idx} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0">
             <td className="px-4 py-2">
-                <select className='w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm font-medium text-slate-700'
+                <select className='w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm font-medium text-slate-700 dark:text-slate-200'
                     value={payment.method}
                     onChange={
                         (e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -44,7 +44,7 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                     }>
                     {
                         paymentMethods.map(method => (
-                            <option key={method} value={method}>{method}</option>
+                            <option key={method} value={method} className="dark:bg-slate-900">{method}</option>
                         ))
                     }
                 </select>
@@ -58,7 +58,7 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                 />
             </td>
             <td className='px-4 py-2'>
-                <div className='flex items-center gap-2 bg-slate-50/50 rounded-lg pr-2 border border-slate-100/50 group-focus-within:border-indigo-200 transition-all'>
+                <div className='flex items-center gap-2 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg pr-2 border border-slate-100/50 dark:border-slate-800/50 group-focus-within:border-indigo-200 dark:group-focus-within:border-indigo-500/30 transition-all'>
                     <CurrencyOrPercentInput
                         value={payment.fee}
                         prefix={payment.feeType === "fixed" ? "R$ " : ""}
@@ -78,13 +78,13 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                 </div>
             </td>
             <td className="px-4 py-2 text-right">
-                <div className="font-bold text-slate-700">
+                <div className="font-bold text-slate-700 dark:text-slate-200">
                     <CurrencyDisplay value={calcPaymentTotalValue(payment)} />
                 </div>
             </td>
             <td className="px-4 py-2">
                 <input
-                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm placeholder:text-slate-300"
+                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-200"
                     placeholder="Status..."
                     value={newStatus}
                     onChange={e => setNewStatus(e.target.value)}
@@ -95,7 +95,7 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                 <button
                     type="button"
                     onClick={onDelete}
-                    className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    className="w-8 h-8 flex items-center justify-center text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                     title="Excluir pagamento"
                 >
                     <i className="bi bi-trash" />

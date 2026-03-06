@@ -44,7 +44,7 @@ export const buttons: PdvButton[] = [
         icon: "bi-printer-fill",
         action: "PRINT_SHIPPING_ORDER",
         label: "Imprimir Pedido",
-        color: "bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-200 transition-all font-bold text-xs uppercase tracking-widest px-6 py-3"
+        color: "bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all font-bold text-xs uppercase tracking-widest px-6 py-3"
     },
     {
         key: "sendShippingOrder",

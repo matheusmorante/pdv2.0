@@ -8,8 +8,10 @@ import { calcItemsSummary } from "./pdvUtils";
 import { calcPaymentsSummary } from "../../utils/calculations";
 import { toast } from "react-toastify";
 import { saveOrder } from "../../utils/orderHistoryService";
-import { validateBase } from "../../utils/validations";
+import { validateBase, validateOrder, ValidationErrors } from "../../utils/validations";
 import { dateNow } from "../../utils/formatters";
+import Shipping from "../../types/Shipping.type";
+import CustomerData from "../../types/customerData.type";
 
 export const usePdvForm = () => {
     const { items, setItems } = useItems();
@@ -21,6 +23,7 @@ export const usePdvForm = () => {
     const [currentOrderId, setCurrentOrderId] = useState<string | undefined>(undefined);
     const [status, setStatus] = useState<'draft' | 'scheduled' | 'fulfilled' | 'cancelled'>('draft');
     const [isSaving, setIsSaving] = useState(false);
+    const [errors, setErrors] = useState<ValidationErrors>({});
 
     // Auto-save control
     const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,15 +59,13 @@ export const usePdvForm = () => {
         if (items.length === 0 && !customerData.fullName && !seller) return;
 
         autoSaveTimerRef.current = setTimeout(async () => {
-            const draft = getOrderData(); // Uses current status
+            const draft = getOrderData();
             try {
                 await saveOrder(draft);
-                // If it was a new order, we might get an ID back if we updated saveOrder
-                // For now, assume it works and doesn't notify to avoid spamming
             } catch (error) {
                 console.error("Erro no salvamento automático:", error);
             }
-        }, 2000); // 2 second debounce
+        }, 2000);
 
         return () => {
             if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
@@ -80,6 +81,7 @@ export const usePdvForm = () => {
         setSeller(order.seller as string);
         setCurrentOrderId(order.id);
         setStatus(order.status || 'draft');
+        setErrors({});
         toast.info("Pedido carregado para edição.");
     }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setCurrentOrderId, setStatus]);
 
@@ -87,14 +89,17 @@ export const usePdvForm = () => {
         if (e) e.preventDefault();
 
         const orderData = getOrderData('scheduled');
+        const validationErrors = validateOrder(orderData);
 
-        if (!validateBase(orderData)) {
-            toast.error("Preencha todos os campos obrigatórios para efetivar o pedido.");
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            toast.error("Existem campos obrigatórios não preenchidos.");
             return;
         }
 
         if (isSaving) return;
         setIsSaving(true);
+        setErrors({});
 
         try {
             await saveOrder(orderData);
@@ -131,19 +136,46 @@ export const usePdvForm = () => {
         paymentsSummary,
         currentOrder,
         isValidForCompletion,
-    }), [items, shipping, payments, customerData, observation, seller, currentOrderId, status, isSaving, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion]);
+        errors,
+    }), [items, shipping, payments, customerData, observation, seller, currentOrderId, status, isSaving, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion, errors]);
 
     const actions = useMemo(() => ({
         setItems,
-        setShipping,
+        setShipping: (val: React.SetStateAction<Shipping>) => {
+            setShipping(val);
+            setErrors(prev => {
+                const next = { ...prev };
+                Object.keys(next).forEach(key => {
+                    if (key.startsWith('shipping_')) delete next[key];
+                });
+                return next;
+            });
+        },
         setPayments,
-        setCustomerData,
+        setCustomerData: (val: React.SetStateAction<CustomerData>) => {
+            setCustomerData(val);
+            setErrors(prev => {
+                const next = { ...prev };
+                Object.keys(next).forEach(key => {
+                    if (key.startsWith('customer_')) delete next[key];
+                });
+                return next;
+            });
+        },
         setObservation,
-        setSeller,
+        setSeller: (val: string) => {
+            setSeller(val);
+            setErrors(prev => {
+                const next = { ...prev };
+                delete next['seller'];
+                return next;
+            });
+        },
         loadOrderForEditing,
         handleSaveOrder: handleCompleteOrder,
         handleCompleteOrder,
         clearForm,
+        setErrors,
     }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, loadOrderForEditing, handleCompleteOrder, clearForm]);
 
     return { state, actions };

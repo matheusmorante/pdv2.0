@@ -1,6 +1,6 @@
 import Body from "./Body";
 import Footer from "./Footer";
-import {Payment, PaymentsSummary} from "../../types/payments.type";
+import { Payment, PaymentsSummary } from "../../types/payments.type";
 
 type Props = {
     payments: Payment[],
@@ -11,12 +11,12 @@ const PaymentsTable = ({ payments, summary }: Props) => {
 
     return (
         <table className="break-words w-[70%] [&_td]:border-2 [&_th]:border-2
-            [&_th]:font-bold [&_th]:text-center">
+            [&_th]:font-bold [&_th]:text-center dark:[&_td]:border-slate-800 dark:[&_th]:border-slate-800 transition-colors duration-300">
             <colgroup>
-                    <col className="w-[35%]" />
-                    <col className="w-[25%]" />
-                    <col className="w-[35%]" />
-                </colgroup>
+                <col className="w-[35%]" />
+                <col className="w-[25%]" />
+                <col className="w-[35%]" />
+            </colgroup>
             <thead>
 
                 <tr className="">
@@ -25,8 +25,8 @@ const PaymentsTable = ({ payments, summary }: Props) => {
                     <th>Status</th>
                 </tr>
             </thead>
-            <Body payments={payments}  />
-            <Footer summary={summary}/>
+            <Body payments={payments} />
+            <Footer summary={summary} />
         </table>
     )
 }
