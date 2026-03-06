@@ -1,6 +1,5 @@
 import React from "react";
 import { NumericFormat } from "react-number-format";
-import { currencyToNumber } from "./pdvUtils";
 import Shipping from "../../types/Shipping.type";
 
 import CustomerData from "../../types/customerData.type";

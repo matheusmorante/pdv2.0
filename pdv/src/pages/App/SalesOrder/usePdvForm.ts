@@ -21,7 +21,6 @@ export const usePdvForm = () => {
     const [currentOrderId, setCurrentOrderId] = useState<string | undefined>(undefined);
     const [status, setStatus] = useState<'draft' | 'scheduled' | 'fulfilled' | 'cancelled'>('draft');
     const [isSaving, setIsSaving] = useState(false);
-    const [activeModal, setActiveModal] = useState<boolean>(false);
 
     // Auto-save control
     const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -70,7 +69,7 @@ export const usePdvForm = () => {
         return () => {
             if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
         };
-    }, [items, shipping, payments, customerData, observation, seller]);
+    }, [items, shipping, payments, customerData, observation, seller, getOrderData]);
 
     const loadOrderForEditing = useCallback((order: Order) => {
         setItems(order.items);
@@ -81,7 +80,6 @@ export const usePdvForm = () => {
         setSeller(order.seller as string);
         setCurrentOrderId(order.id);
         setStatus(order.status || 'draft');
-        setActiveModal(true);
         toast.info("Pedido carregado para edição.");
     }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setCurrentOrderId, setStatus]);
 
