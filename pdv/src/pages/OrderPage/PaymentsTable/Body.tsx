@@ -1,5 +1,4 @@
-import { NumericFormat } from 'react-number-format';
-import { Payment }  from "../../types/payments.type";
+import { Payment } from "../../types/payments.type";
 import CurrencyDisplay from '../../../components/CurrencyDisplay';
 import { calcPaymentTotalValue } from '../../utils/calculations';
 
@@ -7,7 +6,7 @@ interface Props {
     payments: Payment[];
 }
 
-const Body= ({ payments }: Props) => {
+const Body = ({ payments }: Props) => {
     return (
         <tbody>
             {payments.map((payment) => (
@@ -16,7 +15,7 @@ const Body= ({ payments }: Props) => {
                         {payment.method}
                     </td>
                     <td>
-                        <CurrencyDisplay value={calcPaymentTotalValue(payment)}/>
+                        <CurrencyDisplay value={calcPaymentTotalValue(payment)} />
                     </td>
                     <td className='pl-2'>
                         {payment.status}

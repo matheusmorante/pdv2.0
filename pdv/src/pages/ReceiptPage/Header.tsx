@@ -1,14 +1,14 @@
 import logo from '../../assets/logo.jpeg';
 
 interface Props {
-  seller: string;
+    seller: string;
 }
 
-const Header = ({seller}:Props ) => {
+const Header = ({ seller }: Props) => {
     return (
         <header className='flex justify-between '>
             <div>
-                <img src={logo} className='h-[150px]' />
+                <img src={logo} alt="Logo" className='h-[150px]' />
             </div>
             <div className='h-full'>
                 <p>Móveis Morante</p>

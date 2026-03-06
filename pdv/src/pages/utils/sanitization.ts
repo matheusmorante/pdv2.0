@@ -15,5 +15,5 @@ export const sanitizePayment = (payment: Payment) => {
     return payment
 }
 
-export const sanitizeNumber = (value: string) => value.replace('\/D\g', '')
+export const sanitizeNumber = (value: string) => value.replace(/\D/g, '')
 
