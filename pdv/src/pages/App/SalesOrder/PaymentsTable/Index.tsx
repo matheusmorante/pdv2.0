@@ -33,15 +33,22 @@ const PaymentsTable = ({ payments, setPayments, summary }: Props) => {
                 <col className="w-[35%]" />
                 <col className="w-[5%] [&_td]:bg-white [&_td]:border-white" />
             </colgroup>
-            <thead>
+            <thead className="bg-slate-50/50">
                 <tr>
-                    <th>Forma de Pagamento</th>
-                    <th>Valor</th>
-                    <th>Taxa</th>
-                    <th>Total a Pagar</th>
-                    <th>Status</th>
-                    <th className='border-none !bg-white'>
-                        <i onClick={addPayment} className="bi bi-plus-lg" />
+                    <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Forma de Pagamento</th>
+                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Valor</th>
+                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Taxa</th>
+                    <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Total a Pagar</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                    <th className="px-4 py-3 text-center border-none bg-transparent">
+                        <button
+                            type="button"
+                            onClick={addPayment}
+                            className="w-8 h-8 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm border border-indigo-100"
+                            title="Adicionar Pagamento"
+                        >
+                            <i className="bi bi-plus-lg" />
+                        </button>
                     </th>
                 </tr>
             </thead>

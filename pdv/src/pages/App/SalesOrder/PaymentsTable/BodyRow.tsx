@@ -17,11 +17,11 @@ interface Props {
 
 
 const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) => {
-    const [ newStatus, setNewStatus ] = useState(payment.status);
-    
+    const [newStatus, setNewStatus] = useState(payment.status);
+
     const onBlur = () => {
-        if(payment.status === newStatus) return;
-        
+        if (payment.status === newStatus) return;
+
         const result = window.confirm(
             `Tem certeza que quer alterar o status para "${newStatus}"`
         );
@@ -34,9 +34,9 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
 
 
     return (
-        <tr>
-            <td>
-                <select className='p-0.5 w-full'
+        <tr key={idx} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
+            <td className="px-4 py-2">
+                <select className='w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm font-medium text-slate-700'
                     value={payment.method}
                     onChange={
                         (e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -44,12 +44,12 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                     }>
                     {
                         paymentMethods.map(method => (
-                            <option value={method}>{method}</option>
+                            <option key={method} value={method}>{method}</option>
                         ))
                     }
                 </select>
             </td>
-            <td>
+            <td className="px-4 py-2">
                 <CurrencyInput
                     value={payment.amount}
                     onChange={
@@ -57,8 +57,8 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                     }
                 />
             </td>
-            <td className='pr-2'>
-                <div className='flex'>
+            <td className='px-4 py-2'>
+                <div className='flex items-center gap-2 bg-slate-50/50 rounded-lg pr-2 border border-slate-100/50 group-focus-within:border-indigo-200 transition-all'>
                     <CurrencyOrPercentInput
                         value={payment.fee}
                         prefix={payment.feeType === "fixed" ? "R$ " : ""}
@@ -77,21 +77,29 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                     </ToggleValueTypeBtn>
                 </div>
             </td>
-            <td>
-                <CurrencyDisplay value={calcPaymentTotalValue(payment)} />
+            <td className="px-4 py-2 text-right">
+                <div className="font-bold text-slate-700">
+                    <CurrencyDisplay value={calcPaymentTotalValue(payment)} />
+                </div>
             </td>
-            <td>
+            <td className="px-4 py-2">
                 <input
+                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm placeholder:text-slate-300"
+                    placeholder="Status..."
                     value={newStatus}
                     onChange={e => setNewStatus(e.target.value)}
                     onBlur={onBlur}
                 />
             </td>
-            <td className='border-none text-center'>
-                <i
-                    className="bi bi-trash"
+            <td className="px-4 py-2 text-center border-none">
+                <button
+                    type="button"
                     onClick={onDelete}
-                />
+                    className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                    title="Excluir pagamento"
+                >
+                    <i className="bi bi-trash" />
+                </button>
             </td>
         </tr>
     )

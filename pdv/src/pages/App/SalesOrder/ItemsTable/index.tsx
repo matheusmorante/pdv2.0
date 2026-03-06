@@ -30,16 +30,23 @@ const ItemsTable = ({ items, setItems, summary }: Props) => {
         <>
             <table className="w-full border-collapse">
 
-                <thead>
-                    <tr >
-                        <th className="">Descrição do Produto/Serviço</th>
-                        <th>Quant.</th>
-                        <th>Preço Un.</th>
-                        <th>Desconto Unitário</th>
-                        <th>Valor Total</th>
-                        <td className="border-none">
-                            <i onClick={addItem} className="bi bi-plus-lg" />
-                        </td>
+                <thead className="bg-slate-50/50">
+                    <tr>
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Descrição do Produto/Serviço</th>
+                        <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Quant.</th>
+                        <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Preço Un.</th>
+                        <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Desconto Unitário</th>
+                        <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Valor Total</th>
+                        <th className="px-4 py-3 text-center border-none bg-transparent">
+                            <button
+                                type="button"
+                                onClick={addItem}
+                                className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm border border-blue-100"
+                                title="Adicionar Item"
+                            >
+                                <i className="bi bi-plus-lg" />
+                            </button>
+                        </th>
                     </tr>
                 </thead>
 

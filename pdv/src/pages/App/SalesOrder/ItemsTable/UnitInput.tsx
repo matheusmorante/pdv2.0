@@ -8,7 +8,7 @@ interface Props {
 const UnitInput = ({ value, onChange }: Props) => {
     return (
         <NumericFormat
-            className="w-full text-right"
+            className="w-full text-right bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-2 py-1.5 outline-none transition-all text-sm"
             value={value}
             allowNegative={false}
             disabled={false}
