@@ -4,13 +4,58 @@ import { subscribeToOrders, updateOrder } from "../../utils/orderHistoryService"
 import { DropResult } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
 
+export type ScheduleFilter = 'default' | 'week' | 'month' | 'year' | 'all';
+
 /**
- * Utility to group and sort orders by date and time
+ * Utility to group and sort orders by date and time with range filtering
  */
-const processOrders = (orders: Order[]) => {
-    const scheduledOrders = orders.filter(
-        (o) => o.shipping?.scheduling?.date && (o.shipping?.scheduling?.time || o.shipping?.scheduling?.startTime)
-    );
+const processOrders = (orders: Order[], filter: ScheduleFilter) => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
+    // Yesterday for 'default' view
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // Week boundaries (Sun-Sat)
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+
+    const scheduledOrders = orders.filter((o) => {
+        if (o.status !== 'scheduled' && o.status !== 'fulfilled') return false; // Show scheduled and fulfilled orders
+
+        const orderDateStr = o.shipping?.scheduling?.date;
+        if (!orderDateStr) return false;
+
+        const hasTime = o.shipping?.scheduling?.time || o.shipping?.scheduling?.startTime;
+        if (!hasTime) return false;
+
+        if (filter === 'all') return true;
+
+        if (filter === 'default') {
+            return orderDateStr >= yesterdayStr;
+        }
+
+        if (filter === 'week') {
+            return orderDateStr >= startOfWeek.toISOString().split('T')[0] &&
+                orderDateStr <= endOfWeek.toISOString().split('T')[0];
+        }
+
+        if (filter === 'month') {
+            return orderDateStr.startsWith(todayStr.substring(0, 7)); // YYYY-MM
+        }
+
+        if (filter === 'year') {
+            return orderDateStr.startsWith(todayStr.substring(0, 4)); // YYYY
+        }
+
+        return true;
+    });
 
     const grouped: Record<string, Order[]> = {};
     scheduledOrders.forEach((o) => {
@@ -21,7 +66,7 @@ const processOrders = (orders: Order[]) => {
 
     Object.keys(grouped).forEach((date) => {
         grouped[date].sort((a, b) => {
-            if (a.orderIndex !== undefined && b.orderIndex !== undefined) {
+            if (a.orderIndex !== undefined && b.orderIndex !== undefined && a.shipping.scheduling.date === b.shipping.scheduling.date) {
                 return a.orderIndex - b.orderIndex;
             }
             const timeA = a.shipping.scheduling.startTime || a.shipping.scheduling.time || "";
@@ -41,20 +86,30 @@ const processOrders = (orders: Order[]) => {
 };
 
 export const useDeliverySchedule = () => {
+    const [allOrders, setAllOrders] = useState<Order[]>([]);
     const [schedule, setSchedule] = useState<Record<string, Order[]>>({});
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState<"card" | "table">("card");
+    const [filter, setFilter] = useState<ScheduleFilter>('default');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
     useEffect(() => {
         const unsubscribe = subscribeToOrders((orders) => {
-            const processed = processOrders(orders);
+            setAllOrders(orders);
+            const processed = processOrders(orders, filter);
             setSchedule(processed);
             setLoading(false);
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [filter]);
+
+    // Re-process when filter changes locally
+    useEffect(() => {
+        if (!loading) {
+            setSchedule(processOrders(allOrders, filter));
+        }
+    }, [filter, allOrders, loading]);
 
     const handleShare = () => {
         const scheduleUrl = `${window.location.origin}/schedule`;
@@ -85,7 +140,7 @@ export const useDeliverySchedule = () => {
 
         try {
             const updatePromises = dateOrders.map((order, index) => {
-                return updateOrder({ ...order, orderIndex: index });
+                return updateOrder(order.id!, { ...order, orderIndex: index });
             });
             await Promise.all(updatePromises);
         } catch (error) {
@@ -102,6 +157,8 @@ export const useDeliverySchedule = () => {
         loading,
         viewMode,
         setViewMode,
+        filter,
+        setFilter,
         selectedOrder,
         openOrderDetails,
         closeOrderDetails,

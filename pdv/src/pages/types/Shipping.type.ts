@@ -1,5 +1,6 @@
 type Shipping = {
     value: number,
+    distance?: number,
     scheduling: {
         date: string,
         time: string, // legacy/display

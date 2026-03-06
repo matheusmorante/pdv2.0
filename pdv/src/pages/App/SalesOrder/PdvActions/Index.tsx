@@ -3,7 +3,6 @@ import Order, { PdvAction, IsButtonsClicked } from "../../../types/pdvAction.typ
 import { dateNow } from "../../../utils/formatters";
 import { buttons, actionsMap } from "./pdvActionsConfig";
 
-
 const PdvActions = ({ order }: { order: Order }) => {
   const [isButtonsClicked, setIsButtonsClicked] = useState<IsButtonsClicked>({
     printReceipt: false,
@@ -19,26 +18,28 @@ const PdvActions = ({ order }: { order: Order }) => {
   }
 
   function handleAction(action: PdvAction) {
-
     const updated = { ...order, date: dateNow() };
     sessionStorage.setItem("order", JSON.stringify(updated));
-    actionsMap[action](updated);
+    if (actionsMap[action]) {
+      actionsMap[action](updated);
+    }
   }
 
   return (
-    <div className="block [&>button]:p-2 [&>button]:font-bold">
+    <div className="flex flex-wrap items-center justify-center gap-6">
       {buttons.map(btn => (
         <button
           key={btn.key}
-          className={btn.color}
+          className={`${btn.color} flex items-center gap-3 whitespace-nowrap active:scale-95`}
           onClick={e => {
             e.preventDefault()
             handleAction(btn.action);
             markClicked(btn.key);
           }}
         >
-          <i className="bi bi-whatsapp mr-1" /> {btn.label}
-          {isButtonsClicked[btn.key] && <i className="bi bi-check text-md" />}
+          <i className={`bi ${btn.icon} text-lg`} />
+          <span className="font-black">{btn.label}</span>
+          {isButtonsClicked[btn.key] && <i className="bi bi-check-circle-fill text-white ml-1" />}
         </button>
       ))}
     </div>

@@ -5,6 +5,7 @@ import Shipping from "./Shipping.type";
 
 export type Order = {
     id?: string,
+    status?: 'draft' | 'scheduled' | 'fulfilled' | 'cancelled',
     items: Item[],
     itemsSummary: ItemsSummary,
     shipping: Shipping,

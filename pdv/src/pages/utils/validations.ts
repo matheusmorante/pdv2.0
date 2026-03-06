@@ -19,7 +19,7 @@ const requiredField = (value: any, msg: string) => {
 export const validateItems = (items: Item[]) => {
     for (const item of items) {
         if (!requiredField(
-            item.description, 
+            item.description,
             "O campo 'Descrição' do item é obrigatório."
         )) {
             return false
@@ -36,7 +36,7 @@ export const validatePayments = (
 ) => {
     for (const payment of payments) {
         if (!requiredField(
-            payment.status, 
+            payment.status,
             "O campo 'Status' do pagamento é obrigatório."
         )) {
             return false
@@ -52,12 +52,12 @@ export const validatePayments = (
         return false
     }
 
-     if (amountRemaining < 0) {
+    if (amountRemaining < 0) {
         toast.error(
             `O valor de pagamento ultrapassou R$ ${-amountRemaining} 
             em relação ao valor total do pedido.`
         )
-        
+
         return false
     }
 
@@ -102,6 +102,28 @@ export const validateBase = (order: Order) => {
         validatePayments(order.payments, amountRemaining) &&
         validateCustomerData(order.customerData)
     )
+}
+
+export const isOrderIncomplete = (order: Order) => {
+    if (!order.items || order.items.length === 0) return true;
+    if (!order.seller) return true;
+    if (!order.shipping?.scheduling?.date || !order.shipping?.scheduling?.time) return true;
+
+    // Customer checks
+    const c = order.customerData;
+    if (!c?.fullName || !c?.phone) return true;
+    if (!c?.fullAddress?.street || !c?.fullAddress?.number || !c?.fullAddress?.neighborhood || !c?.fullAddress?.city) return true;
+
+    // Payments check
+    const itemsSummary = calcItemsSummary(order.items);
+    const { amountRemaining } = calcPaymentsSummary(
+        order.payments,
+        itemsSummary,
+        order.shipping?.value || 0
+    );
+    if (Math.abs(amountRemaining) > 0.01) return true;
+
+    return false;
 }
 
 export const validateReviews = (order: Order) => {

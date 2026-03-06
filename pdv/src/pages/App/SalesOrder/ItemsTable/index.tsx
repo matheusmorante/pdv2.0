@@ -28,15 +28,7 @@ const ItemsTable = ({ items, setItems, summary }: Props) => {
 
     return (
         <>
-            <table className="break-words w-full table-fixed border-collapse">
-                <colgroup>
-                    <col className="w-[38%]" />
-                    <col className="w-[10%]" />
-                    <col className="w-[15%]" />
-                    <col className="w-[20%]" />
-                    <col className="w-[15%]" />
-                    <col className="w-[2%]" />
-                </colgroup>
+            <table className="w-full border-collapse">
 
                 <thead>
                     <tr >

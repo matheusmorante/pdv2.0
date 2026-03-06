@@ -6,7 +6,7 @@ type PdvTabsProps = {
 
 const PdvTabs = ({ activeTab, setActiveTab }: PdvTabsProps) => {
     const tabs = [
-        { key: "pdv", label: "PDV / Edição" },
+        { key: "pdv", label: "Adicionar Pedido" },
         { key: "history", label: "Histórico de Pedidos" },
         { key: "schedule", label: "Cronograma de Entregas" },
     ] as const;

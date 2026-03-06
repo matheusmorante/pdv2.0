@@ -17,16 +17,16 @@ const Footer = ({ summary }: Props) => {
             </tr>
             <tr>
                 <td>
-                    <CurrencyDisplay value={summary.totalPaymentsFee}/>
+                    <CurrencyDisplay value={summary.totalPaymentsFee} />
                 </td>
                 <td>
-                    <CurrencyDisplay value={summary.totalOrderValue}/>
+                    <CurrencyDisplay value={summary.totalOrderValue} />
                 </td>
                 <td>
-                    <CurrencyDisplay value={summary.totalAmountPaid}/>
+                    <CurrencyDisplay value={summary.totalAmountPaid} />
                 </td>
                 <td>
-                    <CurrencyDisplay value={summary.amountRemaining}/>
+                    <CurrencyDisplay value={summary.amountRemaining} />
                 </td>
 
             </tr>

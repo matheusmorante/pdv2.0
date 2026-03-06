@@ -1,22 +1,26 @@
 import Order from "../types/pdvAction.type";
 import { db } from "./firebaseConfig";
-import { collection, doc, setDoc, deleteDoc, query, onSnapshot } from "firebase/firestore";
+import { collection, doc, setDoc, deleteDoc, query, onSnapshot, runTransaction } from "firebase/firestore";
 
 const COLLECTION_NAME = "orders";
+const METADATA_COLLECTION = "metadata";
+const COUNTER_DOC = "orderCounter";
 
 export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
     const q = query(collection(db, COLLECTION_NAME));
 
-    // Return the unsubscribe function
     return onSnapshot(q, (querySnapshot) => {
         const orders: Order[] = [];
         querySnapshot.forEach((doc) => {
             orders.push(doc.data() as Order);
         });
 
-        // Let's sort locally by date descending
         orders.sort((a, b) => {
-            return b.date.localeCompare(a.date);
+            // Sort by numerical ID if possible, otherwise date
+            const idA = parseInt(a.id || "0", 10);
+            const idB = parseInt(b.id || "0", 10);
+            if (!isNaN(idA) && !isNaN(idB)) return idB - idA;
+            return (b.date || "").localeCompare(a.date || "");
         });
 
         callback(orders);
@@ -28,34 +32,43 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
 
 export const saveOrder = async (order: Order): Promise<void> => {
     if (order.id) {
-        await updateOrder(order);
+        await updateOrder(order.id, order);
         return;
     }
 
-    // Creating a new order
-    const newId = crypto.randomUUID();
-    const newOrder = {
-        ...order,
-        id: newId,
-        date: new Date().toLocaleString('pt-BR')
-    };
-
     try {
-        await setDoc(doc(db, COLLECTION_NAME, newId), newOrder);
+        await runTransaction(db, async (transaction) => {
+            const counterRef = doc(db, METADATA_COLLECTION, COUNTER_DOC);
+            const counterSnap = await transaction.get(counterRef);
+
+            let nextId = 1;
+            if (counterSnap.exists()) {
+                nextId = (counterSnap.data().current || 0) + 1;
+            }
+
+            const newId = String(nextId);
+            const newOrder = {
+                ...order,
+                id: newId,
+                date: new Date().toLocaleString('pt-BR')
+            };
+
+            transaction.set(counterRef, { current: nextId });
+            transaction.set(doc(db, COLLECTION_NAME, newId), newOrder);
+        });
     } catch (error) {
-        console.error("Erro ao salvar o pedido: ", error);
+        console.error("Erro ao salvar o pedido sequencial: ", error);
         throw error;
     }
 };
 
-export const updateOrder = async (orderToUpdate: Order): Promise<void> => {
-    if (!orderToUpdate.id) return;
+export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Promise<void> => {
     try {
         const updated = {
             ...orderToUpdate,
-            date: new Date().toLocaleString('pt-BR')
+            // Keep the original date if possible or update it
         }
-        await setDoc(doc(db, COLLECTION_NAME, orderToUpdate.id), updated, { merge: true });
+        await setDoc(doc(db, COLLECTION_NAME, id), updated, { merge: true });
     } catch (error) {
         console.error("Erro ao atualizar o pedido: ", error);
         throw error;
