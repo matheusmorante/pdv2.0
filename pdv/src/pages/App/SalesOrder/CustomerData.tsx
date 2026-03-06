@@ -122,7 +122,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData }: Props) => {
                     />
                 </div>
                 <div className="flex flex-col">
-                    <label>Observações sobre o endereço</label>
+                    <label>Observaçoes sobre o endereço</label>
                     <input
                         name="observation"
                         onChange={e => onChangeAddress('observation', e.target.value)}
