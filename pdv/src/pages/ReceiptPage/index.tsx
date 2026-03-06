@@ -1,6 +1,6 @@
 import CustomerData from "./CustomerData";
 import Header from "./Header";
-import ItemsTable from "./itemsTable";
+import ItemsTable from "./ItemsTable";
 import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
 
