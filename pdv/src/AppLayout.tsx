@@ -21,21 +21,20 @@ export default function AppLayout() {
         <nav className="flex gap-2">
           <Link to="/">Dashboard</Link><br />
           <div>
-            <Link to="/stock">Estoque</Link><br />
-            {
+            <Link to="/stock" onClick={() => setOpen('stock')}>Estoque</Link><br />
+            {open === 'stock' ?
               <div>
-
-            </div>
+                <Link to="/stock/launch">Lançamento de Estoque</Link>
+                <Link to="/stock/reports">Relatórios de Estoque</Link>
+              </div> : null
             }
           </div>
           <div>
-          <Link to="/sales-order" 
-            onClick={() => setOpen('salesOrder')}
-          >Pedidos</Link>
-           { open === 'salesOrder' ?
+            <Link to="/sales-order"onClick={() => setOpen('salesOrder')}>Pedidos</Link>
+            {open === 'salesOrder' ?
               <div>
-                  <Link to="/sales-order">Pedidos</Link>
-            </div> : null
+                <Link to="/sales-order">Pedidos</Link>
+              </div> : null
             }
           </div>
           <Link to="/sales">Vendas</Link><br />
