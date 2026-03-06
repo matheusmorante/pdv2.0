@@ -145,23 +145,23 @@ const PdvFormSection = ({ form }: PdvFormSectionProps) => {
                 </div>
             </div>
 
-            {/* CLEAN WHITE NON-FIXED FOOTER FOR ACTIONS */}
-            <div className="mt-16 pt-10 border-t border-slate-100 bg-white pb-10">
+            {/* FIXED COMPACT FOOTER FOR ACTIONS */}
+            <div className="sticky bottom-0 z-10 border-t border-slate-100 bg-white/80 backdrop-blur-md py-4">
                 <div className="max-w-[1400px] mx-auto">
-                    <div className="bg-slate-50 border border-slate-100 p-10 rounded-[3rem] shadow-sm flex flex-col items-center justify-between gap-8 md:flex-row">
-                        <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
-                            <span className="text-slate-900 font-black text-2xl tracking-tight">Finalizar Pedido</span>
-                            <p className="text-slate-400 text-xs uppercase font-black tracking-widest">Selecione uma ação rápida para concluir</p>
+                    <div className="bg-slate-50/50 border border-slate-100 p-4 px-8 rounded-3xl shadow-sm flex flex-col items-center justify-between gap-4 md:flex-row">
+                        <div className="flex flex-col items-center md:items-start text-center md:text-left">
+                            <span className="text-slate-900 font-black text-lg tracking-tight">Finalizar Pedido</span>
+                            <p className="text-slate-400 text-[8px] uppercase font-black tracking-widest">Ações rápidas para conclusão</p>
                         </div>
 
                         <div className="flex-1 max-w-xl px-4">
                             <PdvActions order={state.currentOrder} />
                         </div>
 
-                        <div className="flex flex-col items-end gap-6 min-w-[320px]">
-                            <div className="bg-white p-6 px-8 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col items-end w-full">
-                                <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Total a Receber</span>
-                                <span className="text-blue-600 font-black text-4xl italic tracking-tighter">
+                        <div className="flex flex-row items-center gap-4 min-w-[300px]">
+                            <div className="bg-white p-3 px-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-end flex-1">
+                                <span className="text-slate-400 text-[8px] font-black uppercase tracking-widest">Total a Receber</span>
+                                <span className="text-blue-600 font-black text-2xl italic tracking-tighter">
                                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(state.paymentsSummary.totalOrderValue || 0)}
                                 </span>
                             </div>
@@ -169,7 +169,7 @@ const PdvFormSection = ({ form }: PdvFormSectionProps) => {
                             <button
                                 onClick={(e) => { e.preventDefault(); actions.handleCompleteOrder(e as any); }}
                                 disabled={state.isSaving || !state.isValidForCompletion}
-                                className={`w-full flex items-center justify-center gap-3 px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-2xl transition-all active:scale-95 ${state.isSaving || !state.isValidForCompletion
+                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl transition-all active:scale-95 ${state.isSaving || !state.isValidForCompletion
                                     ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
                                     : "bg-green-600 hover:bg-green-700 text-white shadow-green-200 shadow-lg"
                                     }`}
@@ -181,8 +181,8 @@ const PdvFormSection = ({ form }: PdvFormSectionProps) => {
                                     </>
                                 ) : (
                                     <>
-                                        <i className="bi bi-check2-circle text-xl" />
-                                        Finalizar Pedido
+                                        <i className="bi bi-check2-circle text-lg" />
+                                        Finalizar
                                     </>
                                 )}
                             </button>
