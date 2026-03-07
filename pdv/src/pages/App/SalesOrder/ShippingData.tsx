@@ -1,10 +1,9 @@
 import React from "react";
 import Shipping from "../../types/Shipping.type";
 import CustomerData from "../../types/customerData.type";
-import { getShippingRouteUrl, autoCalculateRouteDistance } from "../../utils/maps";
+import { getShippingRouteUrl } from "../../utils/maps";
 import { ValidationErrors } from "../../utils/validations";
 import { getSettings } from "../../utils/settingsService";
-import { toast } from "react-toastify";
 import FreteDistancia from "./ShippingComponents/FreteDistancia";
 import Agendamento from "./ShippingComponents/Agendamento";
 import MapRoute from "./ShippingComponents/MapRoute";

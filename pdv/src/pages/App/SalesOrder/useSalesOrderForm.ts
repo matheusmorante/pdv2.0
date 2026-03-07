@@ -160,7 +160,7 @@ export const useSalesOrderForm = () => {
             }, 1000); // Debounce to avoid excessive API calls
             return () => clearTimeout(timer);
         }
-    }, [customerData.fullAddress.street, customerData.fullAddress.city, customerData.fullAddress.number, customerData.fullAddress.cep, shipping.autoCalculateValue, handleAutoCalculateDistance]);
+    }, [customerData.fullAddress, shipping.autoCalculateValue, handleAutoCalculateDistance]);
 
     const handleCompleteOrder = useCallback(async (e?: React.MouseEvent) => {
         if (e) e.preventDefault();

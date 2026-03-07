@@ -1,7 +1,7 @@
 import { calcPaymentsSummary } from "./calculations";
 import CustomerData from "../types/customerData.type";
 import { Item } from "../types/items.type"
-import { Payment, PaymentsSummary } from "../types/payments.type";
+import { Payment } from "../types/payments.type";
 import Shipping from "../types/Shipping.type";
 import Order from "../types/pdvAction.type";
 import { calcItemsSummary } from "../App/SalesOrder/pdvUtils";

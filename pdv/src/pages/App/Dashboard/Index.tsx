@@ -139,7 +139,7 @@ const SimplePieChart = ({ data }: { data: StatusDistribution[] }) => {
 
 const parsePTBRDate = (dateStr: string): Date | null => {
     try {
-        const [date, time] = dateStr.split(', ');
+        const [date] = dateStr.split(', ');
         const [d, m, y] = date.split('/').map(Number);
         return new Date(y, m - 1, d);
     } catch {
@@ -203,7 +203,6 @@ export default function Dashboard() {
     const filteredOrders = useMemo(() => {
         const active = orders.filter(o => !o.deleted);
         const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         return active.filter(o => {
             const oDate = o.date ? parsePTBRDate(o.date) : null;

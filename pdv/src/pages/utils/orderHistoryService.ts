@@ -13,10 +13,7 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
 
     return onSnapshot(q, (querySnapshot) => {
         const orders: Order[] = [];
-        const settings = getSettings();
         
-        const today = new Date();
-        const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
 
         querySnapshot.forEach((doc) => {
             const rawData = doc.data() as Order;
