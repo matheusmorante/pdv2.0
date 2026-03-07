@@ -43,7 +43,9 @@ export const stringifyPayments = (payments: Payment[]) => {
 }
 
 export const formatDate = (value: string) => {
+    if (!value) return "Não agendado";
     const date = new Date(value);
+    if (isNaN(date.getTime())) return "Data inválida";
     return date.toLocaleDateString("pt-BR", {
         weekday: "long",
         day: "2-digit",
@@ -88,7 +90,7 @@ export const formatCurrency = (value: number) => {
 
 export const capitalizeCustomerData = (data: CustomerData): CustomerData => {
     if (!data) return data;
-    
+
     return {
         ...data,
         fullName: toTitleCase(data.fullName),
@@ -105,7 +107,7 @@ export const capitalizeCustomerData = (data: CustomerData): CustomerData => {
 
 export const capitalizeOrder = (order: Order): Order => {
     if (!order) return order;
-    
+
     return {
         ...order,
         customerData: capitalizeCustomerData(order.customerData),

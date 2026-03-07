@@ -23,7 +23,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         const unsubscribe = subscribeToPeople('suppliers', (data: Person[]) => setSuppliers(data.filter((s: Person) => !s.deleted)));
         return () => unsubscribe();
     }, []);
-    
+
     // Default state for new product
     const initialFormData: Partial<Product> = {
         description: "",
@@ -94,7 +94,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         const freight = formData.freightCost || 0;
         const ipi = formData.ipiPercent || 0;
         const final = (cost + freight) * (1 + ipi / 100);
-        
+
         if (final !== formData.finalPurchasePrice) {
             setFormData(prev => ({ ...prev, finalPurchasePrice: Number(final.toFixed(2)) }));
         }
@@ -180,7 +180,8 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         const loadingToast = toast.loading("🤖 A IA está redigindo uma cópia persuasiva... Isso pode levar um minuto.");
 
         try {
-            const response = await fetch("http://localhost:3001/api/generate-description", {
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+            const response = await fetch(`${apiUrl}/generate-description`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -243,7 +244,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                             {product ? `Editando ID: ${product.id}` : "Configure as informações detalhadas do item"}
                         </p>
                     </div>
-                    
+
                     {/* Item Type Selector */}
                     {!product && (
                         <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl gap-1">
@@ -257,8 +258,8 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                             <button
                                 type="button"
                                 onClick={() => {
-                                    setFormData(prev => ({ 
-                                        ...prev, 
+                                    setFormData(prev => ({
+                                        ...prev,
                                         itemType: 'service',
                                         hasVariations: false,
                                         variations: [],
@@ -375,12 +376,12 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                     {/* ESTOQUE & CUSTOS TAB */}
                     {activeTab === 'estoque' && (
                         <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="bg-slate-50/50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 flex flex-col gap-6">
                                     <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 flex items-center gap-2">
                                         <i className="bi bi-tag text-blue-600"></i> Composição de Custo
                                     </h4>
-                                    
+
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Preço Base de Custo</label>
                                         <input
@@ -467,7 +468,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                                         <span className="text-xl font-black text-blue-700 dark:text-blue-300">{formData.stock || 0} {formData.unit}</span>
                                     </div>
                                 </div>
-                             </div>
+                            </div>
                         </div>
                     )}
 
@@ -476,7 +477,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                         <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/30">
                                 <div className="flex items-center gap-4">
-                                     <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${formData.hasVariations ? 'bg-blue-600' : 'bg-slate-300'}`} onClick={() => setFormData({ ...formData, hasVariations: !formData.hasVariations })}>
+                                    <div className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${formData.hasVariations ? 'bg-blue-600' : 'bg-slate-300'}`} onClick={() => setFormData({ ...formData, hasVariations: !formData.hasVariations })}>
                                         <div className={`w-4 h-4 bg-white rounded-full transition-transform ${formData.hasVariations ? 'translate-x-6' : 'translate-x-0'}`} />
                                     </div>
                                     <div>
@@ -624,8 +625,8 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                             <div className="flex flex-col gap-2 relative">
                                 <div className="flex items-center justify-between mb-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Descrição Detalhada (HTML/Marketing)</label>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={handleGenerateAIDescription}
                                         disabled={isGeneratingDescription}
                                         className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 dark:text-indigo-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors shadow-sm disabled:opacity-50"
@@ -652,7 +653,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                     {/* FISCAL TAB */}
                     {activeTab === 'fiscal' && (
                         <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                             <div className="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-3xl border border-amber-100 dark:border-amber-900/30 flex items-start gap-4">
+                            <div className="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-3xl border border-amber-100 dark:border-amber-900/30 flex items-start gap-4">
                                 <i className="bi bi-info-circle-fill text-amber-500 text-xl mt-1"></i>
                                 <div>
                                     <h4 className="text-xs font-black uppercase tracking-widest text-amber-800 dark:text-amber-200">Informações Fiscais para NF-e</h4>

@@ -36,13 +36,13 @@ export const useSalesOrderForm = () => {
     const paymentsSummary = calcPaymentsSummary(payments, itemsSummary, shipping.value);
 
     // Stable state ref for callbacks
-    const latestState = useRef({ 
-        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving 
+    const latestState = useRef({
+        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving
     });
-    
+
     useEffect(() => {
-        latestState.current = { 
-            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving 
+        latestState.current = {
+            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving
         };
     }, [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving]);
 
@@ -87,7 +87,7 @@ export const useSalesOrderForm = () => {
             if (payments.length === 1 && payments[0].amount !== 0) return false;
             // Check Observation and Seller
             if (observation !== '' || seller !== '') return false;
-            
+
             return true;
         })();
 
@@ -129,15 +129,15 @@ export const useSalesOrderForm = () => {
             const routeResult = await autoCalculateRouteDistance(address);
             if (routeResult !== null) {
                 const { distanceKm, destinationCoords, routeGeoJSON } = routeResult;
-                
+
                 setShipping(prev => {
                     let value = prev.value;
                     // Auto-calculate freight if rate is configured
                     if (settings.freightPerKm > 0) {
                         value = distanceKm * settings.freightPerKm;
                     }
-                    return { 
-                        ...prev, 
+                    return {
+                        ...prev,
                         distance: distanceKm,
                         value,
                         destinationCoords,
@@ -196,7 +196,20 @@ export const useSalesOrderForm = () => {
         }
     }, []);
 
-    const currentOrder = useMemo(() => getOrderData(currentOrderId ? 'scheduled' : 'draft'), [getOrderData, currentOrderId]);
+    const currentOrder = useMemo((): Order => ({
+        id: currentOrderId,
+        orderType: 'sale',
+        status: currentOrderId ? 'scheduled' : 'draft',
+        items,
+        itemsSummary,
+        shipping,
+        payments,
+        paymentsSummary,
+        customerData,
+        observation,
+        seller,
+        date: dateNow(),
+    }), [currentOrderId, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller]);
 
     const isValidForCompletion = useMemo(() => validateBase(getOrderData('scheduled')), [getOrderData]);
 

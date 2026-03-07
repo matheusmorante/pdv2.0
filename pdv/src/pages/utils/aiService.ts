@@ -10,7 +10,7 @@ export interface AIChatResponse {
     answer: string;
 }
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export const aiService = {
     async detectIntent(message: string, detectionPrompt: string): Promise<AIIntentResponse> {

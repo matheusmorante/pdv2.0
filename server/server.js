@@ -20,17 +20,17 @@ async function bootstrapLlama() {
         llama = await getLlama();
         const modelUri = "hf:mradermacher/Phi-3-mini-4k-instruct-GGUF/Phi-3-mini-4k-instruct.Q4_K_M.gguf";
         const modelPath = await resolveModelFile(modelUri);
-        
+
         model = await llama.loadModel({ modelPath });
-        
+
         // Criamos o contexto com 1 sequência dedicada
         context = await model.createContext({ sequences: 1 });
-        
+
         // Criamos uma única sessão que será reutilizada
-        chatSession = new LlamaChatSession({ 
+        chatSession = new LlamaChatSession({
             contextSequence: context.getSequence()
         });
-        
+
         console.log("LIZANDRO ESTÁ ONLINE E PRONTO!");
         console.log("==========================================");
     } catch (error) {
@@ -43,15 +43,15 @@ bootstrapLlama();
 // Rota genérica para qualquer prompt
 async function safePrompt(prompt, systemPrompt = null) {
     if (!chatSession) throw new Error("IA ainda carregando...");
-    
+
     // Resetamos o histórico antes de cada operação para evitar interferência
     // e economia de tokens no contexto
     chatSession.setChatHistory([]);
-    
+
     // Se houver um systemPrompt específico (como o de detecção), aplicamos
     // Note: Em algumas versões, o systemPrompt é definido na criação da sessão.
     // Para manter estável, vamos apenas concatenar ou usar o padrão.
-    
+
     const response = await chatSession.prompt(prompt);
     return response;
 }
@@ -60,7 +60,7 @@ app.post('/api/generate-description', async (req, res) => {
     try {
         const { productName, category, unitPrice, promptTemplate } = req.body;
         console.log(`Gerando descrição: ${productName}`);
-        
+
         let prompt = promptTemplate || `Crie uma descrição persuasiva para o produto ${productName}.`;
         prompt = prompt
             .replace(/{{productName}}/g, productName || '')
@@ -92,17 +92,17 @@ app.post('/api/ai-detect-intent', async (req, res) => {
 
         const answer = await safePrompt(prompt);
         console.log("Resposta Lizandro:", answer);
-        
+
         const jsonMatch = answer.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
                 return res.json(JSON.parse(jsonMatch[0]));
-            } catch (e) {}
+            } catch (e) { }
         }
 
-        res.json({ 
-            intent: 'chat', 
-            data: { message: answer } 
+        res.json({
+            intent: 'chat',
+            data: { message: answer }
         });
     } catch (error) {
         console.error("ERRO:", error);
@@ -110,4 +110,11 @@ app.post('/api/ai-detect-intent', async (req, res) => {
     }
 });
 
-app.listen(3001, () => console.log(`Servidor rodando na porta 3001`));
+const port = process.env.PORT || 3001;
+app.listen(port, '0.0.0.0', () => console.log(`Servidor rodando na porta ${port}`));
+
+// Handle graceful shutdown for Cloud Run
+process.on('SIGTERM', () => {
+    console.log('Recebido SIGTERM, desligando graciosamente...');
+    process.exit(0);
+});
