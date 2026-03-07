@@ -14,9 +14,9 @@ const parsePTBRDate = (dateStr: string): Date | null => {
     }
 };
 
-const isSameDay = (d1: Date, d2: Date) => 
-    d1.getDate() === d2.getDate() && 
-    d1.getMonth() === d2.getMonth() && 
+const isSameDay = (d1: Date, d2: Date) =>
+    d1.getDate() === d2.getDate() &&
+    d1.getMonth() === d2.getMonth() &&
     d1.getFullYear() === d2.getFullYear();
 
 const STATUS_LABELS: Record<string, string> = {
@@ -61,13 +61,14 @@ export const useDashboardData = (period: Period) => {
     }, [orders, period]);
 
     const stats = useMemo(() => {
-        const totalSales = filteredOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
-        const avgTicket = filteredOrders.length > 0 ? totalSales / filteredOrders.length : 0;
+        const saleOrders = filteredOrders.filter(o => o.status === 'scheduled' || o.status === 'fulfilled');
+        const totalSales = saleOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
+        const avgTicket = saleOrders.length > 0 ? totalSales / saleOrders.length : 0;
         const pendingOrders = filteredOrders.filter(o => o.status === 'scheduled' || o.status === 'draft').length;
 
         return {
             totalSales,
-            orderCount: filteredOrders.length,
+            orderCount: saleOrders.length,
             avgTicket,
             pendingOrders
         };
@@ -91,9 +92,13 @@ export const useDashboardData = (period: Period) => {
         const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
         return lastDays.map(dateStr => {
-            const dayOrders = orders.filter(o => !o.deleted && (o.date?.includes(dateStr)));
+            const dayOrders = orders.filter(o =>
+                !o.deleted &&
+                (o.date?.includes(dateStr)) &&
+                (o.status === 'scheduled' || o.status === 'fulfilled')
+            );
             const total = dayOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
-            
+
             let label = dateStr;
             if (period === 'year') {
                 const [m] = dateStr.split('/');
@@ -103,7 +108,7 @@ export const useDashboardData = (period: Period) => {
                 const dateObj = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
                 label = shortNames[dateObj.getDay()];
             }
-            
+
             return { name: label, valor: total };
         });
     }, [orders, period]);
