@@ -44,24 +44,35 @@ export const validatePayments = (
 export const validateCustomerData = (customer: CustomerData): ValidationErrors => {
     const errors: ValidationErrors = {};
 
+    if (!customer) return { customer: "Dados do cliente ausentes." };
+
     if (!customer.fullName) errors['customer_fullName'] = "Nome completo é obrigatório.";
     if (!customer.noPhone && !customer.phone) errors['customer_phone'] = "Celular/WhatsApp é obrigatório.";
 
     const addr = customer.fullAddress;
-    if (!addr.street) errors['customer_street'] = "Rua é obrigatória.";
-    if (!addr.number) errors['customer_number'] = "Número é obrigatório.";
-    if (!addr.neighborhood) errors['customer_neighborhood'] = "Bairro é obrigatório.";
-    if (!addr.city) errors['customer_city'] = "Cidade é obrigatória.";
+    if (!addr) {
+        errors['customer_address'] = "Endereço é obrigatório.";
+    } else {
+        if (!addr.street) errors['customer_street'] = "Rua é obrigatória.";
+        if (!addr.number) errors['customer_number'] = "Número é obrigatório.";
+        if (!addr.neighborhood) errors['customer_neighborhood'] = "Bairro é obrigatório.";
+        if (!addr.city) errors['customer_city'] = "Cidade é obrigatória.";
+    }
 
     return errors;
 }
 
 export const validateShipping = (shipping: Shipping): ValidationErrors => {
     const errors: ValidationErrors = {};
-    const { date, startTime } = shipping.scheduling;
+    if (!shipping) return { shipping: "Dados de entrega ausentes." };
 
-    if (!date) errors['shipping_date'] = "Data de entrega é obrigatória.";
-    if (!startTime) errors['shipping_time'] = "Horário/Período é obrigatório.";
+    const scheduling = shipping.scheduling;
+    if (!scheduling) {
+        errors['shipping_scheduling'] = "Agendamento é obrigatório.";
+    } else {
+        if (!scheduling.date) errors['shipping_date'] = "Data de entrega é obrigatória.";
+        if (!scheduling.startTime) errors['shipping_time'] = "Horário/Período é obrigatório.";
+    }
 
     return errors;
 }
@@ -73,18 +84,24 @@ export const validateSeller = (seller: Order['seller']): ValidationErrors => {
 }
 
 export const validateOrder = (order: Order): ValidationErrors => {
-    const itemsSummary = calcItemsSummary(order.items);
+    if (!order) return { order: "Pedido não encontrado." };
+
+    const items = order.items || [];
+    const payments = order.payments || [];
+    const shippingValue = order.shipping?.value || 0;
+
+    const itemsSummary = calcItemsSummary(items);
     const { amountRemaining } = calcPaymentsSummary(
-        order.payments,
+        payments,
         itemsSummary,
-        order.shipping.value
+        shippingValue
     );
 
     return {
-        ...validateItems(order.items),
+        ...validateItems(items),
         ...validateSeller(order.seller),
         ...validateShipping(order.shipping),
-        ...validatePayments(order.payments, amountRemaining),
+        ...validatePayments(payments, amountRemaining),
         ...validateCustomerData(order.customerData)
     };
 }
@@ -101,6 +118,8 @@ export const isOrderIncomplete = (order: Order) => {
 
 export const validateReviews = (order: Order): ValidationErrors => {
     const errors: ValidationErrors = {};
+    if (!order || !order.customerData) return { order: "Dados insuficientes." };
+
     if (!order.customerData.fullName) {
         errors['customer_fullName'] = "Nome completo é obrigatório para o pedido de avaliação.";
     }

@@ -174,13 +174,21 @@ const OrderHistoryRow = ({
             case 'customer':
                 return (
                     <td key="customer" className="px-6 py-4 text-left">
-                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{order.customerData?.fullName || "Não informado"}</span>
+                        <div className="flex flex-col gap-1">
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{order.customerData?.fullName || "Não informado"}</span>
+                            {order.orderType === 'assistance' && (
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[9px] font-black uppercase tracking-widest w-fit">
+                                    <i className="bi bi-tools text-[8px]" />
+                                    Assistência
+                                </span>
+                            )}
+                        </div>
                     </td>
                 );
             case 'totalValue':
                 return (
                     <td key="totalValue" className="px-6 py-4 text-right">
-                        <span className="text-sm font-black text-blue-600 dark:text-blue-400">{formatCurrency(order.paymentsSummary.totalOrderValue || 0)}</span>
+                        <span className="text-sm font-black text-blue-600 dark:text-blue-400">{formatCurrency(order.paymentsSummary?.totalOrderValue || 0)}</span>
                     </td>
                 );
             case 'status':

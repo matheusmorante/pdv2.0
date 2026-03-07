@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import { useTheme } from "./context/ThemeContext";
 import DesktopNav from "./components/layout/DesktopNav";
 import MobileNav from "./components/layout/MobileNav";
+import AIChatAssistant from "./components/shared/AIChatAssistant";
 
 type MenuKey = 'stock' | 'salesOrder' | 'registrations' | null;
 
@@ -75,6 +76,8 @@ export default function AppLayout() {
       <main className="flex-1 p-4 xl:p-8 overflow-x-hidden">
         <Outlet />
       </main>
+
+      <AIChatAssistant />
 
       <style dangerouslySetInnerHTML={{
         __html: `

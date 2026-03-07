@@ -50,6 +50,7 @@ export const useSalesOrderForm = () => {
         const s = latestState.current;
         return {
             id: s.currentOrderId,
+            orderType: 'sale',
             status: newStatus || s.status,
             items: s.items,
             itemsSummary: s.itemsSummary,

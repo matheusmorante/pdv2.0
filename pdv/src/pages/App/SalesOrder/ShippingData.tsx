@@ -62,7 +62,7 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
 
     return (
         <div className="flex flex-col gap-8 w-full">
-            <div className="flex flex-col xl:flex-row gap-8 w-full">
+            <div className="flex flex-col gap-10 w-full lg:gap-12">
                 <FreteDistancia
                     value={shipping.value}
                     distance={shipping.distance}

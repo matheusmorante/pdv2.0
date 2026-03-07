@@ -27,16 +27,20 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 Dashboard
             </Link>
 
-            {/* Cadastros */}
+            <Link to="/registrations/products" className={navLinkClass}>
+                <i className="bi bi-box-seam"></i>
+                Produtos e Serviços
+            </Link>
+
+            {/* Pessoas */}
             <div className="relative h-full flex items-center">
                 <button onClick={() => toggle('registrations')} className={menuBtnClass(activeMenu === 'registrations')}>
-                    <i className="bi bi-person-lines-fill"></i>
-                    Cadastros
+                    <i className="bi bi-people-fill"></i>
+                    Pessoas
                     <i className={chevronClass(activeMenu === 'registrations')}></i>
                 </button>
                 {activeMenu === 'registrations' && (
                     <div className={dropdownClass}>
-                        <Link to="/registrations/products" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Produtos</Link>
                         <Link to="/registrations/customers" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Clientes</Link>
                         <Link to="/registrations/suppliers" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Fornecedores</Link>
                         <Link to="/registrations/employees" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Funcionários</Link>

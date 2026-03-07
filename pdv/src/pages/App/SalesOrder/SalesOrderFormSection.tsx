@@ -29,22 +29,24 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                 />
 
                 {/* Main Form Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-10 items-start pb-10">
+                <div className="grid grid-cols-1 xl:grid-cols-3 2xl:grid-cols-4 gap-8 items-start pb-10">
                     {/* Left Column - Items & Payments */}
-                    <div className="lg:col-span-2 2xl:col-span-3 flex flex-col gap-10">
+                    <div className="xl:col-span-2 2xl:col-span-3 flex flex-col gap-8">
                         <SectionCard
                             icon="bi bi-box-seam"
                             iconBg="bg-blue-600 shadow-blue-100 dark:shadow-blue-900/20"
                             title="Itens do Pedido"
                             subtitle="Produtos e serviços selecionados"
                         >
-                            <ItemsTable
-                                items={state.items}
-                                setItems={actions.setItems}
-                                summary={state.itemsSummary}
-                                deliveryMethod={state.shipping.deliveryMethod}
-                                errors={state.errors}
-                            />
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-x-auto shadow-sm transition-colors duration-300">
+                                <ItemsTable
+                                    items={state.items}
+                                    setItems={actions.setItems}
+                                    summary={state.itemsSummary}
+                                    deliveryMethod={state.shipping.deliveryMethod}
+                                    errors={state.errors}
+                                />
+                            </div>
                         </SectionCard>
 
                         <SectionCard
@@ -64,7 +66,7 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                     </div>
 
                     {/* Right Column - Customer & Shipping */}
-                    <div className="flex flex-col gap-10">
+                    <div className="flex flex-col gap-8">
                         <SectionCard
                             icon="bi bi-person-badge"
                             iconBg="bg-purple-600 shadow-purple-100 dark:shadow-purple-900/20"

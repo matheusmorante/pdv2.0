@@ -47,17 +47,25 @@ export const useOrderHistory = (filters?: any) => {
                     order.customerData?.fullName?.toLowerCase().includes(filters.customerName.toLowerCase());
 
                 const productMatch = !filters.productName ||
-                    order.items?.some(item => item.description.toLowerCase().includes(filters.productName.toLowerCase()));
+                    (order.items?.some(item => item.description.toLowerCase().includes(filters.productName.toLowerCase()))) ||
+                    (order.assistanceDescription?.toLowerCase().includes(filters.productName.toLowerCase()));
 
-                const valueMatch = (order.paymentsSummary.totalOrderValue || 0) >= filters.valueRange.min &&
-                    (order.paymentsSummary.totalOrderValue || 0) <= filters.valueRange.max;
+                const totalOrderValue = order.paymentsSummary?.totalOrderValue || 0;
+                const valueMatch = totalOrderValue >= filters.valueRange.min &&
+                    totalOrderValue <= filters.valueRange.max;
 
                 return dateMatch && customerMatch && productMatch && valueMatch;
             })
             .sort((a, b) => {
                 let comparison = 0;
-                if (filters?.sortBy === "customer") {
+                const sortBy = filters?.sortBy || 'date';
+                
+                if (sortBy === "customer") {
                     comparison = (a.customerData?.fullName || "").localeCompare(b.customerData?.fullName || "");
+                } else if (sortBy === "totalValue") {
+                    comparison = (a.paymentsSummary?.totalOrderValue || 0) - (b.paymentsSummary?.totalOrderValue || 0);
+                } else if (sortBy === "status") {
+                    comparison = (a.status || "").localeCompare(b.status || "");
                 } else {
                     comparison = (a.date || "").localeCompare(b.date || "");
                 }

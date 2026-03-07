@@ -9,10 +9,11 @@ type OrderHistoryListProps = {
     filters?: any;
     visibilitySettings: VisibilitySettings;
     onToggleColumn: (column: keyof VisibilitySettings) => void;
+    onSort?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
 };
 
 
-const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn }: OrderHistoryListProps) => {
+const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn, onSort }: OrderHistoryListProps) => {
     const {
         orders,
         loading,
@@ -118,6 +119,8 @@ const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn 
                     visibilitySettings={visibilitySettings}
                     onToggleColumn={onToggleColumn}
                     showTrash={filters?.showTrash}
+                    filters={filters}
+                    onSort={onSort}
                     selectedOrders={selectedOrders}
                     onToggleSelection={toggleSelection}
                     onSelectAll={selectAll}

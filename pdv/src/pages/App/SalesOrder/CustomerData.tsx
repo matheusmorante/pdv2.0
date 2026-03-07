@@ -140,8 +140,8 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-                <div className="flex flex-col relative group md:col-span-2">
+            <div className="flex flex-col sm:flex-row gap-6">
+                <div className="w-full sm:w-1/3 flex flex-col relative group">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2 ml-1">
                         CEP
                     </label>
@@ -149,7 +149,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                         <PatternFormat
                             format="#####-###"
                             mask="_"
-                            className="w-full bg-transparent border-0 border-b border-slate-200 dark:border-slate-800 px-1 py-3 focus:border-blue-600 dark:focus:border-blue-500 transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300"
+                            className="w-full bg-transparent border-0 border-b border-slate-100 dark:border-slate-800 px-1 py-3 focus:border-blue-600 dark:focus:border-blue-500 transition-all text-sm font-bold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300"
                             value={customerData.fullAddress.cep}
                             onValueChange={(values) => onChangeAddress('cep', values.value)}
                             placeholder="00000-000"
@@ -157,18 +157,18 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                     </div>
                 </div>
                 <ValidatedInput
-                    containerClassName="md:col-span-4"
+                    containerClassName="flex-1"
                     name="street"
                     label={
-                        <div className="flex justify-between items-center w-full">
+                        <div className="flex justify-between items-center w-full gap-2">
                             <span>Logradouro</span>
                             <a
                                 href={route}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-[10px] font-black uppercase tracking-widest border border-blue-100/50 dark:border-blue-900/30 -my-1"
+                                className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-[10px] font-black uppercase tracking-widest border border-blue-100/50 dark:border-blue-900/30 -my-1 shrink-0"
                             >
-                                <i className="bi bi-geo-alt-fill" /> Maps
+                                <i className="bi bi-geo-alt-fill" /> <span className="hidden sm:inline">Maps</span>
                             </a>
                         </div>
                     }

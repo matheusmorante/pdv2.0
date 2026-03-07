@@ -3,20 +3,36 @@ import CustomerData from "./customerData.type";
 import { Payment, PaymentsSummary } from "./payments.type";
 import Shipping from "./Shipping.type";
 
+export type OrderType = 'sale' | 'assistance';
+
+export type AssistanceItem = {
+    id: string; // ID for internal keying
+    description: string;
+    quantity: number;
+    originalOrderId: string;
+}
+
 export type Order = {
     id?: string,
+    orderType?: OrderType,
     status?: string,
     items: Item[],
     itemsSummary: ItemsSummary,
     shipping: Shipping,
-    seller: String,
+    seller: string,
     payments: Payment[],
     paymentsSummary: PaymentsSummary
     customerData: CustomerData,
     observation: string,
     date: string,
+    // Assistance-specific fields
+    assistanceDescription?: string,
+    scheduledDate?: string,
+    scheduledTime?: string,
+    linkedOrderId?: string | null,
+    assistanceItems?: AssistanceItem[],
     deleted?: boolean,
-    deletedAt?: string,
+    deletedAt?: string | null,
     orderIndex?: number,
     reviewRequested?: boolean
 }

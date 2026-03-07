@@ -9,6 +9,11 @@ import OrderPage from './pages/OrderPage';
 import ComingSoon from './components/shared/ComingSoon';
 import Products from './pages/App/Products/Index';
 import Settings from './pages/App/Settings';
+import Customers from './pages/App/Customers/Index';
+import Suppliers from './pages/App/Suppliers/Index';
+import Employees from './pages/App/Employees/Index';
+import Services from './pages/App/Services/Index';
+import Variations from './pages/App/Variations/Index';
 
 function Router() {
   return (
@@ -28,9 +33,11 @@ function Router() {
 
           {/* Registrations */}
           <Route path='/registrations/products' element={<Products />} />
-          <Route path='/registrations/customers' element={<ComingSoon title="Clientes" />} />
-          <Route path='/registrations/suppliers' element={<ComingSoon title="Fornecedores" />} />
-          <Route path='/registrations/employees' element={<ComingSoon title="Funcionários" />} />
+          <Route path='/registrations/services' element={<Services />} />
+          <Route path='/registrations/variations' element={<Variations />} />
+          <Route path='/registrations/customers' element={<Customers />} />
+          <Route path='/registrations/suppliers' element={<Suppliers />} />
+          <Route path='/registrations/employees' element={<Employees />} />
         </Route>
       </Routes>
     </BrowserRouter>

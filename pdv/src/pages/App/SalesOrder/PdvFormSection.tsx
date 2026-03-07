@@ -29,22 +29,24 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                 />
 
                 {/* Main Form Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-10 items-start pb-10">
+                <div className="grid grid-cols-1 xl:grid-cols-3 2xl:grid-cols-4 gap-4 items-start pb-10">
                     {/* Left Column - Items & Payments */}
-                    <div className="lg:col-span-2 2xl:col-span-3 flex flex-col gap-10">
+                    <div className="xl:col-span-2 2xl:col-span-3 flex flex-col gap-4">
                         <SectionCard
                             icon="bi bi-box-seam"
                             iconBg="bg-blue-600 shadow-blue-100 dark:shadow-blue-900/20"
                             title="Itens do Pedido"
                             subtitle="Produtos e serviços selecionados"
                         >
-                            <ItemsTable
-                                items={state.items}
-                                setItems={actions.setItems}
-                                summary={state.itemsSummary}
-                                deliveryMethod={state.shipping.deliveryMethod}
-                                errors={state.errors}
-                            />
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-x-auto shadow-sm transition-colors duration-300">
+                                <ItemsTable
+                                    items={state.items}
+                                    setItems={actions.setItems}
+                                    summary={state.itemsSummary}
+                                    deliveryMethod={state.shipping.deliveryMethod}
+                                    errors={state.errors}
+                                />
+                            </div>
                         </SectionCard>
 
                         <SectionCard
@@ -53,7 +55,7 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                             title="Condições de Pagamento"
                             subtitle="Formas e prazos acordados"
                         >
-                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-x-auto shadow-sm">
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-x-auto shadow-sm transition-colors duration-300">
                                 <PaymentsTable
                                     payments={state.payments}
                                     setPayments={actions.setPayments}
@@ -64,7 +66,7 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                     </div>
 
                     {/* Right Column - Customer & Shipping */}
-                    <div className="flex flex-col gap-10">
+                    <div className="flex flex-col gap-4">
                         <SectionCard
                             icon="bi bi-person-badge"
                             iconBg="bg-purple-600 shadow-purple-100 dark:shadow-purple-900/20"
@@ -108,7 +110,7 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                             <textarea
                                 value={state.observation}
                                 onChange={(e) => actions.setObservation(e.target.value)}
-                                className="w-full min-h-[120px] bg-transparent border-0 border-b border-slate-200 dark:border-slate-800 p-2 text-slate-600 dark:text-slate-400 focus:border-blue-600 dark:focus:border-blue-500 outline-none transition-all resize-none text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                className="w-full min-h-[120px] bg-transparent border-0 border-b border-slate-200 dark:border-slate-800 p-2 text-slate-700 dark:text-slate-300 focus:border-blue-600 dark:focus:border-blue-500 outline-none transition-all resize-none text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 font-medium"
                                 placeholder="Notas importantes deste pedido..."
                             />
                         </SectionCard>

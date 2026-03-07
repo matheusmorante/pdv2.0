@@ -7,6 +7,12 @@ const COLLECTION_NAME = "orders";
 const METADATA_COLLECTION = "metadata";
 const COUNTER_DOC = "orderCounter";
 
+const deepClean = (obj: any): any => {
+    return JSON.parse(JSON.stringify(obj, (key, value) => {
+        return value === undefined ? null : value;
+    }));
+};
+
 export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
     const q = query(collection(db, COLLECTION_NAME));
 
@@ -61,11 +67,11 @@ export const saveOrder = async (order: Order): Promise<void> => {
             }
 
             const newId = String(nextId);
-            const newOrder = {
+            const newOrder = deepClean({
                 ...order,
                 id: newId,
-                date: new Date().toLocaleString('pt-BR')
-            };
+                date: order.date || new Date().toLocaleString('pt-BR')
+            });
 
             transaction.set(counterRef, { current: nextId });
             transaction.set(doc(db, COLLECTION_NAME, newId), newOrder);
@@ -78,10 +84,9 @@ export const saveOrder = async (order: Order): Promise<void> => {
 
 export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Promise<void> => {
     try {
-        const updated = {
+        const updated = deepClean({
             ...orderToUpdate,
-            // Keep the original date if possible or update it
-        }
+        });
         await setDoc(doc(db, COLLECTION_NAME, id), updated, { merge: true });
     } catch (error) {
         console.error("Erro ao atualizar o pedido: ", error);
@@ -105,7 +110,7 @@ export const restoreOrder = async (id: string): Promise<void> => {
     try {
         await updateOrder(id, { 
             deleted: false,
-            deletedAt: undefined 
+            deletedAt: null 
         });
     } catch (error) {
         console.error("Erro ao restaurar o pedido: ", error);

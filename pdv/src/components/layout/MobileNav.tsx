@@ -46,18 +46,22 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                         Dashboard
                     </Link>
 
-                    {/* Cadastros */}
+                    <Link to="/registrations/products" onClick={onClose} className={mobileLinkClass}>
+                        <i className="bi bi-box-seam text-lg"></i>
+                        Produtos e Serviços
+                    </Link>
+
+                    {/* Pessoas */}
                     <div className="flex flex-col">
                         <button onClick={() => toggle('registrations')} className={menuBtnClass(activeMenu === 'registrations')}>
                             <div className="flex items-center gap-3">
-                                <i className="bi bi-person-lines-fill text-lg"></i>
-                                Cadastros
+                                <i className="bi bi-people-fill text-lg"></i>
+                                Pessoas
                             </div>
                             <i className={`bi bi-chevron-down transition-transform ${activeMenu === 'registrations' ? 'rotate-180' : ''}`}></i>
                         </button>
                         {activeMenu === 'registrations' && (
                             <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
-                                <Link to="/registrations/products" onClick={onClose} className={mobileSubLinkClass}>Produtos</Link>
                                 <Link to="/registrations/customers" onClick={onClose} className={mobileSubLinkClass}>Clientes</Link>
                                 <Link to="/registrations/suppliers" onClick={onClose} className={mobileSubLinkClass}>Fornecedores</Link>
                                 <Link to="/registrations/employees" onClick={onClose} className={mobileSubLinkClass}>Funcionários</Link>

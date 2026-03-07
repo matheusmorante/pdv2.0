@@ -16,6 +16,8 @@ interface OrderHistoryTableProps {
     visibilitySettings: VisibilitySettings;
     onToggleColumn: (column: keyof VisibilitySettings) => void;
     showTrash?: boolean;
+    filters?: any;
+    onSort?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
     selectedOrders: string[];
     onToggleSelection: (id: string) => void;
     onSelectAll: () => void;
@@ -47,12 +49,12 @@ const COLUMNS_DEF: ColumnDef[] = [
 
 const OrderHistoryTable = ({
     orders, onEdit, onDelete, onRestore, onPermanentDelete, onAction, onStatusUpdate, onViewDetails,
-    visibilitySettings, onToggleColumn, showTrash,
+    visibilitySettings, onToggleColumn, showTrash, filters, onSort,
     selectedOrders, onToggleSelection, onSelectAll, onBulkTrash, onBulkRestore, onBulkPermanentDelete, onClearSelection
 }: OrderHistoryTableProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const settings = getSettings();
-    const allIdsOnPage = orders.map(o => o.id!).filter(Boolean);
+    const allIdsOnPage = (orders || []).filter(o => o && o.id).map(o => o.id!) as string[];
     const isAllSelected = allIdsOnPage.length > 0 && allIdsOnPage.every(id => selectedOrders.includes(id));
     const isIndeterminate = selectedOrders.length > 0 && !isAllSelected;
 
@@ -179,6 +181,13 @@ const OrderHistoryTable = ({
                             {orderedColumns.map((col) => {
                                 const labelText = typeof col.label === 'function' ? col.label(showTrash) : col.label;
                                 const isVisible = visibilitySettings[col.key];
+                                const sortableKeys = ['orderDate', 'customer', 'totalValue', 'status'];
+                                const isSortable = sortableKeys.includes(col.key);
+                                // Map keys for the backend
+                                const sortByValueMap: any = { orderDate: 'date', customer: 'customer', totalValue: 'totalValue', status: 'status' };
+                                const sortByKey = sortByValueMap[col.key];
+                                const isSorted = filters?.sortBy === sortByKey;
+                                const sortOrder = filters?.sortOrder || 'desc';
 
                                 if (!isVisible) return null;
 
@@ -190,46 +199,67 @@ const OrderHistoryTable = ({
                                         onDragOver={handleDragOver}
                                         onDrop={(e) => handleDrop(e, col.key as string)}
                                         onDragEnd={() => setDraggedColumn(null)}
-                                        className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 cursor-grab active:cursor-grabbing hover:bg-slate-100 dark:hover:bg-slate-800 transition-all ${col.align || ''} ${draggedColumn === col.key ? 'opacity-20' : 'opacity-100'}`}
+                                        className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 transition-all ${col.align || ''} ${draggedColumn === col.key ? 'opacity-20' : 'opacity-100'}`}
                                     >
                                         <div className={`flex items-center gap-2 ${col.align === 'text-right' ? 'justify-end' : col.align === 'text-center' ? 'justify-center' : ''}`}>
-                                            <i className="bi bi-grip-vertical text-slate-300 dark:text-slate-700 mr-1" />
-                                            <span>{labelText}</span>
+                                            <div className="flex items-center group/header w-fit cursor-grab active:cursor-grabbing">
+                                                <i className="bi bi-grip-vertical text-slate-300 dark:text-slate-700 mr-1 opacity-0 group-hover/header:opacity-100 transition-opacity" />
+                                                <span>{labelText}</span>
+                                            </div>
+
+                                            {isSortable && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const newOrder = isSorted && sortOrder === 'desc' ? 'asc' : 'desc';
+                                                        onSort?.(sortByKey, newOrder);
+                                                    }}
+                                                    className={`ml-2 flex items-center transition-all ${isSorted ? 'text-blue-600 dark:text-blue-400 scale-150' : 'text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400'}`}
+                                                    title={isSorted ? (sortOrder === 'desc' ? 'Ordenando: Decrescente' : 'Ordenando: Crescente') : `Clique para ordenar por ${labelText}`}
+                                                >
+                                                    {isSorted ? (
+                                                        <i className={`bi ${sortOrder === 'desc' ? 'bi-sort-down' : 'bi-sort-up'} text-sm font-black`}></i>
+                                                    ) : (
+                                                        <i className="bi bi-arrow-down-up text-xs font-bold"></i>
+                                                    )}
+                                                </button>
+                                            )}
+
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onToggleColumn(col.key); }}
-                                                className="p-1 text-slate-300 dark:text-slate-600 hover:text-red-400 transition-colors rounded"
+                                                className="p-1 text-slate-400 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors rounded ml-1"
                                                 title={`Ocultar ${labelText}`}
                                             >
-                                                <i className="bi bi-eye-slash text-[10px]" />
+                                                <i className="bi bi-eye-slash text-sm" />
                                             </button>
                                         </div>
                                     </th>
                                 );
                             })}
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                    {orders.map((order) => (
-                        <OrderHistoryRow
-                            key={order.id}
-                            order={order}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            onRestore={onRestore}
-                            onPermanentDelete={onPermanentDelete}
-                            onAction={onAction}
-                            onStatusUpdate={onStatusUpdate}
-                            onViewDetails={onViewDetails}
-                            visibilitySettings={visibilitySettings}
-                            showTrash={showTrash}
-                            orderedColumnKeys={orderedColumns.map(c => c.key as string)}
-                            isSelected={selectedOrders.includes(order.id!)}
-                            onToggleSelection={() => onToggleSelection(order.id!)}
-                        />
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                        {orders.map((order) => (
+                            <OrderHistoryRow
+                                key={order.id}
+                                order={order}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                onRestore={onRestore}
+                                onPermanentDelete={onPermanentDelete}
+                                onAction={onAction}
+                                onStatusUpdate={onStatusUpdate}
+                                onViewDetails={onViewDetails}
+                                visibilitySettings={visibilitySettings}
+                                showTrash={showTrash}
+                                orderedColumnKeys={orderedColumns.map(c => c.key as string)}
+                                isSelected={selectedOrders.includes(order.id!)}
+                                onToggleSelection={() => onToggleSelection(order.id!)}
+                            />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

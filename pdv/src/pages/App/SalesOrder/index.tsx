@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import OrderHistoryList from "./OrderHistoryList";
 import OrderEditModal from "./OrderEditModal";
 import NewSaleOrder from "./NewSaleOrder";
+import AssistanceOrderModal from "./AssistanceOrderModal";
+import NewOrderDropdown from "./NewOrderDropdown";
 import Order, { VisibilitySettings } from "../../types/order.type";
 import OrderFilters from "./OrderFilters";
 
 const SalesOrder = () => {
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [orderModalType, setOrderModalType] = useState<'sale' | 'assistance' | null>(null);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
     const [filters, setFilters] = useState({
         dateRange: { start: "", end: "" },
@@ -34,6 +36,14 @@ const SalesOrder = () => {
 
     const toggleVisibility = (column: keyof VisibilitySettings) => {
         setVisibilitySettings(prev => ({ ...prev, [column]: !prev[column] }));
+    };
+
+    const handleSort = (sortBy: string, sortOrder: 'asc' | 'desc') => {
+        setFilters(prev => ({
+            ...prev,
+            sortBy: sortBy as any,
+            sortOrder
+        }));
     };
 
     const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false }), [filters]);
@@ -68,14 +78,7 @@ const SalesOrder = () => {
                     </div>
 
                     <div className="flex gap-4">
-                        <button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
-                            title="Iniciar novo pedido de venda"
-                        >
-                            <i className="bi bi-plus-lg text-lg xl:text-xl" />
-                            Novo Pedido
-                        </button>
+                        <NewOrderDropdown onSelect={(type) => setOrderModalType(type)} />
                     </div>
                 </div>
 
@@ -161,6 +164,7 @@ const SalesOrder = () => {
                             filters={activeFilters}
                             visibilitySettings={visibilitySettings}
                             onToggleColumn={toggleVisibility}
+                            onSort={handleSort}
                         />
                     </div>
                 </div>
@@ -205,6 +209,7 @@ const SalesOrder = () => {
                                     filters={trashFilters}
                                     visibilitySettings={visibilitySettings}
                                     onToggleColumn={toggleVisibility}
+                                    onSort={handleSort}
                                 />
                             </div>
                         </div>
@@ -212,20 +217,33 @@ const SalesOrder = () => {
                 </div>
             )}
 
-            {isAddModalOpen && (
+            {orderModalType === 'sale' && (
                 <NewSaleOrder
-                    onClose={() => setIsAddModalOpen(false)}
+                    onClose={() => setOrderModalType(null)}
                     onSaveSuccess={() => { }}
                 />
             )}
 
-            {editingOrder && (
+            {orderModalType === 'assistance' && (
+                <AssistanceOrderModal
+                    onClose={() => setOrderModalType(null)}
+                    onSaveSuccess={() => { }}
+                />
+            )}
+
+            {editingOrder && editingOrder.orderType === 'assistance' ? (
+                <AssistanceOrderModal
+                    order={editingOrder}
+                    onClose={() => setEditingOrder(null)}
+                    onSaveSuccess={() => { }}
+                />
+            ) : editingOrder ? (
                 <OrderEditModal
                     order={editingOrder}
                     onClose={() => setEditingOrder(null)}
                     onSaveSuccess={() => { }}
                 />
-            )}
+            ) : null}
         </div>
     );
 };
