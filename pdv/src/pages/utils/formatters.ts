@@ -94,14 +94,14 @@ export const capitalizeCustomerData = (data: CustomerData): CustomerData => {
     return {
         ...data,
         fullName: toTitleCase(data.fullName),
-        fullAddress: {
+        fullAddress: data.fullAddress ? {
             ...data.fullAddress,
             street: toTitleCase(data.fullAddress.street),
             complement: toTitleCase(data.fullAddress.complement),
             neighborhood: toTitleCase(data.fullAddress.neighborhood),
             city: toTitleCase(data.fullAddress.city),
             observation: toTitleCase(data.fullAddress.observation),
-        }
+        } : data.fullAddress
     };
 };
 

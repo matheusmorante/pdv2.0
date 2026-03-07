@@ -62,7 +62,10 @@ export const useSalesOrderForm = () => {
         autoSaveTimerRef.current = setTimeout(async () => {
             const draft = getOrderData();
             try {
-                await saveOrder(draft);
+                const savedId = await saveOrder(draft);
+                if (!currentOrderId && savedId) {
+                    setCurrentOrderId(savedId);
+                }
             } catch (error) {
                 console.error("Erro no salvamento automático:", error);
             }
@@ -83,7 +86,6 @@ export const useSalesOrderForm = () => {
         setCurrentOrderId(order.id);
         setStatus(order.status || 'draft');
         setErrors({});
-        toast.info("Pedido carregado para edição.");
     }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setCurrentOrderId, setStatus]);
 
     const handleCompleteOrder = useCallback(async (e?: React.MouseEvent) => {

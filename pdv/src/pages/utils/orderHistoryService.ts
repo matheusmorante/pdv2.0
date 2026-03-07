@@ -17,46 +17,48 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
     const q = query(collection(db, COLLECTION_NAME));
 
     return onSnapshot(q, (querySnapshot) => {
-        const orders: Order[] = [];
-        
+        try {
+            const orders: Order[] = [];
 
-        querySnapshot.forEach((doc) => {
-            const rawData = doc.data() as Order;
-            
-            // Auto-capitalize existing data
-            const data = capitalizeOrder(rawData);
-            
-            // If capitalization changed something, save back to DB quietly
-            if (JSON.stringify(rawData) !== JSON.stringify(data) && data.id) {
-                updateOrder(data.id, data).catch(console.error);
-            }
-            
+            querySnapshot.forEach((doc) => {
+                const rawData = doc.data() as Order;
+                try {
+                    const data = capitalizeOrder(rawData);
+                    orders.push(data);
+                } catch (e) {
+                    // If formatting one order fails, still push raw data
+                    console.warn("Erro ao formatar pedido:", doc.id, e);
+                    orders.push(rawData);
+                }
+            });
 
-            orders.push(data);
-        });
+            orders.sort((a, b) => {
+                // Sort by numerical ID if possible, otherwise date
+                const idA = parseInt(a.id || "0", 10);
+                const idB = parseInt(b.id || "0", 10);
+                if (!isNaN(idA) && !isNaN(idB)) return idB - idA;
+                return (b.date || "").localeCompare(a.date || "");
+            });
 
-        orders.sort((a, b) => {
-            // Sort by numerical ID if possible, otherwise date
-            const idA = parseInt(a.id || "0", 10);
-            const idB = parseInt(b.id || "0", 10);
-            if (!isNaN(idA) && !isNaN(idB)) return idB - idA;
-            return (b.date || "").localeCompare(a.date || "");
-        });
-
-        callback(orders);
+            callback(orders);
+        } catch (error) {
+            console.error("Erro ao processar pedidos do Firebase:", error);
+            callback([]);
+        }
     }, (error) => {
         console.error("Erro no listener do Firebase:", error);
         callback([]);
     });
 };
 
-export const saveOrder = async (order: Order): Promise<void> => {
+export const saveOrder = async (order: Order): Promise<string> => {
     if (order.id) {
         await updateOrder(order.id, order);
-        return;
+        return order.id;
     }
 
     try {
+        let newId = "";
         await runTransaction(db, async (transaction) => {
             const counterRef = doc(db, METADATA_COLLECTION, COUNTER_DOC);
             const counterSnap = await transaction.get(counterRef);
@@ -66,7 +68,7 @@ export const saveOrder = async (order: Order): Promise<void> => {
                 nextId = (counterSnap.data().current || 0) + 1;
             }
 
-            const newId = String(nextId);
+            newId = String(nextId);
             const newOrder = deepClean({
                 ...order,
                 id: newId,
@@ -76,6 +78,7 @@ export const saveOrder = async (order: Order): Promise<void> => {
             transaction.set(counterRef, { current: nextId });
             transaction.set(doc(db, COLLECTION_NAME, newId), newOrder);
         });
+        return newId;
     } catch (error) {
         console.error("Erro ao salvar o pedido sequencial: ", error);
         throw error;
@@ -96,9 +99,9 @@ export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Pr
 
 export const moveToTrash = async (id: string): Promise<void> => {
     try {
-        await updateOrder(id, { 
-            deleted: true, 
-            deletedAt: new Date().toLocaleString('pt-BR') 
+        await updateOrder(id, {
+            deleted: true,
+            deletedAt: new Date().toLocaleString('pt-BR')
         });
     } catch (error) {
         console.error("Erro ao mover para lixeira: ", error);
@@ -108,9 +111,9 @@ export const moveToTrash = async (id: string): Promise<void> => {
 
 export const restoreOrder = async (id: string): Promise<void> => {
     try {
-        await updateOrder(id, { 
+        await updateOrder(id, {
             deleted: false,
-            deletedAt: null 
+            deletedAt: null
         });
     } catch (error) {
         console.error("Erro ao restaurar o pedido: ", error);

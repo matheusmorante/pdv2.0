@@ -6,6 +6,8 @@ import { subscribeToPeople } from "../../utils/personService";
 import { getSettings } from "../../utils/settingsService";
 import { toast } from "react-toastify";
 import { compressImage } from "../../utils/imageUtils";
+import { uploadFile } from "../../utils/storageService";
+import { aiService } from "../../utils/aiService";
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -109,21 +111,28 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
 
         setLoading(true);
         try {
-            const compressedImages: string[] = [];
+            const uploadedUrls: string[] = [];
             for (const file of files) {
                 try {
-                    const compressedBase64 = await compressImage(file, { maxMB: 0.3, maxWidth: 1920 });
-                    compressedImages.push(compressedBase64);
+                    // 1. Compress the image first (returns Blob/File or Base64, depending on utility)
+                    // If compressImage returns base64, we need to convert to blob for storage uploadBytes
+                    // Let's assume we can upload the raw file for now, or use a blob
+                    const fileName = `${Date.now()}-${file.name}`;
+                    const path = `products/${fileName}`;
+
+                    const url = await uploadFile(file, path);
+                    uploadedUrls.push(url);
                 } catch (err) {
-                    // Error toast handled in utility
+                    console.error("Error uploading image:", err);
                 }
             }
 
-            if (compressedImages.length > 0) {
+            if (uploadedUrls.length > 0) {
                 setFormData(prev => ({
                     ...prev,
-                    images: [...(prev.images || []), ...compressedImages]
+                    images: [...(prev.images || []), ...uploadedUrls]
                 }));
+                toast.success(`${uploadedUrls.length} imagem(ns) enviada(s) com sucesso.`);
             }
         } finally {
             setLoading(false);
@@ -180,24 +189,13 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         const loadingToast = toast.loading("🤖 A IA está redigindo uma cópia persuasiva... Isso pode levar um minuto.");
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
-            const response = await fetch(`${apiUrl}/generate-description`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    productName: formData.description,
-                    category: formData.category,
-                    unitPrice: formData.unitPrice,
-                    promptTemplate: getSettings().aiPrompts.productDescription
-                })
+            const data = await aiService.generateDescription({
+                productName: formData.description,
+                category: formData.category || "Produtos",
+                unitPrice: formData.unitPrice || 0,
+                promptTemplate: getSettings().aiPrompts.productDescription
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || "Erro desconhecido na IA");
-            }
-
-            const data = await response.json();
             setFormData(prev => ({ ...prev, ecommerceDescription: data.description }));
             toast.update(loadingToast, { render: "Descrição gerada com IA! ✨", type: "success", isLoading: false, autoClose: 3000 });
         } catch (error: any) {

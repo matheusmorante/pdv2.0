@@ -96,7 +96,12 @@ export const useSalesOrderForm = () => {
         autoSaveTimerRef.current = setTimeout(async () => {
             const draft = getOrderData();
             try {
-                await saveOrder(draft);
+                const savedId = await saveOrder(draft);
+                // After first auto-save, update currentOrderId so all subsequent
+                // saves update the same doc instead of creating new ones.
+                if (!latestState.current.currentOrderId && savedId) {
+                    setCurrentOrderId(savedId);
+                }
             } catch (error) {
                 console.error("Erro no salvamento automático:", error);
             }
