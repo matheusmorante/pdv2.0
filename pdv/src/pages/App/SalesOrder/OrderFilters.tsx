@@ -44,7 +44,7 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
 
     return (
         <aside className="w-full bg-white dark:bg-slate-900 flex flex-col h-full overflow-y-auto transition-colors">
-            <div className="p-8 border-b border-slate-50 dark:border-slate-800 min-w-[320px]">
+            <div className="p-4 md:p-8 border-b border-slate-50 dark:border-slate-800">
                 <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
                     <i className="bi bi-filter-left text-blue-600 dark:text-blue-500"></i>
                     Filtros

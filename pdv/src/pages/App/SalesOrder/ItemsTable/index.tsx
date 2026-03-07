@@ -23,7 +23,7 @@ const ItemsTable = ({ items, setItems, summary, deliveryMethod, errors }: Props)
                     unitPrice: 0,
                     unitDiscount: 0,
                     discountType: 'fixed',
-                    handlingType: deliveryMethod === 'delivery' ? 'Entrega com montagem no local' : 'Retirada na loja – produto na caixa'
+                    handlingType: deliveryMethod === 'delivery' ? 'com montagem' : 'na caixa ( sem montagem)'
                 }
             ])
         })
@@ -35,8 +35,9 @@ const ItemsTable = ({ items, setItems, summary, deliveryMethod, errors }: Props)
 
                 <thead className="bg-slate-50/50 dark:bg-slate-800/30">
                     <tr>
-                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 min-w-[350px]">Descrição do Produto/Serviço</th>
-                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[180px]">Manuseio</th>
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 min-w-[260px]">Descrição do Produto/Serviço</th>
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[100px]">Modalidade</th>
+                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[240px]">Manuseio</th>
                         <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[80px]">Quant.</th>
                         <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[110px]">Preço Un.</th>
                         <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[120px]">Desconto Unitário</th>

@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^13.5.0",
     "firebase": "^12.10.0",
     "html2canvas": "^1.4.1",
+    "maplibre-gl": "^4.7.1",
     "mathjs": "^14.6.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -58,6 +59,12 @@
     "prop-types": "^15.8.1",
     "storybook": "^9.1.12",
     "tailwindcss": "^3.4.17",
+    "typescript": "^4.9.5",
     "webpack": "^5.102.1"
+  },
+  "overrides": {
+    "detect-port-alt": {
+      "debug": "^4.3.4"
+    }
   }
 }

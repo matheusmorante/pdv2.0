@@ -7,6 +7,7 @@ export type Item = {
     unitDiscount: number;
     discountType: DiscountType;
     handlingType: string;
+    deliveryMethod?: 'delivery' | 'pickup';
 }
 
 export type ItemsSummary = {

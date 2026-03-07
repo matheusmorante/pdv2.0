@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import Order from "../../types/pdvAction.type";
+import Order from "../../types/order.type";
+// ... (rest of imports keep same)
 import useItems from "./hooks/useItems";
 import useShipping from "./hooks/useShipping";
 import usePaymentsData from "./hooks/usePayments";
 import { useCustomerData } from "./hooks/useCustomerData";
-import { calcItemsSummary } from "./pdvUtils";
+import { calcItemsSummary } from "./salesOrderUtils";
 import { calcPaymentsSummary } from "../../utils/calculations";
 import { toast } from "react-toastify";
 import { saveOrder } from "../../utils/orderHistoryService";
@@ -13,7 +14,7 @@ import { dateNow } from "../../utils/formatters";
 import Shipping from "../../types/Shipping.type";
 import CustomerData from "../../types/customerData.type";
 
-export const usePdvForm = () => {
+export const useSalesOrderForm = () => {
     const { items, setItems } = useItems();
     const { shipping, setShipping } = useShipping();
     const { payments, setPayments } = usePaymentsData();
@@ -21,7 +22,7 @@ export const usePdvForm = () => {
     const [observation, setObservation] = useState("");
     const [seller, setSeller] = useState("");
     const [currentOrderId, setCurrentOrderId] = useState<string | undefined>(undefined);
-    const [status, setStatus] = useState<'draft' | 'scheduled' | 'fulfilled' | 'cancelled'>('draft');
+    const [status, setStatus] = useState<string>('draft');
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState<ValidationErrors>({});
 

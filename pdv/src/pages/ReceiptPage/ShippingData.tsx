@@ -14,14 +14,18 @@ const ShippingData = ({ shipping }: Props) => {
         <section className='h-[100px] w-[40%]'>
             <div>
                 <strong>Valor do frete: </strong>
-                <NumericFormat
-                    value={shipping.value}
-                    allowNegative={false}
-                    thousandSeparator="."
-                    prefix={"R$ "}
-                    decimalScale={2}
-                    decimalSeparator=","
-                />
+                {shipping.value === 0 ? (
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">FRETE GRÁTIS</span>
+                ) : (
+                        <NumericFormat
+                            value={shipping.value}
+                            allowNegative={false}
+                            thousandSeparator="."
+                            prefix={"R$ "}
+                            decimalScale={2}
+                            decimalSeparator=","
+                        />
+                )}
             </div>
             <div>
                 <strong>Data e periodo da entrega: </strong>

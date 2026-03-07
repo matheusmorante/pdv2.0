@@ -1,8 +1,9 @@
 import React from "react";
 import Order from "../../types/pdvAction.type";
 import ModalHeader from "./OrderDetailsModalComponents/ModalHeader";
-import { CustomerSection, ShippingSection, SchedulingSection } from "./OrderDetailsModalComponents/CustomerShippingInfo";
+import { CustomerSection, ShippingSection, SchedulingSection, ModalityLabelsSection, OrderTypeSection } from "./OrderDetailsModalComponents/CustomerShippingInfo";
 import { ItemsTable, FinancialSummary } from "./OrderDetailsModalComponents/ItemsFinancialInfo";
+import MapRoute from "../SalesOrder/ShippingComponents/MapRoute";
 
 interface Props {
     order: Order;
@@ -11,27 +12,50 @@ interface Props {
 
 const OrderDetailsModal = ({ order, onClose }: Props) => {
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in transition-colors duration-300">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 transition-colors duration-300">
+        <div
+            className="fixed inset-0 z-[110] flex items-center justify-center p-0 sm:p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in transition-colors duration-300"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white dark:bg-slate-900 w-full h-full sm:w-auto sm:h-auto sm:max-w-4xl max-h-none sm:max-h-[90vh] rounded-none sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border-0 sm:border border-slate-100 dark:border-slate-800 transition-colors duration-300"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <ModalHeader
                     reference={order.id?.slice(-8).toUpperCase() || "N/A"}
                     onClose={onClose}
                 />
 
-                <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-10 custom-scrollbar">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
                         {/* Left Column: Customer & Shipping */}
-                        <div className="space-y-10">
+                        <div className="space-y-8 sm:space-y-10">
                             <CustomerSection
                                 fullName={order.customerData?.fullName}
                                 phone={order.customerData?.phone}
                             />
+                            <ModalityLabelsSection
+                                deliveryMethod={order.shipping?.deliveryMethod}
+                            />
+                            <OrderTypeSection
+                                orderType={order.shipping?.orderType}
+                            />
                             <ShippingSection
                                 fullAddress={order.customerData?.fullAddress}
+                                destinationCoords={order.shipping?.destinationCoords}
                             />
                             <SchedulingSection
                                 scheduling={order.shipping?.scheduling}
                             />
+                            {order.shipping?.destinationCoords && (
+                                <div className="mt-8 flex flex-col gap-2">
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1 ml-1">Rota de Entrega</h4>
+                                    <MapRoute
+                                        destinationCoords={order.shipping.destinationCoords}
+                                        routeGeoJSON={order.shipping.routeGeoJSON}
+                                        className="h-64 w-full"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* Right Column: Items & Summary */}

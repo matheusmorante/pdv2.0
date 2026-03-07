@@ -1,4 +1,5 @@
 import Order from "../types/pdvAction.type";
+import { getSettings } from "./settingsService";
 import {
     stringifyFullAddress, stringifyFullAddressWithObservation,
     stringifyPayments, stringifyItemsWithValues, formatDate
@@ -31,7 +32,7 @@ ${stringifyFullAddressWithObservation(customer.fullAddress)}
 ${stringifyItemsWithValues(order.items)}
 
 *Valor do Frete:*
-R$ ${order.shipping.value}
+${order.shipping.value === 0 ? "*FRETE GRÁTIS*" : `R$ ${order.shipping.value}`}
 
 *Valor do Juros:*
 R$ ${order.paymentsSummary.totalPaymentsFee}
@@ -68,7 +69,7 @@ ${stringifyFullAddress(customer.fullAddress)}
 ${stringifyItemsWithValues(order.items)}
 
 *Valor do Frete:*
-R$ ${order.shipping.value}
+${order.shipping.value === 0 ? "*FRETE GRÁTIS*" : `R$ ${order.shipping.value}`}
 
 *Valor do Juros:*
 R$ ${order.paymentsSummary.totalPaymentsFee}
@@ -87,13 +88,12 @@ ${stringifyPayments(order.payments)}
 export const customerReviewsWhatsappUrl = (order: Order) => {
     const customer = order.customerData;
     const phone = customer.phone.replace(/[^0-9]/g, '');
-    const message = `
-Muito obrigado pela sua compra *${customer.fullName}*!
+    const settings = getSettings();
+    const reviewUrl = settings.googleReviewUrl || 'https://g.page/r/CctxeFYzY2o8EBE/review';
+    const message = `Muito obrigado pela sua compra!
 
-Quando puder, avalie a sua compra para que possamos estar sempre melhorando a nossa qualidade. Para isso, clique no link abaixo:
-https://g.page/r/CctxeFYzY2o8EBE/review.
+Quando puder, avalie a sua compra e o atendimento para que possamos estar sempre melhorando a nossa qualidade. Para isso, clique no link abaixo:
+${reviewUrl}`;
 
-`;
-
-    return `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }

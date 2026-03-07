@@ -7,7 +7,67 @@ export const actionsMap: Record<PdvAction, (order: Order) => void> = {
         console.log("Gerando Recibo para o pedido:", order.id);
     },
     'PRINT_SHIPPING_ORDER': (order) => {
-        console.log("Gerando Pedido de Entrega para o pedido:", order.id);
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+
+        const itemsHtml = order.items.map(item => {
+            const unitPrice = item.unitPrice || 0;
+            const quantity = item.quantity || 0;
+            const discount = item.unitDiscount || 0;
+            const total = (unitPrice - discount) * quantity;
+            
+            return `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.description}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${quantity}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">R$ ${unitPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                </tr>
+            `;
+        }).join('');
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Pedido de Venda - ${order.id}</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; color: #333; }
+                        .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        th { background: #f4f4f4; text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+                        .footer { margin-top: 30px; text-align: right; font-weight: bold; font-size: 1.2em; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Pedido de Venda</h1>
+                        <p>ID: ${order.id}</p>
+                        <p>Data: ${order.date}</p>
+                        <p>Cliente: ${order.customerData?.fullName || 'Não informado'}</p>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th style="text-align: center;">Qtd</th>
+                                <th style="text-align: right;">V. Unit</th>
+                                <th style="text-align: right;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        Total do Pedido: R$ ${(order.paymentsSummary.totalOrderValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); window.close(); };
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
     },
     'PRINT_WARRANTY_TERM': (order) => {
         console.log("Gerando Termo de Garantia para o pedido:", order.id);

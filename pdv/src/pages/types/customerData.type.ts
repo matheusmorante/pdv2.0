@@ -1,8 +1,9 @@
 import FullAddress from "./fullAddress.type"
 
 type CustomerData = {
-    fullName: '',
+    fullName: string,
     phone: string,
+    noPhone?: boolean,
     fullAddress: FullAddress
 }
 

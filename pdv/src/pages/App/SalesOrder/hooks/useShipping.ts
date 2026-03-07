@@ -15,6 +15,7 @@ const useShipping = () => {
                     endTime: "",
                     type: "range"
                 },
+                autoCalculateValue: false
             }
         );
 

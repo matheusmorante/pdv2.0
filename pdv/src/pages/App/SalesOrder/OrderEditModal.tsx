@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from "react";
-import PdvFormSection from "./PdvFormSection";
-import { usePdvForm } from "./usePdvForm";
-import Order from "../../types/pdvAction.type";
+import SalesOrderFormSection from "./SalesOrderFormSection";
+import { useSalesOrderForm } from "./useSalesOrderForm";
+import Order from "../../types/order.type";
 import { updateOrder } from "../../utils/orderHistoryService";
 import { toast } from "react-toastify";
 
@@ -12,14 +12,17 @@ interface OrderEditModalProps {
 }
 
 const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) => {
-    const form = usePdvForm();
+    const form = useSalesOrderForm();
 
     // Load order data into form on mount
     useEffect(() => {
-        if (order) {
+        if (order && order.id) {
             form.actions.loadOrderForEditing(order);
         }
-    }, [order, form.actions]);
+        // We only want to load the order when the component mounts or the order ID changes.
+        // Dependent on form.actions.loadOrderForEditing which is memoized and stable.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [order?.id, form.actions.loadOrderForEditing]);
 
     const handleUpdate = useCallback(async (e?: React.MouseEvent) => {
         e?.preventDefault();
@@ -36,8 +39,14 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
     }, [form.state.currentOrder, order.id, order.date, onSaveSuccess, onClose]);
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
-            <div className="bg-white dark:bg-slate-950 w-full max-w-[95vw] h-[95vh] rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-white/20 dark:border-slate-800/50">
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white dark:bg-slate-950 w-full h-full md:w-[95vw] md:h-[95vh] rounded-none md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border-0 md:border border-white/20 dark:border-slate-800/50"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Modal Header */}
                 <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 transition-colors duration-300">
                     <div className="flex items-center gap-5">
@@ -61,7 +70,7 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
 
                 {/* Modal Content - Internal Scroll handled by PdvFormSection */}
                 <div className="flex-1 overflow-hidden bg-white dark:bg-slate-900">
-                    <PdvFormSection form={{
+                    <SalesOrderFormSection form={{
                         ...form,
                         actions: {
                             ...form.actions,

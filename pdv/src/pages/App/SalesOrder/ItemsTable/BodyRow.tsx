@@ -8,6 +8,8 @@ import ToggleValueTypeBtn from '../ToggleValueTypeBtn';
 import CurrencyDisplay from '../../../../components/CurrencyDisplay';
 import { ValidationErrors } from '../../../utils/validations';
 
+import { getSettings } from '../../../utils/settingsService';
+
 interface Props {
     item: Item,
     onChange: (idx: number, key: keyof Item, value: number | string) => void,
@@ -21,6 +23,8 @@ interface Props {
 const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, deliveryMethod, errors }: Props) => {
     const errorKey = `item_${idx}_description`;
     const error = errors[errorKey];
+    const settings = getSettings();
+    const currentModality = item.deliveryMethod || deliveryMethod;
 
     return (
         <tr key={idx} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0">
@@ -44,23 +48,30 @@ const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, delivery
             <td className="px-4 py-2">
                 <select
                     className="w-full bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-1 py-1.5 outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
+                    value={currentModality}
+                    onChange={(e) => {
+                        const newModality = e.target.value as 'delivery' | 'pickup';
+                        onChange(idx, 'deliveryMethod', newModality);
+                        // Auto-update handling type to match first option of the new delivery method
+                        const options = newModality === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions;
+                        if (options.length > 0) {
+                            onChange(idx, 'handlingType', options[0]);
+                        }
+                    }}
+                >
+                    <option value="delivery" className="dark:bg-slate-900">{settings.modalityLabels.delivery}</option>
+                    <option value="pickup" className="dark:bg-slate-900">{settings.modalityLabels.pickup}</option>
+                </select>
+            </td>
+            <td className="px-4 py-2">
+                <select
+                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-1 py-1.5 outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
                     value={item.handlingType}
                     onChange={(e) => onChange(idx, 'handlingType', e.target.value)}
                 >
-                    {deliveryMethod === 'delivery' ? (
-                        <>
-                            <option value="Entrega com montagem no local" className="dark:bg-slate-900">Entrega com montagem</option>
-                            <option value="Entrega na caixa (montagem por conta do cliente)" className="dark:bg-slate-900">Entrega na caixa (cliente)</option>
-                            <option value="Entrega de item do mostruário – desmontar na loja e montar no local" className="dark:bg-slate-900">Mostruário p/ montar</option>
-                            <option value="Entrega de item do mostruário – levar montado" className="dark:bg-slate-900">Mostruário montado</option>
-                        </>
-                    ) : (
-                        <>
-                            <option value="Retirada na loja – produto na caixa" className="dark:bg-slate-900">Retirada na caixa</option>
-                            <option value="Retirada na loja – item do mostruário montado" className="dark:bg-slate-900">Retirada mostruário montado</option>
-                            <option value="Retirada na loja – item do mostruário desmontado" className="dark:bg-slate-900">Retirada mostruário desmontado</option>
-                        </>
-                    )}
+                    {(currentModality === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions).map(opt => (
+                        <option key={opt} value={opt} className="dark:bg-slate-900">{opt}</option>
+                    ))}
                 </select>
             </td>
             <td className="px-4 py-2">

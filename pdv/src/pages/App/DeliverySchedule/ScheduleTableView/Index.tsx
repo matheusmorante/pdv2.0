@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useRef } from "react";
 import Order from "../../../types/pdvAction.type";
 import TableCell from "../ScheduleTableViewComponents/TableCell";
 import { calculateLanes, getHour } from "../ScheduleTableViewComponents/laneUtils";
+import { getSettings } from "../../../utils/settingsService";
+import { useAutoScroll } from "../../../utils/useAutoScroll";
 
 interface Props {
     schedule: Record<string, Order[]>;
@@ -11,9 +13,19 @@ interface Props {
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 8); // 8:00 to 20:00
 
 const ScheduleTableView = ({ schedule, onOrderClick }: Props) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const settings = getSettings();
+
+    useAutoScroll(containerRef, {
+        direction: 'horizontal',
+        threshold: settings.autoScroll.threshold,
+        maxSpeed: settings.autoScroll.speed,
+        enabled: settings.autoScroll.scheduleTable
+    });
+
     return (
         <div className="bg-white dark:bg-slate-950 p-2 transition-colors duration-300">
-            <div className="overflow-x-auto rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none">
+            <div ref={containerRef} className="overflow-x-auto rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none custom-scrollbar">
                 <table className="w-full border-collapse min-w-[1200px]">
                     <thead>
                         <tr className="bg-slate-900 dark:bg-slate-950 text-white">

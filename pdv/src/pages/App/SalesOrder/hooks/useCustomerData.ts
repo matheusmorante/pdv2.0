@@ -5,6 +5,7 @@ export function useCustomerData() {
     const [customerData, setCustomerData] = useState<CustomerData>({
         fullName: '',
         phone: '',
+        noPhone: false,
         fullAddress: {
             cep: '',
             street: '',

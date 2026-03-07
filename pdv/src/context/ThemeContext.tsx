@@ -1,18 +1,23 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getSettings } from '../pages/utils/settingsService';
 
 type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
     theme: Theme;
     toggleTheme: () => void;
+    setTheme: (t: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [theme, setTheme] = useState<Theme>(() => {
+    const [theme, setThemeState] = useState<Theme>(() => {
         const saved = localStorage.getItem('theme');
-        return (saved as Theme) || 'light';
+        if (saved === 'light' || saved === 'dark') return saved;
+        // Fall back to settings default
+        const settings = getSettings();
+        return settings.defaultTheme || 'light';
     });
 
     useEffect(() => {
@@ -23,11 +28,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [theme]);
 
     const toggleTheme = () => {
-        setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+        setThemeState((prev) => (prev === 'light' ? 'dark' : 'light'));
+    };
+
+    const setTheme = (t: Theme) => {
+        setThemeState(t);
     };
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
             {children}
         </ThemeContext.Provider>
     );

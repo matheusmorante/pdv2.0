@@ -10,14 +10,16 @@ interface Props {
 const CurrencyOrPercentInput = ({ value, onChange, prefix, suffix }: Props) => {
     return (
         <NumericFormat
-            className="w-full text-right bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-2 py-1 outline-none transition-all text-sm"
+            className="w-full min-w-[80px] text-right bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-2 py-1 outline-none transition-all text-sm"
             value={value}
+            allowNegative={false}
             thousandSeparator="."
             decimalScale={2}
             decimalSeparator=","
             fixedDecimalScale
             prefix={prefix}
             suffix={suffix}
+            onFocus={(e) => e.target.select()}
             onValueChange={(values: NumberFormatValues) => onChange(values.floatValue ?? 0)}
         />
     )

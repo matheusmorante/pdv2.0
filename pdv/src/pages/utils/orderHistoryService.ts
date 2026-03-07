@@ -1,6 +1,8 @@
 import Order from "../types/pdvAction.type";
 import { db } from "./firebaseConfig";
 import { collection, doc, setDoc, deleteDoc, query, onSnapshot, runTransaction } from "firebase/firestore";
+import { getSettings } from "./settingsService";
+import { capitalizeOrder } from "./formatters";
 
 const COLLECTION_NAME = "orders";
 const METADATA_COLLECTION = "metadata";
@@ -11,8 +13,24 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
 
     return onSnapshot(q, (querySnapshot) => {
         const orders: Order[] = [];
+        const settings = getSettings();
+        
+        const today = new Date();
+        const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
+
         querySnapshot.forEach((doc) => {
-            orders.push(doc.data() as Order);
+            const rawData = doc.data() as Order;
+            
+            // Auto-capitalize existing data
+            const data = capitalizeOrder(rawData);
+            
+            // If capitalization changed something, save back to DB quietly
+            if (JSON.stringify(rawData) !== JSON.stringify(data) && data.id) {
+                updateOrder(data.id, data).catch(console.error);
+            }
+            
+
+            orders.push(data);
         });
 
         orders.sort((a, b) => {
@@ -75,11 +93,38 @@ export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Pr
     }
 };
 
-export const deleteOrder = async (id: string): Promise<void> => {
+export const moveToTrash = async (id: string): Promise<void> => {
     try {
-        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        await updateOrder(id, { 
+            deleted: true, 
+            deletedAt: new Date().toLocaleString('pt-BR') 
+        });
     } catch (error) {
-        console.error("Erro ao deletar o pedido: ", error);
+        console.error("Erro ao mover para lixeira: ", error);
         throw error;
     }
 };
+
+export const restoreOrder = async (id: string): Promise<void> => {
+    try {
+        await updateOrder(id, { 
+            deleted: false,
+            deletedAt: undefined 
+        });
+    } catch (error) {
+        console.error("Erro ao restaurar o pedido: ", error);
+        throw error;
+    }
+};
+
+export const permanentDeleteOrder = async (id: string): Promise<void> => {
+    try {
+        await deleteDoc(doc(db, COLLECTION_NAME, id));
+    } catch (error) {
+        console.error("Erro ao deletar permanentemente o pedido: ", error);
+        throw error;
+    }
+};
+
+/** @deprecated Use moveToTrash instead */
+export const deleteOrder = moveToTrash;

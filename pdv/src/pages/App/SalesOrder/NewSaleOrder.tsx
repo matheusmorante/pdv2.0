@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
-import PdvFormSection from "./PdvFormSection";
-import { usePdvForm } from "./usePdvForm";
+import SalesOrderFormSection from "./SalesOrderFormSection";
+import { useSalesOrderForm } from "./useSalesOrderForm";
 
 interface NewSaleOrderProps {
     onClose: () => void;
@@ -8,7 +8,7 @@ interface NewSaleOrderProps {
 }
 
 const NewSaleOrder = ({ onClose, onSaveSuccess }: NewSaleOrderProps) => {
-    const form = usePdvForm();
+    const form = useSalesOrderForm();
 
     // Wrap handleSaveOrder to include onClose and onSaveSuccess
     const originalHandleSaveOrder = form.actions.handleSaveOrder;
@@ -20,8 +20,14 @@ const NewSaleOrder = ({ onClose, onSaveSuccess }: NewSaleOrderProps) => {
     }, [originalHandleSaveOrder, onSaveSuccess, onClose]);
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
-            <div className="bg-white w-full max-w-[95vw] h-[95vh] rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-white/20">
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white w-full h-full md:w-[95vw] md:h-[95vh] rounded-none md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border-0 md:border md:border-white/20"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Modal Header */}
                 <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <div className="flex items-center gap-4">
@@ -45,7 +51,7 @@ const NewSaleOrder = ({ onClose, onSaveSuccess }: NewSaleOrderProps) => {
 
                 {/* Modal Content - Internal Scroll handled by PdvFormSection */}
                 <div className="flex-1 overflow-hidden bg-white dark:bg-slate-900">
-                    <PdvFormSection form={{
+                    <SalesOrderFormSection form={{
                         ...form,
                         actions: {
                             ...form.actions,

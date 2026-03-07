@@ -1,6 +1,7 @@
 import CustomerData from "../types/customerData.type"
 import { Item } from "../types/items.type";
 import { Payment } from "../types/payments.type";
+import Order from "../types/order.type";
 import { calcItemTotalValue, calcPaymentTotalValue } from "./calculations";
 
 export const stringifyFullAddress = (
@@ -83,4 +84,34 @@ export const formatCurrency = (value: number) => {
         style: "currency",
         currency: "BRL"
     }).format(value);
+};
+
+export const capitalizeCustomerData = (data: CustomerData): CustomerData => {
+    if (!data) return data;
+    
+    return {
+        ...data,
+        fullName: toTitleCase(data.fullName),
+        fullAddress: {
+            ...data.fullAddress,
+            street: toTitleCase(data.fullAddress.street),
+            complement: toTitleCase(data.fullAddress.complement),
+            neighborhood: toTitleCase(data.fullAddress.neighborhood),
+            city: toTitleCase(data.fullAddress.city),
+            observation: toTitleCase(data.fullAddress.observation),
+        }
+    };
+};
+
+export const capitalizeOrder = (order: Order): Order => {
+    if (!order) return order;
+    
+    return {
+        ...order,
+        customerData: capitalizeCustomerData(order.customerData),
+        items: order.items?.map(item => ({
+            ...item,
+            description: toTitleCase(item.description)
+        }))
+    };
 };

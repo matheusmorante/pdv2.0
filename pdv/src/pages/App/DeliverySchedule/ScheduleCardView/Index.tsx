@@ -1,6 +1,8 @@
 import React from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import Order from "../../../types/pdvAction.type";
+import { getSettings } from "../../../utils/settingsService";
+import { useAutoScroll } from "../../../utils/useAutoScroll";
 import {
     stringifyFullAddressWithObservation,
     stringifyItemsWithValues,
@@ -16,6 +18,7 @@ interface Props {
  * Renders an individual delivery order as a draggable card
  */
 const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index: number; onOrderClick: (order: Order) => void }) => {
+    const settings = getSettings();
     const { scheduling } = order.shipping;
     const isRange = scheduling.type === "range";
     const displayTime = isRange
@@ -58,6 +61,24 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                         {isRange && (
                             <span className="text-[9px] uppercase font-black bg-blue-600 dark:bg-blue-500 text-white px-3 py-1 rounded-full tracking-widest shadow-sm">
                                 Período
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Modalidade & Manuseio Labels */}
+                    <div className="flex flex-wrap gap-2 px-5 pt-4">
+                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border ${order.shipping?.deliveryMethod === 'pickup'
+                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
+                            : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'}`}
+                        >
+                            <i className={`bi ${order.shipping?.deliveryMethod === 'pickup' ? 'bi-hand-index-thumb-fill' : 'bi-truck'} mr-1.5`} />
+                            {order.shipping?.deliveryMethod === 'pickup' ? settings.modalityLabels.pickup : settings.modalityLabels.delivery}
+                        </span>
+
+                        {order.shipping?.orderType && (
+                            <span className="text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                <i className="bi bi-box-seam-fill mr-1.5" />
+                                {order.shipping.orderType}
                             </span>
                         )}
                     </div>
@@ -107,9 +128,19 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
  * Main component for the Card Visualization of the Delivery Schedule
  */
 const ScheduleCardView = ({ schedule, handleDragEnd, onOrderClick }: Props) => {
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const settings = getSettings();
+
+    useAutoScroll(containerRef, {
+        direction: 'vertical',
+        threshold: settings.autoScroll.threshold,
+        maxSpeed: settings.autoScroll.speed,
+        enabled: settings.autoScroll.scheduleCards
+    });
+
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="flex flex-col gap-12">
+            <div ref={containerRef} className="flex flex-col gap-12 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
                 {Object.entries(schedule).map(([date, orders]) => (
                     <div key={date} className="w-full">
                         {/* Date Divider */}

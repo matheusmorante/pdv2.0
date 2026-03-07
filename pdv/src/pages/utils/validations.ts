@@ -45,7 +45,7 @@ export const validateCustomerData = (customer: CustomerData): ValidationErrors =
     const errors: ValidationErrors = {};
 
     if (!customer.fullName) errors['customer_fullName'] = "Nome completo é obrigatório.";
-    if (!customer.phone) errors['customer_phone'] = "Celular/WhatsApp é obrigatório.";
+    if (!customer.noPhone && !customer.phone) errors['customer_phone'] = "Celular/WhatsApp é obrigatório.";
 
     const addr = customer.fullAddress;
     if (!addr.street) errors['customer_street'] = "Rua é obrigatória.";

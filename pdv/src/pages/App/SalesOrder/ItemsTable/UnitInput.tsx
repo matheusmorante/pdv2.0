@@ -17,6 +17,7 @@ const UnitInput = ({ value, onChange }: Props) => {
             decimalScale={0}
             decimalSeparator=","
             fixedDecimalScale
+            onFocus={(e) => e.target.select()}
             onValueChange={
                 (values: NumberFormatValues) => onChange(values.floatValue ?? 1)
             }
