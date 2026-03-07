@@ -38,7 +38,7 @@ export default function Settings(): any {
         if (settings.defaultTheme !== (theme as any)) {
             setSettings(prev => ({ ...prev, defaultTheme: theme as 'light' | 'dark' }));
         }
-    }, [theme]);
+    }, [theme, settings.defaultTheme]);
 
     const handleChange = useCallback((path: string, value: any) => {
         if (path === 'defaultTheme') {

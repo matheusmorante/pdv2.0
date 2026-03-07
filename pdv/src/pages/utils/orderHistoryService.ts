@@ -1,7 +1,6 @@
 import Order from "../types/pdvAction.type";
 import { db } from "./firebaseConfig";
 import { collection, doc, setDoc, deleteDoc, query, onSnapshot, runTransaction } from "firebase/firestore";
-import { getSettings } from "./settingsService";
 import { capitalizeOrder } from "./formatters";
 
 const COLLECTION_NAME = "orders";
