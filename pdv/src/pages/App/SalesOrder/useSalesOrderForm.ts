@@ -168,6 +168,36 @@ export const useSalesOrderForm = () => {
         }
     }, [customerData.fullAddress, shipping.autoCalculateValue, handleAutoCalculateDistance]);
 
+    const handleSaveOrder = useCallback(async (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+
+        const orderData = getOrderData('draft'); // Save as draft
+        const validationErrors = validateOrder(orderData); // Get actual error object
+
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            toast.error("Existem campos obrigatórios não preenchidos para salvar como rascunho.");
+            return;
+        }
+
+        if (latestState.current.isSaving) return;
+        setIsSaving(true);
+        setErrors({});
+
+        try {
+            const savedId = await saveOrder(orderData);
+            if (!latestState.current.currentOrderId && savedId) {
+                setCurrentOrderId(savedId);
+            }
+            setStatus('draft');
+            toast.success("Pedido salvo como rascunho!");
+        } catch (error) {
+            toast.error("Erro ao salvar pedido como rascunho.");
+        } finally {
+            setIsSaving(false);
+        }
+    }, [getOrderData]);
+
     const handleCompleteOrder = useCallback(async (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
 
@@ -204,7 +234,7 @@ export const useSalesOrderForm = () => {
     const currentOrder = useMemo((): Order => ({
         id: currentOrderId,
         orderType: 'sale',
-        status: currentOrderId ? 'scheduled' : 'draft',
+        status: status as any,
         items,
         itemsSummary,
         shipping,
@@ -214,7 +244,7 @@ export const useSalesOrderForm = () => {
         observation,
         seller,
         date: dateNow(),
-    }), [currentOrderId, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller]);
+    }), [currentOrderId, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, status]);
 
     const isValidForCompletion = useMemo(() => validateBase(getOrderData('scheduled')), [getOrderData]);
 
@@ -274,6 +304,7 @@ export const useSalesOrderForm = () => {
         handleCompleteOrder,
         clearForm,
         setErrors,
+        validateOrder,
     }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, loadOrderForEditing, handleAutoCalculateDistance, handleCompleteOrder, clearForm]);
 
     return { state, actions };

@@ -26,8 +26,18 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
 
     const handleUpdate = useCallback(async (e?: React.MouseEvent) => {
         e?.preventDefault();
+
+        const updatedOrder = { ...form.state.currentOrder, id: order.id, date: order.date };
+
+        // Validate before updating
+        const validationErrors = form.actions.validateOrder(updatedOrder);
+        if (Object.keys(validationErrors).length > 0) {
+            form.actions.setErrors(validationErrors);
+            toast.error("Existem campos obrigatórios não preenchidos.");
+            return;
+        }
+
         try {
-            const updatedOrder = { ...form.state.currentOrder, id: order.id, date: order.date };
             await updateOrder(order.id!, updatedOrder);
             toast.success("Pedido atualizado com sucesso!");
             onSaveSuccess();
@@ -36,7 +46,7 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
             console.error("Erro ao atualizar pedido:", error);
             toast.error("Falha ao atualizar pedido.");
         }
-    }, [form.state.currentOrder, order.id, order.date, onSaveSuccess, onClose]);
+    }, [form.actions, form.state.currentOrder, order.id, order.date, onSaveSuccess, onClose]);
 
     return (
         <div

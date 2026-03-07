@@ -125,7 +125,8 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                 currentOrder={state.currentOrder}
                 totalOrderValue={state.paymentsSummary.totalOrderValue}
                 isSaving={state.isSaving}
-                onCompleteOrder={actions.handleCompleteOrder}
+                onCompleteOrder={actions.handleSaveOrder}
+                buttonLabel={state.currentOrderId ? "Salvar Alterações" : "Finalizar"}
             />
         </form>
     );

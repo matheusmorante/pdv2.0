@@ -7,9 +7,10 @@ interface FormFooterProps {
     totalOrderValue: number;
     isSaving: boolean;
     onCompleteOrder: (e?: React.MouseEvent) => void;
+    buttonLabel?: string;
 }
 
-const FormFooter = ({ currentOrder, totalOrderValue, isSaving, onCompleteOrder }: FormFooterProps) => (
+const FormFooter = ({ currentOrder, totalOrderValue, isSaving, onCompleteOrder, buttonLabel }: FormFooterProps) => (
     <div className="border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md py-4 px-8 transition-colors duration-300 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] dark:shadow-none shrink-0">
         <div className="max-w-[1400px] mx-auto">
             <div className="bg-slate-50/50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 p-4 px-6 md:px-8 rounded-3xl shadow-sm flex flex-row items-center justify-between gap-6 transition-colors duration-300">
@@ -42,7 +43,7 @@ const FormFooter = ({ currentOrder, totalOrderValue, isSaving, onCompleteOrder }
                         ) : (
                             <>
                                 <i className="bi bi-check2-circle text-lg" />
-                                Finalizar
+                                {buttonLabel || "Finalizar"}
                             </>
                         )}
                     </button>
