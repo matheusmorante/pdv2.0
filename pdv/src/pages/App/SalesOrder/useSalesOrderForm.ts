@@ -29,7 +29,7 @@ export const useSalesOrderForm = () => {
     const [errors, setErrors] = useState<ValidationErrors>({});
 
     // Auto-save control
-    const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const autoSaveTimerRef = useRef<any>(null);
     const isInitialMount = useRef(true);
 
     const itemsSummary = calcItemsSummary(items);
