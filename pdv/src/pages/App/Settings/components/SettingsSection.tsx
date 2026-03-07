@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from 'react';
 
 interface SettingsSectionProps {
     id: string;
@@ -8,7 +8,7 @@ interface SettingsSectionProps {
     children: React.ReactNode;
 }
 
-const SettingsSection: React.FC<SettingsSectionProps> = ({ id, title, icon, isVisible, children }) => {
+export default function SettingsSection({ id, title, icon, isVisible, children }: SettingsSectionProps) {
     if (!isVisible) return null;
 
     return (
@@ -24,6 +24,6 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ id, title, icon, isVi
             </div>
         </section>
     );
-};
+}
 
-export default SettingsSection;
+

@@ -1,3 +1,4 @@
+/** @jsxImportSource react */
 import React from "react";
 import { AppSettings } from "../../../utils/settingsService";
 
@@ -6,7 +7,7 @@ interface Props {
     onChange: (path: string, value: any) => void;
 }
 
-const HandlingSection: React.FC<Props> = ({ settings, onChange }) => {
+export default function HandlingSection({ settings, onChange }: Props): any {
     const renderOptionList = (title: string, options: string[], path: string) => (
         <div className="p-8">
             <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-6 block">{title}</h5>
@@ -68,6 +69,4 @@ const HandlingSection: React.FC<Props> = ({ settings, onChange }) => {
             )}
         </div>
     );
-};
-
-export default HandlingSection;
+}

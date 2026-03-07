@@ -6,7 +6,7 @@ interface Props {
     onChange: (path: string, value: any) => void;
 }
 
-const AppearanceSection: React.FC<Props> = ({ settings, onChange }) => {
+export default function AppearanceSection({ settings, onChange }: Props): any {
     return (
         <div className="p-8 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -35,6 +35,5 @@ const AppearanceSection: React.FC<Props> = ({ settings, onChange }) => {
             </div>
         </div>
     );
-};
+}
 
-export default AppearanceSection;

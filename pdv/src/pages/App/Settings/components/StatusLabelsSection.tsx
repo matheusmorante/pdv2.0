@@ -1,3 +1,4 @@
+/** @jsxImportSource react */
 import React from "react";
 import { AppSettings, OrderStatusConfig } from "../../../utils/settingsService";
 
@@ -15,7 +16,7 @@ const COLOR_OPTIONS = [
     { value: 'purple', dot: 'bg-purple-500', hover: 'hover:bg-purple-100 dark:hover:bg-purple-900/40' },
 ] as const;
 
-const StatusLabelsSection: React.FC<Props> = ({ settings, onChange }) => {
+export default function StatusLabelsSection({ settings, onChange }: Props): any {
     const statuses = settings.orderStatuses || [];
 
     const updateStatus = (index: number, changes: Partial<OrderStatusConfig>) => {
@@ -129,6 +130,4 @@ const StatusLabelsSection: React.FC<Props> = ({ settings, onChange }) => {
             </div>
         </div>
     );
-};
-
-export default StatusLabelsSection;
+}
