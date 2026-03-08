@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { subscribeToOrders } from '../../utils/orderHistoryService';
 import Order from '../../types/order.type';
 
-export type Period = 'custom' | 'today' | 'week' | 'month' | 'semester' | 'year';
+export type Period = 'custom' | 'today' | 'week' | 'month' | 'last_month' | 'last_semester' | 'year';
 
 const parsePTBRDate = (dateStr: string): Date | null => {
     try {
@@ -53,10 +53,15 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
                     return diff <= 7 * 24 * 60 * 60 * 1000;
                 }
                 case 'month': return oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
-                case 'semester':
-                    const currentHalf = now.getMonth() < 6 ? 0 : 1;
-                    const oHalf = oDate.getMonth() < 6 ? 0 : 1;
-                    return oHalf === currentHalf && oDate.getFullYear() === now.getFullYear();
+                case 'last_month': {
+                    const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    return oDate.getMonth() === lm.getMonth() && oDate.getFullYear() === lm.getFullYear();
+                }
+                case 'last_semester': {
+                    const startDate = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+                    const endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                    return oDate >= startDate && oDate <= endDate;
+                }
                 case 'year': return oDate.getFullYear() === now.getFullYear();
                 case 'custom':
                     if (customStartDate && customEndDate) {
@@ -91,12 +96,17 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
     }, [filteredOrders]);
 
     const salesOverTime = useMemo(() => {
-        const days = period === 'year' || period === 'semester' ? 12 : 7;
-        const lastDays = Array.from({ length: days }, (_, i) => {
+        const isMonthlyChart = period === 'year' || period === 'last_semester';
+        const numDataPoints = period === 'year' ? 12 : period === 'last_semester' ? 6 : (period === 'last_month' || period === 'month' ? 30 : 7);
+        const lastDays = Array.from({ length: numDataPoints }, (_, i) => {
             const date = new Date();
-            if (period === 'year' || period === 'semester') {
-                date.setMonth(date.getMonth() - i);
+            if (isMonthlyChart) {
+                const shift = period === 'last_semester' ? 1 : 0;
+                date.setMonth(date.getMonth() - i - shift);
                 return `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+            }
+            if (period === 'last_month') {
+                date.setDate(0); 
             }
             date.setDate(date.getDate() - i);
             const d = String(date.getDate()).padStart(2, '0');
@@ -116,7 +126,7 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
             const total = dayOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
 
             let label = dateStr;
-            if (period === 'year' || period === 'semester') {
+            if (period === 'year' || period === 'last_semester') {
                 const [m] = dateStr.split('/');
                 label = months[parseInt(m) - 1];
             } else {

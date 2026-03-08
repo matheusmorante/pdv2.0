@@ -222,7 +222,7 @@ export const subscribeToSettings = (callback: (settings: AppSettings) => void) =
         .select('data')
         .eq('id', SETTINGS_ID)
         .single()
-        .then(({ data, error }) => {
+        .then(({ data, error }: { data: any, error: any }) => {
             if (data && !error) {
                 const settings = data.data as AppSettings;
                 localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -233,7 +233,7 @@ export const subscribeToSettings = (callback: (settings: AppSettings) => void) =
     const channel = supabase.channel('settings_changes')
         .on('postgres_changes', 
             { event: '*', schema: 'public', table: SUPABASE_SETTINGS_TABLE, filter: `id=eq.${SETTINGS_ID}` }, 
-            (payload) => {
+            (payload: any) => {
                 if (payload.new) {
                     const settings = (payload.new as any).data as AppSettings;
                     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));

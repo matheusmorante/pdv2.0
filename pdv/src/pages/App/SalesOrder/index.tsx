@@ -13,7 +13,7 @@ const SalesOrder = () => {
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
     const [filters, setFilters] = useState({
         dateRange: { start: "", end: "" },
-        dateType: "personalizado" as "personalizado" | "hoje" | "esse_mes" | "esse_semestre" | "esse_ano",
+        dateType: "personalizado" as "personalizado" | "hoje" | "esse_mes" | "mes_passado" | "ultimo_semestre" | "esse_ano",
         customerName: "",
         productName: "",
         valueRange: { min: 0, max: 1000000 },

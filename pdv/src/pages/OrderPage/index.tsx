@@ -22,8 +22,12 @@ const OrderPage = () => {
             </div>
             <div>
                 <h1 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">OBSERVAÇÕES SOBRE A ENTREGA</h1>
-                <div className="min-h-[50px] border-2 border-red-500/50 dark:border-red-900/50 p-4 rounded-2xl bg-red-50/30 dark:bg-red-900/10 text-sm italic">
-                    {order.observation}
+                <div className="min-h-[50px] border-2 border-red-500/50 dark:border-red-900/50 p-4 rounded-2xl bg-red-50/30 dark:bg-red-900/10 text-sm flex flex-wrap gap-2 items-start">
+                    {order.observation ? order.observation.split(';').filter((t: string) => t.trim() !== "").map((tag: string, i: number) => (
+                        <span key={i} className="px-3 py-1 bg-red-100 dark:bg-red-900/40 text-[12px] font-bold rounded-lg border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 capitalize">
+                            {tag}
+                        </span>
+                    )) : ""}
                 </div>
             </div>
             <CustomerData customerData={order.customerData} />

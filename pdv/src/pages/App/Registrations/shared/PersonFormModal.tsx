@@ -251,12 +251,32 @@ const PersonFormModal = ({ isOpen, onClose, person, collectionName, title }: Per
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Complemento</label>
+                                <input
+                                    type="text"
+                                    value={formData.fullAddress?.complement}
+                                    onChange={(e) => handleAddressChange("complement", e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
+                                    placeholder="Opcional"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Cidade</label>
                                 <input
                                     type="text"
                                     value={formData.fullAddress?.city}
                                     onChange={(e) => handleAddressChange("city", e.target.value)}
                                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
+                                />
+                            </div>
+                            <div className="md:col-span-3 flex flex-col gap-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Observações sobre o Endereço</label>
+                                <input
+                                    type="text"
+                                    value={formData.fullAddress?.observation}
+                                    onChange={(e) => handleAddressChange("observation", e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
+                                    placeholder="Ponto de referência, etc."
                                 />
                             </div>
                         </div>

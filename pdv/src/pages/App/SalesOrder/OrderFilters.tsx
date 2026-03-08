@@ -2,7 +2,7 @@ import React from "react";
 
 interface Filters {
     dateRange: { start: string; end: string };
-    dateType: "personalizado" | "hoje" | "esse_mes" | "esse_semestre" | "esse_ano";
+    dateType: "personalizado" | "hoje" | "esse_mes" | "mes_passado" | "ultimo_semestre" | "esse_ano";
     customerName: string;
     productName: string;
     valueRange: { min: number; max: number };
@@ -53,15 +53,13 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
                 start = formatDate(firstDayOfMonth);
                 end = formatDate(lastDayOfMonth);
                 break;
-            case "esse_semestre":
-                const currentMonth = now.getMonth();
-                if (currentMonth < 6) { // Jan-Jun
-                    start = formatDate(new Date(now.getFullYear(), 0, 1));
-                    end = formatDate(new Date(now.getFullYear(), 5, 30));
-                } else { // Jul-Dec
-                    start = formatDate(new Date(now.getFullYear(), 6, 1));
-                    end = formatDate(new Date(now.getFullYear(), 11, 31));
-                }
+            case "mes_passado":
+                start = formatDate(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+                end = formatDate(new Date(now.getFullYear(), now.getMonth(), 0));
+                break;
+            case "ultimo_semestre":
+                start = formatDate(new Date(now.getFullYear(), now.getMonth() - 6, 1));
+                end = formatDate(new Date(now.getFullYear(), now.getMonth(), 0));
                 break;
             case "esse_ano":
                 start = formatDate(new Date(now.getFullYear(), 0, 1));
@@ -151,7 +149,8 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
                                 <option value="personalizado" className="dark:bg-slate-900">Personalizado</option>
                                 <option value="hoje" className="dark:bg-slate-900">Hoje</option>
                                 <option value="esse_mes" className="dark:bg-slate-900">Esse Mês</option>
-                                <option value="esse_semestre" className="dark:bg-slate-900">Esse Semestre</option>
+                                <option value="mes_passado" className="dark:bg-slate-900">Mês Passado</option>
+                                <option value="ultimo_semestre" className="dark:bg-slate-900">Último Semestre</option>
                                 <option value="esse_ano" className="dark:bg-slate-900">Esse Ano</option>
                             </select>
                         </div>

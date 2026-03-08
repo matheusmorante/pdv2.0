@@ -69,6 +69,11 @@ const TableCell = ({ order, duration, onOrderClick }: Props) => {
                             {order.shipping.orderType}
                         </span>
                     )}
+                    {order.observation && order.observation.split(';').filter((t: string) => t.trim() !== "").map((tag: string, i: number) => (
+                        <span key={i} className="text-[7px] font-black px-1.5 py-0.5 rounded border bg-amber-100/50 dark:bg-amber-900/40 border-amber-200/50 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 capitalize max-w-[100px] truncate" title={tag}>
+                            {tag}
+                        </span>
+                    ))}
                 </div>
 
                 <div className="mt-1 bg-slate-50/80 dark:bg-slate-800/50 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 group-hover:bg-blue-50/30 dark:group-hover:bg-blue-900/20 transition-colors">

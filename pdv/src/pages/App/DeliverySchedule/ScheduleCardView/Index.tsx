@@ -143,12 +143,18 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                         </div>
 
                         {order.observation && (
-                            <div className="text-amber-800 dark:text-amber-200/70 bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-xl italic text-xs border border-amber-100/50 dark:border-amber-900/30 flex items-start gap-3 transition-colors">
+                            <div className="text-amber-800 dark:text-amber-200/70 bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-xl text-xs border border-amber-100/50 dark:border-amber-900/30 flex items-start gap-3 transition-colors">
                                 <i className="bi bi-info-circle-fill text-amber-500 mt-0.5" />
-                                <p className="leading-relaxed">
-                                    <strong className="uppercase font-black text-[9px] tracking-widest mr-1">Obs:</strong>
-                                    {order.observation}
-                                </p>
+                                <div className="flex flex-col gap-1.5 w-full">
+                                    <strong className="uppercase font-black text-[9px] tracking-widest text-amber-600 dark:text-amber-500">Observações:</strong>
+                                    <div className="flex flex-wrap gap-1.5 w-full">
+                                        {order.observation.split(';').filter((t: string) => t.trim() !== "").map((tag: string, i: number) => (
+                                            <span key={i} className="px-2 py-0.5 bg-amber-100/50 dark:bg-amber-900/40 text-[10px] font-bold rounded-lg border border-amber-200/50 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 capitalize">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>

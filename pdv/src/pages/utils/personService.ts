@@ -48,7 +48,7 @@ export const subscribeToPeople = (collectionName: string, callback: (people: Per
         .select('*')
         .eq('person_type', collectionName)
         .order('full_name', { ascending: true })
-        .then(({ data, error }) => {
+        .then(({ data, error }: { data: any, error: any }) => {
             if (data && !error) {
                 callback(data.map(mapFromDB));
             } else if (error) {
@@ -65,7 +65,7 @@ export const subscribeToPeople = (collectionName: string, callback: (people: Per
                     .select('*')
                     .eq('person_type', collectionName)
                     .order('full_name', { ascending: true })
-                    .then(({ data }) => {
+                    .then(({ data }: { data: any }) => {
                         if (data) callback(data.map(mapFromDB));
                     });
             }

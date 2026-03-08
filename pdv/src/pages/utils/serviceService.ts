@@ -15,7 +15,7 @@ export const subscribeToServices = (callback: (services: Service[]) => void) => 
     supabase.from(TABLE_NAME)
         .select('*')
         .order('id', { ascending: false })
-        .then(({ data, error }) => {
+        .then(({ data, error }: { data: any, error: any }) => {
             if (data && !error) {
                 callback(data.map(mapFromDB));
             } else if (error) {
@@ -29,7 +29,7 @@ export const subscribeToServices = (callback: (services: Service[]) => void) => 
              supabase.from(TABLE_NAME)
                 .select('*')
                 .order('id', { ascending: false })
-                .then(({ data }) => {
+                .then(({ data }: { data: any }) => {
                     if (data) callback(data.map(mapFromDB));
                 });
         })

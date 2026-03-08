@@ -56,25 +56,38 @@ export const HandlingTypeSection = ({ handlingType }: { handlingType?: string })
     </section>
 );
 
-export const ShippingSection = ({ fullAddress, destinationCoords }: { fullAddress: any, destinationCoords?: [number, number] }) => (
+import MapRoute from "../../SalesOrder/ShippingComponents/MapRoute";
+
+export const ShippingSection = ({ fullAddress, destinationCoords, routeGeoJSON }: { fullAddress: any, destinationCoords?: [number, number], routeGeoJSON?: any }) => (
     <section>
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-5 flex items-center gap-2">
             <i className="bi bi-geo-alt-fill" /> Endereço de Entrega
         </h3>
-        <div className="bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 transition-colors duration-300">
-            <p className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                {stringifyFullAddressWithObservation(fullAddress)}
-            </p>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 transition-colors duration-300">
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+                    {stringifyFullAddressWithObservation(fullAddress)}
+                </p>
+                {destinationCoords && (
+                    <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${destinationCoords[1]},${destinationCoords[0]}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors mt-auto"
+                    >
+                        <i className="bi bi-geo-fill" />
+                        Abrir no Google Maps
+                    </a>
+                )}
+            </div>
             {destinationCoords && (
-                <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${destinationCoords[1]},${destinationCoords[0]}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
-                >
-                    <i className="bi bi-geo-fill" />
-                    Abrir no Google Maps
-                </a>
+                <div className="border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden p-2 bg-slate-50/50 dark:bg-slate-800/20 h-full">
+                    <MapRoute
+                        destinationCoords={destinationCoords}
+                        routeGeoJSON={routeGeoJSON}
+                        className="h-full min-h-[160px] w-full rounded-2xl"
+                    />
+                </div>
             )}
         </div>
     </section>

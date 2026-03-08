@@ -17,8 +17,9 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 const PERIODS: { label: string, value: Period }[] = [
     { label: 'Personalizado', value: 'custom' },
     { label: 'Semana', value: 'week' },
-    { label: 'Mês', value: 'month' },
-    { label: 'Semestre', value: 'semester' },
+    { label: 'Este Mês', value: 'month' },
+    { label: 'Mês Passado', value: 'last_month' },
+    { label: 'Último Semestre', value: 'last_semester' },
     { label: 'Ano', value: 'year' },
 ];
 

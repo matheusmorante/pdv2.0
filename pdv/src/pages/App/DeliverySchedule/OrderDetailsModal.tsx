@@ -45,22 +45,13 @@ const OrderDetailsModal = ({ order, onClose }: Props) => {
                                 <ShippingSection
                                     fullAddress={order.customerData?.fullAddress}
                                     destinationCoords={order.shipping?.destinationCoords}
+                                    routeGeoJSON={order.shipping?.routeGeoJSON}
                                 />
                             )}
                             <SchedulingSection
                                 scheduling={order.shipping?.scheduling}
                                 isPickup={isPickup}
                             />
-                            {order.shipping?.destinationCoords && !isPickup && (
-                                <div className="mt-8 flex flex-col gap-2">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1 ml-1">Rota de Entrega</h4>
-                                    <MapRoute
-                                        destinationCoords={order.shipping.destinationCoords}
-                                        routeGeoJSON={order.shipping.routeGeoJSON}
-                                        className="h-64 w-full"
-                                    />
-                                </div>
-                            )}
                         </div>
 
                         {/* Right Column: Items & Summary */}

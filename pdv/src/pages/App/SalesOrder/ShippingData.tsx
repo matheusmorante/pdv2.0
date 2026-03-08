@@ -72,7 +72,14 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
                         onChangeDistance={onChangeDistance}
                         onAutoCalculateDistance={onAutoCalculateDistance}
                         autoCalculateValue={shipping.autoCalculateValue}
-                        onToggleAutoCalculate={() => setShipping(prev => ({ ...prev, autoCalculateValue: !prev.autoCalculateValue }))}
+                        onToggleAutoCalculate={() => setShipping(prev => {
+                            const newValue = !prev.autoCalculateValue;
+                            let newShippingValue = prev.value;
+                            if (newValue && prev.distance !== undefined && settings.freightPerKm > 0) {
+                                newShippingValue = prev.distance * settings.freightPerKm;
+                            }
+                            return { ...prev, autoCalculateValue: newValue, value: newShippingValue };
+                        })}
                         isCalculatingDistance={isCalculatingDistance}
                         errors={errors}
                     />

@@ -138,8 +138,8 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
 
                 setShipping(prev => {
                     let value = prev.value;
-                    // Auto-calculate freight if rate is configured
-                    if (settings.freightPerKm > 0) {
+                    // Auto-calculate freight if rate is configured AND auto-calculate is enabled
+                    if (prev.autoCalculateValue && settings.freightPerKm > 0) {
                         value = distanceKm * settings.freightPerKm;
                     }
                     return {
@@ -161,13 +161,13 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
     // Automatic calculation when address changes
     useEffect(() => {
         const addr = customerData.fullAddress;
-        if (shipping.autoCalculateValue && addr.street && addr.city && (addr.number || addr.cep)) {
+        if (addr.street && addr.city && (addr.number || addr.cep)) {
             const timer = setTimeout(() => {
                 handleAutoCalculateDistance(addr);
             }, 1000); // Debounce to avoid excessive API calls
             return () => clearTimeout(timer);
         }
-    }, [customerData.fullAddress, shipping.autoCalculateValue, handleAutoCalculateDistance]);
+    }, [customerData.fullAddress, handleAutoCalculateDistance]);
 
     const handleSaveOrder = useCallback(async (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
