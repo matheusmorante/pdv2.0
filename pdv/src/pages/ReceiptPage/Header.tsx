@@ -13,27 +13,27 @@ const Header = ({ seller }: Props) => {
     const companyPhone = settings.companyPhone || "41997493547 | 41992244631";
 
     return (
-        <header className='flex justify-between text-slate-800 dark:text-slate-100 transition-colors duration-300'>
+        <header className='flex justify-between text-slate-800 transition-colors duration-300'>
             <div>
-                <img src={logo} alt={`Logo ${companyName}`} className='h-[150px] dark:brightness-90' />
+                <img src={logo} alt={`Logo ${companyName}`} className='h-[150px]' />
             </div>
             <div className='h-full flex flex-col items-end text-right'>
                 <p className="font-black text-xl mb-2">{companyName}</p>
                 <div className="space-y-1">
                     <p className="text-xs">
-                        <strong className="text-blue-600 dark:text-blue-400">CNPJ: </strong>
+                        <strong className="text-blue-600">CNPJ: </strong>
                         {companyCnpj}
                     </p>
                     <p className="text-xs shrink-0 w-80">
-                        <strong className="text-blue-600 dark:text-blue-400">Endereço: </strong>
+                        <strong className="text-blue-600">Endereço: </strong>
                         {companyAddress}
                     </p>
                     <p className="text-xs">
-                        <strong className="text-blue-600 dark:text-blue-400">Contato: </strong>
+                        <strong className="text-blue-600">Contato: </strong>
                         {companyPhone}
                     </p>
                     <p className="text-xs uppercase font-black tracking-widest mt-4">
-                        <strong className="text-blue-600 dark:text-blue-400">Vendedor:</strong> {seller}
+                        <strong className="text-blue-600">Vendedor:</strong> {seller}
                     </p>
                 </div>
             </div>

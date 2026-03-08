@@ -64,7 +64,7 @@ export type VisibilitySettings = {
     customer: boolean;
     totalValue: boolean;
     status: boolean;
-    modality: boolean;
+    orderType: boolean;
     manuseio: boolean;
     actions: boolean;
 };

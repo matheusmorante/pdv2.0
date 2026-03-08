@@ -86,7 +86,7 @@ const VariationFormModal = ({ isOpen, onClose, variation }: VariationFormModalPr
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 flex flex-col">
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 flex flex-col">
                 {/* Header */}
                 <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div>
@@ -111,7 +111,7 @@ const VariationFormModal = ({ isOpen, onClose, variation }: VariationFormModalPr
                                 required
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
+                                className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
                                 placeholder="Ex: Cor"
                             />
                         </div>
@@ -169,7 +169,7 @@ const VariationFormModal = ({ isOpen, onClose, variation }: VariationFormModalPr
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 mt-4">
+                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-100 dark:border-slate-800 mt-4">
                             <div className="flex-1">
                                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">Status da Variação</h4>
                                 <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Inativar esta variação a esconderá no cadastro de produtos.</p>

@@ -8,6 +8,7 @@ import { ValidationErrors } from "../../utils/validations";
 
 import { PatternFormat } from "react-number-format";
 import { getSettings } from "../../utils/settingsService";
+import TagInput from "../../../components/TagInput";
 
 interface Props {
     customerData: CustomerData,
@@ -108,8 +109,8 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                             customerData.phone.startsWith('+') || customerData.phone.length > 11 ? (
                                 <input
                                     type="text"
-                                    className={`w-full bg-transparent border-0 border-b px-1 py-3 transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${errors['customer_phone']
-                                        ? 'border-red-500 dark:border-red-500/50 focus:border-red-600'
+                                        className={`w-full bg-transparent border px-3 py-3 rounded-2xl transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 min-w-[160px] ${errors['customer_phone']
+                                            ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg shadow-red-100 dark:shadow-red-900/10'
                                         : 'border-slate-200 dark:border-slate-800 focus:border-blue-600 dark:focus:border-blue-500'
                                         }`}
                                     value={customerData.phone}
@@ -120,8 +121,8 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                                 <PatternFormat
                                     format="(##) #####-####"
                                     mask="_"
-                                    className={`w-full bg-transparent border-0 border-b px-1 py-3 transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${errors['customer_phone']
-                                        ? 'border-red-500 dark:border-red-500/50 focus:border-red-600'
+                                            className={`w-full bg-transparent border px-3 py-3 rounded-2xl transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 min-w-[160px] ${errors['customer_phone']
+                                                ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg shadow-red-100 dark:shadow-red-900/10'
                                         : 'border-slate-200 dark:border-slate-800 focus:border-blue-600 dark:focus:border-blue-500'
                                         }`}
                                     value={customerData.phone}
@@ -149,7 +150,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                         <PatternFormat
                             format="#####-###"
                             mask="_"
-                            className="w-full bg-transparent border-0 border-b border-slate-100 dark:border-slate-800 px-1 py-3 focus:border-blue-600 dark:focus:border-blue-500 transition-all text-sm font-bold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300"
+                            className="w-full bg-transparent border border-slate-100 dark:border-slate-800 px-3 py-3 rounded-2xl focus:border-blue-600 dark:focus:border-blue-500 transition-all text-sm font-bold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 min-w-[120px]"
                             value={customerData.fullAddress.cep}
                             onValueChange={(values) => onChangeAddress('cep', values.value)}
                             placeholder="00000-000"
@@ -210,12 +211,11 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                 />
             </div>
 
-            <ValidatedInput
+            <TagInput
                 label="Observações sobre o endereço"
-                name="observation"
-                onChange={e => onChangeAddress('observation', e.target.value)}
-                placeholder="Ponto de referência, etc."
                 value={customerData.fullAddress.observation}
+                onChange={val => onChangeAddress('observation', val)}
+                placeholder="Ponto de referência, etc."
             />
         </div>
     )

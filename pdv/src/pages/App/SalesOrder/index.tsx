@@ -8,10 +8,11 @@ import Order, { VisibilitySettings } from "../../types/order.type";
 import OrderFilters from "./OrderFilters";
 
 const SalesOrder = () => {
-    const [orderModalType, setOrderModalType] = useState<'sale' | 'assistance' | null>(null);
+    const [orderModalType, setOrderModalType] = useState<'sale' | 'pickup' | 'assistance' | null>(null);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
     const [filters, setFilters] = useState({
         dateRange: { start: "", end: "" },
+        dateType: "personalizado" as "personalizado" | "hoje" | "esse_mes" | "esse_semestre" | "esse_ano",
         customerName: "",
         productName: "",
         valueRange: { min: 0, max: 1000000 },
@@ -29,7 +30,7 @@ const SalesOrder = () => {
         customer: true,
         totalValue: true,
         status: true,
-        modality: true,
+        orderType: true,
         manuseio: true,
         actions: true,
     });
@@ -124,7 +125,7 @@ const SalesOrder = () => {
                             {showSettings && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)} />
-                                    <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-2xl p-4 flex flex-col gap-3 z-50 animate-slide-up">
+                                    <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-2xl p-4 flex flex-col gap-3 z-50 animate-slide-up">
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Colunas da Tabela</h4>
                                         <div className="grid grid-cols-1 gap-2">
                                             {[
@@ -134,7 +135,7 @@ const SalesOrder = () => {
                                                 { key: 'customer', label: 'Cliente' },
                                                 { key: 'totalValue', label: 'Valor Total' },
                                                 { key: 'status', label: 'Status' },
-                                                { key: 'modality', label: 'Modalidade' },
+                                                { key: 'orderType', label: 'Tipo de Pedido' },
                                                 { key: 'manuseio', label: 'Manuseio' },
                                                 { key: 'actions', label: 'Ações' },
                                             ].map((col) => (
@@ -158,7 +159,7 @@ const SalesOrder = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none md:shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                         <OrderHistoryList
                             onEdit={setEditingOrder}
                             filters={activeFilters}
@@ -177,7 +178,7 @@ const SalesOrder = () => {
                     onClick={() => setIsTrashOpen(false)}
                 >
                     <div
-                        className="bg-white dark:bg-slate-950 w-full h-full md:w-[95vw] md:h-[95vh] rounded-none md:rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border-0 md:border border-white/20 dark:border-slate-800/50"
+                        className="bg-white dark:bg-slate-950 w-full h-full md:w-[95vw] md:h-[95vh] rounded-none md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up border-0 md:border border-white/20 dark:border-slate-800/50"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
@@ -203,7 +204,7 @@ const SalesOrder = () => {
 
                         {/* Modal Content */}
                         <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-slate-50 dark:bg-slate-950">
-                            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm overflow-hidden border border-slate-100 dark:border-slate-800 transition-colors">
+                            <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                                 <OrderHistoryList
                                     onEdit={setEditingOrder}
                                     filters={trashFilters}
@@ -217,8 +218,9 @@ const SalesOrder = () => {
                 </div>
             )}
 
-            {orderModalType === 'sale' && (
+            {(orderModalType === 'sale' || orderModalType === 'pickup') && (
                 <NewSaleOrder
+                    initialDeliveryMethod={orderModalType === 'pickup' ? 'pickup' : 'delivery'}
                     onClose={() => setOrderModalType(null)}
                     onSaveSuccess={() => { }}
                 />

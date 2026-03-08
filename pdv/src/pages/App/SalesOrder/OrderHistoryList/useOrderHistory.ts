@@ -29,6 +29,12 @@ export const useOrderHistory = (filters?: any) => {
     const filteredOrders = useMemo(() => {
         const showTrash = filters?.showTrash || false;
 
+        const toComparableDate = (dateStr: string) => {
+            if (!dateStr || !dateStr.includes('/')) return dateStr;
+            const [day, month, year] = dateStr.split('/');
+            return `${year}-${month}-${day}`;
+        };
+
         return orders
             .filter(order => {
                 // Filter by Deleted status first
@@ -40,8 +46,9 @@ export const useOrderHistory = (filters?: any) => {
 
                 if (!filters) return true;
 
-                const dateMatch = (!filters.dateRange.start || order.date >= filters.dateRange.start) &&
-                    (!filters.dateRange.end || order.date <= filters.dateRange.end);
+                const orderDateComp = toComparableDate(order.date);
+                const dateMatch = (!filters.dateRange.start || orderDateComp >= filters.dateRange.start) &&
+                    (!filters.dateRange.end || orderDateComp <= filters.dateRange.end);
 
                 const customerMatch = !filters.customerName ||
                     order.customerData?.fullName?.toLowerCase().includes(filters.customerName.toLowerCase());
@@ -66,8 +73,14 @@ export const useOrderHistory = (filters?: any) => {
                     comparison = (a.paymentsSummary?.totalOrderValue || 0) - (b.paymentsSummary?.totalOrderValue || 0);
                 } else if (sortBy === "status") {
                     comparison = (a.status || "").localeCompare(b.status || "");
+                } else if (sortBy === "deliveryDate") {
+                    const dateA = toComparableDate(a.shipping?.scheduling?.date || "");
+                    const dateB = toComparableDate(b.shipping?.scheduling?.date || "");
+                    comparison = dateA.localeCompare(dateB);
                 } else {
-                    comparison = (a.date || "").localeCompare(b.date || "");
+                    const dateA = toComparableDate(a.date || "");
+                    const dateB = toComparableDate(b.date || "");
+                    comparison = dateA.localeCompare(dateB);
                 }
                 const sortOrder = filters?.sortOrder || 'desc';
                 return sortOrder === "asc" ? comparison : -comparison;

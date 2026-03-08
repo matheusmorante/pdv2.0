@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getSettings } from '../../pages/utils/settingsService';
+import { getSettings, AppSettings, subscribeToSettings } from '../../pages/utils/settingsService';
 import { toast } from 'react-toastify';
 import { saveProduct } from '../../pages/utils/productService';
 import { saveOrder } from '../../pages/utils/orderHistoryService';
@@ -58,7 +58,15 @@ const formatValue = (key: string, value: any) => {
 
 const AIChatAssistant = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const settings = getSettings();
+    const [settings, setSettings] = useState<AppSettings>(getSettings());
+
+    useEffect(() => {
+        const unsubscribe = subscribeToSettings((newSettings) => {
+            setSettings(newSettings);
+        });
+        return () => unsubscribe();
+    }, []);
+
     const aiName = settings.aiPrompts.aiName || 'Lizandro';
     const aiAvatar = settings.aiPrompts.aiAvatar || ''; // Path or URL
     

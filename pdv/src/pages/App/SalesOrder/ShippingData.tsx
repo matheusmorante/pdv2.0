@@ -63,26 +63,29 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
     return (
         <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col gap-10 w-full lg:gap-12">
-                <FreteDistancia
-                    value={shipping.value}
-                    distance={shipping.distance}
-                    routeUrl={route}
-                    onChangeValue={onChangeShippingValue}
-                    onChangeDistance={onChangeDistance}
-                    onAutoCalculateDistance={onAutoCalculateDistance}
-                    autoCalculateValue={shipping.autoCalculateValue}
-                    onToggleAutoCalculate={() => setShipping(prev => ({ ...prev, autoCalculateValue: !prev.autoCalculateValue }))}
-                    isCalculatingDistance={isCalculatingDistance}
-                    errors={errors}
-                />
+                {shipping.deliveryMethod !== 'pickup' && (
+                    <FreteDistancia
+                        value={shipping.value}
+                        distance={shipping.distance}
+                        routeUrl={route}
+                        onChangeValue={onChangeShippingValue}
+                        onChangeDistance={onChangeDistance}
+                        onAutoCalculateDistance={onAutoCalculateDistance}
+                        autoCalculateValue={shipping.autoCalculateValue}
+                        onToggleAutoCalculate={() => setShipping(prev => ({ ...prev, autoCalculateValue: !prev.autoCalculateValue }))}
+                        isCalculatingDistance={isCalculatingDistance}
+                        errors={errors}
+                    />
+                )}
                 <Agendamento
                     scheduling={shipping.scheduling}
                     onChangeScheduling={onChangeScheduling}
                     errors={errors}
+                    isPickup={shipping.deliveryMethod === 'pickup'}
                 />
             </div>
 
-            {shipping.destinationCoords && (
+            {shipping.destinationCoords && shipping.deliveryMethod !== 'pickup' && (
                 <div className="w-full flex flex-col gap-2 relative group -mt-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Rota de Entrega</label>
                     <MapRoute

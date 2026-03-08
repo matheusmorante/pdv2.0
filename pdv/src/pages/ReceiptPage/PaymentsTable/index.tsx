@@ -9,13 +9,8 @@ type Props = {
 }
 
 const PaymentsTable = ({ payments, summary }: Props) => {
-
-    useEffect(() => {
-        window.print();
-    }, []);
-
     return (
-        <table className=" w-[60%] break-words [&_td]:border-2 [&_th]:border-2 dark:[&_td]:border-slate-800 dark:[&_th]:border-slate-800">
+        <table className=" w-[60%] break-words [&_td]:border-2 [&_th]:border-2">
             <colgroup>
                 <col className="w-[40%]" />
                 <col className="w-[30%]" />

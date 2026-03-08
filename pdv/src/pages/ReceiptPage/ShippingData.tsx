@@ -15,7 +15,7 @@ const ShippingData = ({ shipping }: Props) => {
             <div>
                 <strong>Valor do frete: </strong>
                 {shipping.value === 0 ? (
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">FRETE GRÁTIS</span>
+                    <span className="font-bold text-emerald-600">FRETE GRÁTIS</span>
                 ) : (
                         <NumericFormat
                             value={shipping.value}

@@ -61,9 +61,13 @@ export const useDashboardData = (period: Period) => {
     }, [orders, period]);
 
     const stats = useMemo(() => {
-        const saleOrders = filteredOrders.filter(o => o.status === 'scheduled' || o.status === 'fulfilled');
+        // Uma venda é reconhecida quando está 'Atendida', 'Agendada' ou 'Completa' (antigo)
+        const recognizedStatuses = ['scheduled', 'fulfilled', 'completed'];
+        const saleOrders = filteredOrders.filter(o => recognizedStatuses.includes(o.status || ''));
         const totalSales = saleOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
         const avgTicket = saleOrders.length > 0 ? totalSales / saleOrders.length : 0;
+
+        // Pedidos pendentes são aqueles que ainda não foram atendidos (Rascunho e Agendado)
         const pendingOrders = filteredOrders.filter(o => o.status === 'scheduled' || o.status === 'draft').length;
 
         return {
@@ -95,7 +99,7 @@ export const useDashboardData = (period: Period) => {
             const dayOrders = orders.filter(o =>
                 !o.deleted &&
                 (o.date?.includes(dateStr)) &&
-                (o.status === 'scheduled' || o.status === 'fulfilled')
+                (['scheduled', 'fulfilled', 'completed'].includes(o.status || ''))
             );
             const total = dayOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
 

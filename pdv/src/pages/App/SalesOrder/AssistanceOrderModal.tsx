@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { formatToBRDate } from "../../utils/formatters";
 import { saveOrder, subscribeToOrders } from "../../utils/orderHistoryService";
 import { toast } from "react-toastify";
 import Order, { AssistanceItem } from "../../types/order.type";
 import CustomerData from "../../types/customerData.type";
 import OrderSelectionModal from "./OrderSelectionModal";
+import TagInput from "../../../components/TagInput";
 
 interface AssistanceOrderModalProps {
     onClose: () => void;
@@ -41,6 +43,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
     const [customerName, setCustomerName] = useState(order?.customerData?.fullName || "");
     const [customerPhone, setCustomerPhone] = useState(order?.customerData?.phone || "");
     const [description, setDescription] = useState(order?.assistanceDescription || "");
+    const [observation, setObservation] = useState(order?.observation || "");
     const [scheduledDate, setScheduledDate] = useState(order?.scheduledDate || "");
     const [scheduledTime, setScheduledTime] = useState(order?.scheduledTime || "");
     const [isLinked, setIsLinked] = useState(!!order?.linkedOrderId);
@@ -127,12 +130,12 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                 assistanceDescription: description.trim(),
                 scheduledDate,
                 scheduledTime,
+                observation,
                 ...(isLinked ? {
                     linkedOrderId,
                     assistanceItems: selectedAssistanceItems
                 } : {}),
                 date: order?.date || new Date().toLocaleString('pt-BR'),
-                observation: order?.observation || "",
                 items: order?.items || [],
                 itemsSummary: order?.itemsSummary || { totalQuantity: 0, itemsSubtotal: 0, totalFixedDiscount: 0, itemsTotalValue: 0 },
                 payments: order?.payments || [],
@@ -204,7 +207,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 onChange={(e) => setCustomerName(e.target.value)}
                                 placeholder="Ex: João da Silva"
                                 required
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all invalid:border-red-500 invalid:ring-4 invalid:ring-red-500/10"
                             />
                         </div>
 
@@ -273,7 +276,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                             #{currentLinkedOrder?.id} — {currentLinkedOrder?.customerData.fullName}
                                         </h4>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                            Data da Venda: {currentLinkedOrder?.date}
+                                                Data da Venda: {formatToBRDate(currentLinkedOrder?.date)}
                                         </p>
                                     </div>
                                 )}
@@ -354,7 +357,15 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Descreva o problema, o equipamento e o serviço a ser prestado..."
                                 required
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all resize-none"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all resize-none invalid:border-red-500 invalid:ring-4 invalid:ring-red-500/10"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2 mt-4 px-1">
+                            <TagInput
+                                label="Observações Técnicas"
+                                value={observation}
+                                onChange={setObservation}
+                                placeholder="Notas internas, peças extras, observações, etc..."
                             />
                         </div>
                     </div>

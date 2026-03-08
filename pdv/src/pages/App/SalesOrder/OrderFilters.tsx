@@ -2,6 +2,7 @@ import React from "react";
 
 interface Filters {
     dateRange: { start: string; end: string };
+    dateType: "personalizado" | "hoje" | "esse_mes" | "esse_semestre" | "esse_ano";
     customerName: string;
     productName: string;
     valueRange: { min: number; max: number };
@@ -31,9 +32,58 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
         }
     };
 
+    const handleDateTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const type = e.target.value as Filters['dateType'];
+        const now = new Date();
+        let start = "";
+        let end = "";
+
+        const formatDate = (date: Date) => {
+            return date.toISOString().split('T')[0];
+        };
+
+        switch (type) {
+            case "hoje":
+                start = formatDate(now);
+                end = formatDate(now);
+                break;
+            case "esse_mes":
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                start = formatDate(firstDayOfMonth);
+                end = formatDate(lastDayOfMonth);
+                break;
+            case "esse_semestre":
+                const currentMonth = now.getMonth();
+                if (currentMonth < 6) { // Jan-Jun
+                    start = formatDate(new Date(now.getFullYear(), 0, 1));
+                    end = formatDate(new Date(now.getFullYear(), 5, 30));
+                } else { // Jul-Dec
+                    start = formatDate(new Date(now.getFullYear(), 6, 1));
+                    end = formatDate(new Date(now.getFullYear(), 11, 31));
+                }
+                break;
+            case "esse_ano":
+                start = formatDate(new Date(now.getFullYear(), 0, 1));
+                end = formatDate(new Date(now.getFullYear(), 11, 31));
+                break;
+            case "personalizado":
+                start = filters.dateRange.start;
+                end = filters.dateRange.end;
+                break;
+        }
+
+        setFilters(prev => ({
+            ...prev,
+            dateType: type,
+            dateRange: { start, end }
+        }));
+    };
+
     const resetFilters = () => {
         setFilters({
             dateRange: { start: "", end: "" },
+            dateType: "personalizado",
             customerName: "",
             productName: "",
             valueRange: { min: 0, max: 1000000 },
@@ -52,7 +102,7 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
                 <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">Refine sua busca de pedidos</p>
             </div>
 
-            <div className="p-8 flex flex-col gap-8">
+            <div className="p-4 md:p-8 flex flex-col gap-6">
                 {/* Search Inputs */}
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
@@ -65,7 +115,7 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
                                 value={filters.customerName}
                                 onChange={handleChange}
                                 placeholder="Nome do cliente..."
-                                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700 min-w-[160px]"
                             />
                         </div>
                     </div>
@@ -80,40 +130,60 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
                                 value={filters.productName}
                                 onChange={handleChange}
                                 placeholder="Nome do produto..."
-                                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700 min-w-[160px]"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Date Range */}
+                {/* Date Range Selection */}
                 <div className="flex flex-col gap-4">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-300 border-b border-slate-50 dark:border-slate-800 pb-2">Período</h4>
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Início</label>
-                            <input
-                                type="date"
-                                name="dateRange.start"
-                                value={filters.dateRange.start}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300"
-                            />
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Tipo de Período</label>
+                            <select
+                                name="dateType"
+                                value={filters.dateType}
+                                onChange={handleDateTypeChange}
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300 min-w-[140px]"
+                            >
+                                <option value="personalizado" className="dark:bg-slate-900">Personalizado</option>
+                                <option value="hoje" className="dark:bg-slate-900">Hoje</option>
+                                <option value="esse_mes" className="dark:bg-slate-900">Esse Mês</option>
+                                <option value="esse_semestre" className="dark:bg-slate-900">Esse Semestre</option>
+                                <option value="esse_ano" className="dark:bg-slate-900">Esse Ano</option>
+                            </select>
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Fim</label>
-                            <input
-                                type="date"
-                                name="dateRange.end"
-                                value={filters.dateRange.end}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300"
-                            />
-                        </div>
+
+                        {filters.dateType === "personalizado" && (
+                            <div className="grid grid-cols-1 gap-4 animate-fade-in">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Início</label>
+                                    <input
+                                        type="date"
+                                        name="dateRange.start"
+                                        value={filters.dateRange.start}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300"
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Fim</label>
+                                    <input
+                                        type="date"
+                                        name="dateRange.end"
+                                        value={filters.dateRange.end}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300"
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Values and Sorting */}
+                {/* Values Selection */}
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Valor Mínimo</label>
@@ -124,45 +194,14 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
                                 name="valueRange.min"
                                 value={filters.valueRange.min}
                                 onChange={handleChange}
-                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300"
+                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300"
                             />
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Ordenar por</label>
-                        <select
-                            name="sortBy"
-                            value={filters.sortBy}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300"
-                        >
-                            <option value="date" className="dark:bg-slate-900">📅 Data do Pedido</option>
-                            <option value="customer" className="dark:bg-slate-900">👤 Nome do Cliente</option>
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Direção</label>
-                        <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-2xl border border-slate-100 dark:border-slate-800">
-                            <button
-                                onClick={() => setFilters(prev => ({ ...prev, sortOrder: 'asc' }))}
-                                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${filters.sortOrder === 'asc' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400'}`}
-                            >
-                                Crescente
-                            </button>
-                            <button
-                                onClick={() => setFilters(prev => ({ ...prev, sortOrder: 'desc' }))}
-                                className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${filters.sortOrder === 'desc' ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400'}`}
-                            >
-                                Decrescente
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-auto p-8 border-t border-slate-50 dark:border-slate-800">
+            <div className="mt-auto p-4 border-t border-slate-50 dark:border-slate-800">
                 <button
                     onClick={resetFilters}
                     className="w-full py-4 text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center justify-center gap-2"

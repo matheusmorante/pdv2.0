@@ -5,18 +5,24 @@ import { useSalesOrderForm } from "./useSalesOrderForm";
 interface NewSaleOrderProps {
     onClose: () => void;
     onSaveSuccess: () => void;
+    initialDeliveryMethod?: 'delivery' | 'pickup';
 }
 
-const NewSaleOrder = ({ onClose, onSaveSuccess }: NewSaleOrderProps) => {
-    const form = useSalesOrderForm();
+const NewSaleOrder = ({ onClose, onSaveSuccess, initialDeliveryMethod }: NewSaleOrderProps) => {
+    const form = useSalesOrderForm(initialDeliveryMethod);
+    const isPickup = form.state.shipping.deliveryMethod === 'pickup';
+    const isEditing = false; // We can add an isEditing prop later if NewSaleOrder handles edit, but currently OrderEditModal does it.
 
     // Wrap handleSaveOrder to include onClose and onSaveSuccess
     const originalHandleSaveOrder = form.actions.handleSaveOrder;
     const handleSave = useCallback(async (e?: React.MouseEvent) => {
         e?.preventDefault();
-        await originalHandleSaveOrder(e);
-        onSaveSuccess();
-        onClose();
+        const success = await originalHandleSaveOrder(e);
+        if (success) {
+            onSaveSuccess();
+            onClose();
+        }
+        return success;
     }, [originalHandleSaveOrder, onSaveSuccess, onClose]);
 
     return (
@@ -29,15 +35,17 @@ const NewSaleOrder = ({ onClose, onSaveSuccess }: NewSaleOrderProps) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Modal Header */}
-                <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div className={`px-8 py-6 border-b flex justify-between items-center transition-colors duration-300 ${isPickup ? 'bg-emerald-50/50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
                     <div className="flex items-center gap-4">
-                        <div className="bg-green-600 p-2 rounded-lg shadow-lg">
-                            <i className="bi bi-plus-lg text-white" />
+                        <div className={`p-2 rounded-lg shadow-lg transition-colors duration-300 ${isPickup ? 'bg-emerald-600' : 'bg-blue-600'}`}>
+                            <i className={`bi ${isPickup ? 'bi-hand-index-thumb-fill' : 'bi-truck'} text-white`} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-slate-800 tracking-tight">Novo Pedido de Venda</h2>
-                            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest mt-0.5">
-                                Preencha os detalhes abaixo para registrar uma nova venda
+                            <h2 className={`text-xl font-black tracking-tight transition-colors duration-300 ${isPickup ? 'text-emerald-900' : 'text-slate-800'}`}>
+                                {isPickup ? 'Novo Pedido de Retirada' : 'Novo Pedido de Entrega'}
+                            </h2>
+                            <p className={`text-[10px] uppercase font-black tracking-widest mt-0.5 transition-colors duration-300 ${isPickup ? 'text-emerald-700/60' : 'text-slate-400'}`}>
+                                Preencha os detalhes abaixo para registrar uma nova {isPickup ? 'retirada' : 'venda e entrega'}
                             </p>
                         </div>
                     </div>

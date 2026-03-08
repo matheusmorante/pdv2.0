@@ -46,7 +46,7 @@ const ProductFilters = ({ filters, setFilters }: ProductFiltersProps) => {
                 <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">Refine sua busca de produtos</p>
             </div>
 
-            <div className="p-8 flex flex-col gap-8">
+            <div className="p-4 md:p-8 flex flex-col gap-6">
                 {/* Search Inputs */}
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
@@ -59,7 +59,7 @@ const ProductFilters = ({ filters, setFilters }: ProductFiltersProps) => {
                                 value={filters.search}
                                 onChange={handleChange}
                                 placeholder="Descrição ou código..."
-                                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700"
                             />
                         </div>
                     </div>
@@ -70,7 +70,7 @@ const ProductFilters = ({ filters, setFilters }: ProductFiltersProps) => {
                             name="category"
                             value={filters.category}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300"
                         >
                             <option value="" className="dark:bg-slate-900">Todas Categorias</option>
                             <option value="Serviços" className="dark:bg-slate-900">Serviços</option>
@@ -87,7 +87,7 @@ const ProductFilters = ({ filters, setFilters }: ProductFiltersProps) => {
                                 const val = e.target.value;
                                 setFilters(prev => ({ ...prev, activeOnly: val === "" ? undefined : val === "true" }));
                             }}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300"
                         >
                             <option value="" className="dark:bg-slate-900">Todos Status</option>
                             <option value="true" className="dark:bg-slate-900">Ativos</option>
@@ -98,7 +98,7 @@ const ProductFilters = ({ filters, setFilters }: ProductFiltersProps) => {
 
             </div>
 
-            <div className="mt-auto p-8 border-t border-slate-50 dark:border-slate-800">
+            <div className="mt-auto p-4 border-t border-slate-50 dark:border-slate-800">
                 <button
                     onClick={resetFilters}
                     className="w-full py-4 text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center justify-center gap-2"

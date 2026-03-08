@@ -8,6 +8,7 @@ import FormHeader from "./FormHeader";
 import FormFooter from "./FormFooter";
 import SectionCard from "../../../components/SectionCard";
 import { useSalesOrderForm } from "./useSalesOrderForm";
+import TagInput from "../../../components/TagInput";
 
 type SalesOrderFormSectionProps = {
     form: ReturnType<typeof useSalesOrderForm>;
@@ -15,7 +16,7 @@ type SalesOrderFormSectionProps = {
 
 const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
     const { state, actions } = form;
-
+    const isPickup = state.shipping.deliveryMethod === 'pickup';
     return (
         <form
             className="flex flex-col w-full h-full bg-white dark:bg-slate-900 relative transition-colors duration-300 overflow-hidden"
@@ -81,10 +82,10 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                         </SectionCard>
 
                         <SectionCard
-                            icon="bi bi-truck"
-                            iconBg="bg-orange-500 shadow-orange-100 dark:shadow-orange-900/20"
-                            title="Entrega"
-                            className="bg-white dark:bg-slate-900"
+                            icon={isPickup ? "bi bi-hand-index-thumb" : "bi bi-truck"}
+                            iconBg={isPickup ? "bg-emerald-500 shadow-emerald-100 dark:shadow-emerald-900/20" : "bg-orange-500 shadow-orange-100 dark:shadow-orange-900/20"}
+                            title={isPickup ? "Retirada" : "Entrega"}
+                            className="bg-white dark:bg-slate-900 transition-colors duration-300"
                         >
                             <div className="space-y-8">
                                 <Seller
@@ -109,11 +110,10 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                             title="Observações"
                             className="bg-white dark:bg-slate-900"
                         >
-                            <textarea
+                            <TagInput
                                 value={state.observation}
-                                onChange={(e) => actions.setObservation(e.target.value)}
-                                className="w-full min-h-[120px] bg-transparent border-0 border-b border-slate-200 dark:border-slate-800 p-2 text-slate-700 dark:text-slate-300 focus:border-blue-600 dark:focus:border-blue-500 outline-none transition-all resize-none text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 font-medium"
-                                placeholder="Notas importantes deste pedido..."
+                                onChange={(val) => actions.setObservation(val)}
+                                placeholder="Pressione Enter ou vírgula para adicionar notas..."
                             />
                         </SectionCard>
                     </div>

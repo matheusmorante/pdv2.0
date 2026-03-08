@@ -104,16 +104,16 @@ export default function StatusLabelsSection({ settings, onChange }: Props): any 
                 </div>
             </div>
 
-            {/* Modality Labels */}
+            {/* Order Type Labels */}
             <div className="p-8 space-y-6">
-                <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-4">Modalidades de Entrega</h5>
+                <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-4">Tipos de Pedido</h5>
                 <div className="space-y-4">
                     <div className="flex flex-col gap-2">
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Entrega</label>
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Entrega / Serviço</label>
                         <input 
                             type="text" 
-                            value={settings.modalityLabels.delivery} 
-                            onChange={(e) => onChange('modalityLabels.delivery', e.target.value)}
+                            value={settings.orderTypeLabels.delivery}
+                            onChange={(e) => onChange('orderTypeLabels.delivery', e.target.value)}
                             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-bold focus:border-blue-500 outline-none transition-all dark:text-slate-200"
                         />
                     </div>
@@ -121,8 +121,17 @@ export default function StatusLabelsSection({ settings, onChange }: Props): any 
                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Retirada</label>
                         <input 
                             type="text" 
-                            value={settings.modalityLabels.pickup} 
-                            onChange={(e) => onChange('modalityLabels.pickup', e.target.value)}
+                            value={settings.orderTypeLabels.pickup}
+                            onChange={(e) => onChange('orderTypeLabels.pickup', e.target.value)}
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-bold focus:border-blue-500 outline-none transition-all dark:text-slate-200"
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Assistência</label>
+                        <input
+                            type="text"
+                            value={settings.orderTypeLabels.assistance}
+                            onChange={(e) => onChange('orderTypeLabels.assistance', e.target.value)}
                             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-bold focus:border-blue-500 outline-none transition-all dark:text-slate-200"
                         />
                     </div>

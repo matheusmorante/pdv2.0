@@ -1,3 +1,6 @@
+import { db } from "./firebaseConfig";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+
 export interface OrderStatusConfig {
     id: string;
     label: string;
@@ -18,9 +21,10 @@ export interface AppSettings {
         cancelled: string;
     };
     orderStatuses: OrderStatusConfig[];
-    modalityLabels: {
+    orderTypeLabels: {
         delivery: string;
         pickup: string;
+        assistance: string;
     };
     deliveryHandlingOptions: string[]; 
     pickupHandlingOptions: string[];
@@ -53,7 +57,7 @@ export interface AppSettings {
     };
     aiPrompts: {
         productDescription: string;
-        generalChat: string; // This is the personality
+        generalChat: string; 
         taskDetection: string;
         aiName: string;
         aiAvatar: string;
@@ -61,56 +65,56 @@ export interface AppSettings {
 }
 
 const SETTINGS_KEY = 'pdv_app_settings';
+const FIREBASE_SETTINGS_PATH = 'settings/app';
 
-export const getSettings = (): AppSettings => {
-    const saved = localStorage.getItem(SETTINGS_KEY);
-    const defaults: AppSettings = {
-        showManualFulfillmentPrompt: true,
-        autoSaveOnlyWhenDirty: true,
-        statusLabels: {
-            draft: 'Rascunho',
-            scheduled: 'Agendado',
-            fulfilled: 'Atendido',
-            cancelled: 'Cancelado'
-        },
-        orderStatuses: [
-            { id: 'draft', label: 'Rascunho', color: 'slate', isCore: true },
-            { id: 'scheduled', label: 'Agendado', color: 'amber', isCore: true },
-            { id: 'fulfilled', label: 'Atendido', color: 'emerald', isCore: true },
-            { id: 'cancelled', label: 'Cancelado', color: 'rose', isCore: true },
-        ],
-        modalityLabels: {
-            delivery: 'Entrega',
-            pickup: 'Retirada'
-        },
-        deliveryHandlingOptions: [
-            'Entrega com montagem no local',
-            'Apenas Entrega',
-            'Manuseio Especial'
-        ],
-        pickupHandlingOptions: [
-            'Retirada na loja',
-            'Retirada no depósito'
-        ],
-        freightPerKm: 0,
-        openRouteServiceApiKey: '',
-        storeOriginCoords: [-49.16928181659719, -25.352030536045138], // Rua Cascavel, 306
-        companyName: 'Móveis Morante',
-        companyAddress: 'R. Cascavel, 306 - Guaraituba, Colombo - PR, 83410-270',
-        companyCnpj: '44.512.248.0001/07',
-        companyPhone: '(41) 99749-3547',
-        autoCapitalizeCustomerData: true,
-        googleReviewUrl: 'https://g.page/r/CctxeFYzY2o8EBE/review',
-        defaultTheme: 'light',
-        autoScroll: {
-            orderTable: true,
-            scheduleCards: true,
-            scheduleTable: true,
-            speed: 20,
-            threshold: 100
-        },
-        aiPrompts: {
-            productDescription: `Você é um copywriter de marketing especialista em e-commerce da Móveis Morante.
+export const getDefaultSettings = (): AppSettings => ({
+    showManualFulfillmentPrompt: true,
+    autoSaveOnlyWhenDirty: true,
+    statusLabels: {
+        draft: 'Rascunho',
+        scheduled: 'Agendado',
+        fulfilled: 'Atendido',
+        cancelled: 'Cancelado'
+    },
+    orderStatuses: [
+        { id: 'draft', label: 'Rascunho', color: 'slate', isCore: true },
+        { id: 'scheduled', label: 'Agendado', color: 'amber', isCore: true },
+        { id: 'fulfilled', label: 'Atendido', color: 'emerald', isCore: true },
+        { id: 'cancelled', label: 'Cancelado', color: 'rose', isCore: true },
+    ],
+    orderTypeLabels: {
+        delivery: 'Entrega/Serviço',
+        pickup: 'Retirada',
+        assistance: 'Assistência'
+    },
+    deliveryHandlingOptions: [
+        'Entrega com montagem no local',
+        'Apenas Entrega',
+        'Manuseio Especial'
+    ],
+    pickupHandlingOptions: [
+        'Retirada na loja',
+        'Retirada no depósito'
+    ],
+    freightPerKm: 0,
+    openRouteServiceApiKey: '',
+    storeOriginCoords: [-49.16928181659719, -25.352030536045138],
+    companyName: 'Móveis Morante',
+    companyAddress: 'R. Cascavel, 306 - Guaraituba, Colombo - PR, 83410-270',
+    companyCnpj: '44.512.248.0001/07',
+    companyPhone: '(41) 99749-3547',
+    autoCapitalizeCustomerData: true,
+    googleReviewUrl: 'https://g.page/r/CctxeFYzY2o8EBE/review',
+    defaultTheme: 'light',
+    autoScroll: {
+        orderTable: true,
+        scheduleCards: true,
+        scheduleTable: true,
+        speed: 20,
+        threshold: 100
+    },
+    aiPrompts: {
+        productDescription: `Você é um copywriter de marketing especialista em e-commerce da Móveis Morante.
 Sua tarefa é criar uma descrição de produto incrivelmente persuasiva, focada em vendas.
 
 Produto: {{productName}}
@@ -121,7 +125,7 @@ Instruções Adicionais:
 - Crie apenas UM ou DOIS parágrafos.
 - Seja direto, instigante e profissional.
 - JAMAIS responda com outra coisa que não seja a descrição final do produto. Comece direto no texto.`,
-            generalChat: `Você é Lizandro, um assistente virtual de ALTA PERFORMANCE exclusivo para os vendedores da Móveis Morante.
+        generalChat: `Você é Lizandro, um assistente virtual de ALTA PERFORMANCE exclusivo para os vendedores da Móveis Morante.
 Seu objetivo é ser o braço direito do VENDEDOR, agilizando processos internos e organizando dados.
 
 DIRETRIZES PARA O VENDEDOR:
@@ -135,7 +139,7 @@ O QUE VOCÊ FAZ PARA O VENDEDOR:
 - Organiza informações de entrega e pagamentos.
 
 Responda sempre em Português do Brasil com foco em eficiência operacional.`,
-            taskDetection: `Você é o motor de automação do VENDEDOR da Móveis Morante. 
+        taskDetection: `Você é o motor de automação do VENDEDOR da Móveis Morante. 
 Seu trabalho é ouvir o comando do vendedor e converter em dados estruturados para o sistema.
 
 SUA RESPOSTA DEVE SER EXCLUSIVAMENTE UM OBJETO JSON. 
@@ -173,45 +177,18 @@ Responda APENAS em formato JSON:
 }
 
 Mensagem do Vendedor: {{message}}`,
-            aiName: 'Lizandro',
-            aiAvatar: ''
-        }
-    };
+        aiName: 'Lizandro',
+        aiAvatar: ''
+    }
+});
+
+export const getSettings = (): AppSettings => {
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    const defaults = getDefaultSettings();
 
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
-            
-            if (parsed.aiPrompts && !parsed.aiPrompts.aiName) {
-                parsed.aiPrompts.aiName = defaults.aiPrompts.aiName;
-            }
-            if (parsed.aiPrompts && !parsed.aiPrompts.aiAvatar) {
-                parsed.aiPrompts.aiAvatar = defaults.aiPrompts.aiAvatar;
-            }
-            
-            // Data Migration for store coordinates
-            const isOldCoords = parsed.storeOriginCoords && (
-                Math.abs(parsed.storeOriginCoords[0] - (-49.19139)) < 0.01 || 
-                Math.abs(parsed.storeOriginCoords[0] - (-49.19266)) < 0.01
-            );
-            
-            if (isOldCoords || (parsed.companyAddress && parsed.companyAddress.includes("Cascavel") && isOldCoords)) {
-                parsed.storeOriginCoords = defaults.storeOriginCoords;
-            }
-
-            if (parsed.companyAddress === 'Rua Belo Horizonte, 290, Guaraituba, Colombo-PR') {
-                parsed.companyAddress = defaults.companyAddress;
-            }
-
-            if (parsed.statusLabels && (!parsed.orderStatuses || parsed.orderStatuses.length === 0)) {
-                parsed.orderStatuses = [
-                    { id: 'draft', label: parsed.statusLabels.draft || 'Rascunho', color: 'slate', isCore: true },
-                    { id: 'scheduled', label: parsed.statusLabels.scheduled || 'Agendado', color: 'amber', isCore: true },
-                    { id: 'fulfilled', label: parsed.statusLabels.fulfilled || 'Atendido', color: 'emerald', isCore: true },
-                    { id: 'cancelled', label: parsed.statusLabels.cancelled || 'Cancelado', color: 'rose', isCore: true },
-                ];
-            }
-
             return { ...defaults, ...parsed };
         } catch (e) {
             return defaults;
@@ -220,6 +197,32 @@ Mensagem do Vendedor: {{message}}`,
     return defaults;
 };
 
-export const saveSettings = (settings: AppSettings) => {
+// Real-time synchronization with Firebase
+export const subscribeToSettings = (callback: (settings: AppSettings) => void) => {
+    const docRef = doc(db, FIREBASE_SETTINGS_PATH);
+    
+    // Initial load from localStorage for speed
+    callback(getSettings());
+
+    return onSnapshot(docRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const firebaseSettings = snapshot.data() as AppSettings;
+            // Update localStorage
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(firebaseSettings));
+            callback(firebaseSettings);
+        }
+    });
+};
+
+export const saveSettings = async (settings: AppSettings) => {
+    // 1. Save to localStorage (Local First)
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+
+    // 2. Save to Firebase (Cloud Persistence)
+    try {
+        const docRef = doc(db, FIREBASE_SETTINGS_PATH);
+        await setDoc(docRef, settings, { merge: true });
+    } catch (error) {
+        console.error("Erro ao persistir configurações no Firebase:", error);
+    }
 };

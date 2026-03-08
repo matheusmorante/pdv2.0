@@ -15,9 +15,9 @@ import CustomerData from "../../types/customerData.type";
 import { autoCalculateRouteDistance } from "../../utils/maps";
 import { getSettings } from "../../utils/settingsService";
 
-export const useSalesOrderForm = () => {
+export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' = 'delivery') => {
     const { items, setItems } = useItems();
-    const { shipping, setShipping } = useShipping();
+    const { shipping, setShipping } = useShipping(initialDeliveryMethod);
     const { payments, setPayments } = usePaymentsData();
     const { customerData, setCustomerData } = useCustomerData();
     const [observation, setObservation] = useState("");
@@ -122,7 +122,6 @@ export const useSalesOrderForm = () => {
         setCurrentOrderId(order.id);
         setStatus(order.status || 'draft');
         setErrors({});
-        toast.info("Pedido carregado para edição.");
     }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller]);
 
     const handleAutoCalculateDistance = useCallback(async (address: CustomerData['fullAddress']) => {
@@ -177,7 +176,7 @@ export const useSalesOrderForm = () => {
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             toast.error("Existem campos obrigatórios não preenchidos para salvar como rascunho.");
-            return;
+            return false;
         }
 
         if (latestState.current.isSaving) return;
@@ -191,8 +190,10 @@ export const useSalesOrderForm = () => {
             }
             setStatus('draft');
             toast.success("Pedido salvo como rascunho!");
+            return true;
         } catch (error) {
             toast.error("Erro ao salvar pedido como rascunho.");
+            return false;
         } finally {
             setIsSaving(false);
         }
@@ -207,7 +208,7 @@ export const useSalesOrderForm = () => {
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             toast.error("Existem campos obrigatórios não preenchidos.");
-            return;
+            return false;
         }
 
         if (latestState.current.isSaving) return; // Note: isSaving is not in latestState in the current code structure, but we can fix it
@@ -218,8 +219,10 @@ export const useSalesOrderForm = () => {
             await saveOrder(orderData);
             setStatus('scheduled');
             toast.success("Pedido FINALIZADO com sucesso!");
+            return true;
         } catch (error) {
             toast.error("Erro ao efetivar pedido.");
+            return false;
         } finally {
             setIsSaving(false);
         }

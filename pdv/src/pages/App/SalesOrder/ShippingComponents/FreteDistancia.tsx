@@ -39,7 +39,7 @@ const FreteDistancia = ({ value, distance, routeUrl, onChangeValue, onChangeDist
             </label>
             <div className="relative">
                 <NumericFormat
-                    className={`w-full bg-transparent border-0 border-b px-1 py-3 focus:border-blue-600 dark:focus:border-blue-500 transition-all text-sm font-bold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${errors['shipping_value'] ? 'border-red-500' : 'border-slate-100 dark:border-slate-800'}`}
+                    className={`w-full bg-transparent border px-3 py-3 rounded-2xl transition-all text-sm font-bold outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${errors['shipping_value'] ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg shadow-red-100 dark:shadow-red-900/10' : 'border-slate-100 dark:border-slate-800 focus:border-blue-600 dark:focus:border-blue-500'}`}
                     value={value}
                     allowNegative={false}
                     thousandSeparator="."

@@ -1,7 +1,7 @@
 import React from "react";
 import Order from "../../types/pdvAction.type";
 import ModalHeader from "./OrderDetailsModalComponents/ModalHeader";
-import { CustomerSection, ShippingSection, SchedulingSection, ModalityLabelsSection, OrderTypeSection } from "./OrderDetailsModalComponents/CustomerShippingInfo";
+import { CustomerSection, ShippingSection, SchedulingSection, OrderTypeLabelsSection, HandlingTypeSection } from "./OrderDetailsModalComponents/CustomerShippingInfo";
 import { ItemsTable, FinancialSummary } from "./OrderDetailsModalComponents/ItemsFinancialInfo";
 import MapRoute from "../SalesOrder/ShippingComponents/MapRoute";
 
@@ -11,6 +11,8 @@ interface Props {
 }
 
 const OrderDetailsModal = ({ order, onClose }: Props) => {
+    const isPickup = order.shipping?.deliveryMethod === 'pickup';
+
     return (
         <div
             className="fixed inset-0 z-[110] flex items-center justify-center p-0 sm:p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in transition-colors duration-300"
@@ -33,20 +35,24 @@ const OrderDetailsModal = ({ order, onClose }: Props) => {
                                 fullName={order.customerData?.fullName}
                                 phone={order.customerData?.phone}
                             />
-                            <ModalityLabelsSection
+                            <OrderTypeLabelsSection
                                 deliveryMethod={order.shipping?.deliveryMethod}
+                                orderType={order.orderType}
                             />
-                            <OrderTypeSection
-                                orderType={order.shipping?.orderType}
+                            <HandlingTypeSection
+                                handlingType={order.shipping?.orderType}
                             />
-                            <ShippingSection
-                                fullAddress={order.customerData?.fullAddress}
-                                destinationCoords={order.shipping?.destinationCoords}
-                            />
+                            {!isPickup && (
+                                <ShippingSection
+                                    fullAddress={order.customerData?.fullAddress}
+                                    destinationCoords={order.shipping?.destinationCoords}
+                                />
+                            )}
                             <SchedulingSection
                                 scheduling={order.shipping?.scheduling}
+                                isPickup={isPickup}
                             />
-                            {order.shipping?.destinationCoords && (
+                            {order.shipping?.destinationCoords && !isPickup && (
                                 <div className="mt-8 flex flex-col gap-2">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1 ml-1">Rota de Entrega</h4>
                                     <MapRoute

@@ -1,6 +1,6 @@
 /** @jsxImportSource react */
 import React, { useState, useEffect, useCallback } from 'react';
-import { getSettings, saveSettings, AppSettings } from '../../utils/settingsService';
+import { getSettings, saveSettings, AppSettings, subscribeToSettings } from '../../utils/settingsService';
 import { useTheme } from '../../../context/ThemeContext';
 import { toast } from 'react-toastify';
 import { PatternFormat } from 'react-number-format';
@@ -35,12 +35,18 @@ export default function Settings(): any {
     const [settings, setSettings] = useState<AppSettings>(getSettings());
     const [search, setSearch] = useState("");
 
-    // Sync state if theme changes globally
+    // Real-time synchronization with Firebase
     useEffect(() => {
-        if (settings.defaultTheme !== (theme as any)) {
-            setSettings(prev => ({ ...prev, defaultTheme: theme as 'light' | 'dark' }));
-        }
-    }, [theme, settings.defaultTheme]);
+        const unsubscribe = subscribeToSettings((newSettings) => {
+            setSettings(newSettings);
+
+            // Sync theme if it's different from current
+            if (newSettings.defaultTheme && newSettings.defaultTheme !== (theme as any)) {
+                setTheme(newSettings.defaultTheme);
+            }
+        });
+        return () => unsubscribe();
+    }, [setTheme, theme]);
 
     const handleChange = useCallback((path: string, value: any) => {
         if (path === 'defaultTheme') {

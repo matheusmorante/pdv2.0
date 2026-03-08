@@ -36,7 +36,7 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
     return (
         <tr key={idx} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0">
             <td className="px-4 py-2">
-                <select className='w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm font-medium text-slate-700 dark:text-slate-200'
+                <select className='w-full bg-transparent border border-slate-100 dark:border-slate-800 focus:border-indigo-500 px-3 py-1.5 rounded-xl outline-none transition-all text-sm font-medium text-slate-700 dark:text-slate-200 min-w-[140px]'
                     value={payment.method}
                     onChange={
                         (e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -84,7 +84,7 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
             </td>
             <td className="px-4 py-2">
                 <input
-                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-indigo-500 px-2 py-1.5 outline-none transition-all text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-200"
+                    className="w-full bg-transparent border border-slate-100 dark:border-slate-800 focus:border-indigo-500 px-3 py-1.5 rounded-xl outline-none transition-all text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-200 min-w-[120px]"
                     placeholder="Status..."
                     value={newStatus}
                     onChange={e => setNewStatus(e.target.value)}

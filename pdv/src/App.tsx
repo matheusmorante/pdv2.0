@@ -1,8 +1,12 @@
 import Router from './Router';
+import GlobalAutoScroll from './components/shared/GlobalAutoScroll';
 
 function App() {
   return (
-    <Router />
+    <>
+      <GlobalAutoScroll />
+      <Router />
+    </>
   );
 }
 

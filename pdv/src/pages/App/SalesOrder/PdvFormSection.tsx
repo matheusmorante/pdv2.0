@@ -8,6 +8,7 @@ import FormHeader from "./FormHeader";
 import FormFooter from "./FormFooter";
 import SectionCard from "../../../components/SectionCard";
 import { useSalesOrderForm } from "./useSalesOrderForm";
+import TagInput from "../../../components/TagInput";
 
 type SalesOrderFormSectionProps = {
     form: ReturnType<typeof useSalesOrderForm>;
@@ -107,11 +108,10 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                             title="Observações"
                             className="bg-white dark:bg-slate-900"
                         >
-                            <textarea
+                            <TagInput
                                 value={state.observation}
-                                onChange={(e) => actions.setObservation(e.target.value)}
-                                className="w-full min-h-[120px] bg-transparent border-0 border-b border-slate-200 dark:border-slate-800 p-2 text-slate-700 dark:text-slate-300 focus:border-blue-600 dark:focus:border-blue-500 outline-none transition-all resize-none text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 font-medium"
-                                placeholder="Notas importantes deste pedido..."
+                                onChange={(val) => actions.setObservation(val)}
+                                placeholder="Pressione Enter ou vírgula para adicionar notas..."
                             />
                         </SectionCard>
                     </div>

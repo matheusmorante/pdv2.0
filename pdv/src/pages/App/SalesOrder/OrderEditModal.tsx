@@ -34,7 +34,7 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
         if (Object.keys(validationErrors).length > 0) {
             form.actions.setErrors(validationErrors);
             toast.error("Existem campos obrigatórios não preenchidos.");
-            return;
+            return false;
         }
 
         try {
@@ -42,9 +42,11 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
             toast.success("Pedido atualizado com sucesso!");
             onSaveSuccess();
             onClose();
+            return true;
         } catch (error) {
             console.error("Erro ao atualizar pedido:", error);
             toast.error("Falha ao atualizar pedido.");
+            return false;
         }
     }, [form.actions, form.state.currentOrder, order.id, order.date, onSaveSuccess, onClose]);
 

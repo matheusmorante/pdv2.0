@@ -8,7 +8,7 @@ interface Props {
 const CurrencyInput = ({ value, onChange }: Props) => {
     return (
         <NumericFormat
-            className="w-full min-w-[100px] text-right bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-2 py-1.5 outline-none transition-all text-sm"
+            className="w-full min-w-[110px] text-right bg-transparent border border-slate-100 dark:border-slate-800 focus:border-blue-500 px-3 py-1.5 rounded-xl outline-none transition-all text-sm"
             value={value}
             disabled={false}
             allowNegative={false}

@@ -12,22 +12,39 @@ interface Props {
 const TableCell = ({ order, duration, onOrderClick }: Props) => {
     const settings = getSettings();
 
+    const isPickup = order.shipping?.deliveryMethod === 'pickup';
+    const isAssistance = order.orderType === 'assistance';
+
+    let containerColor = 'bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/30 hover:border-blue-400 dark:hover:border-blue-500';
+    let timeColor = 'text-blue-700 dark:text-blue-400';
+    let badgeColor = 'bg-blue-600 text-white';
+
+    if (isAssistance) {
+        containerColor = 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-500';
+        timeColor = 'text-amber-700 dark:text-amber-500';
+        badgeColor = 'bg-amber-600 text-white';
+    } else if (isPickup) {
+        containerColor = 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-900/40 hover:border-emerald-400 dark:hover:border-emerald-500';
+        timeColor = 'text-emerald-700 dark:text-emerald-500';
+        badgeColor = 'bg-emerald-600 text-white';
+    }
+
     return (
         <td
             colSpan={duration}
-            className="p-1.5 align-top bg-blue-50/40 dark:bg-blue-900/10 border-r border-slate-200 dark:border-slate-800 transition-colors duration-300"
+            className="p-1.5 align-top bg-transparent transition-colors duration-300"
         >
             <div
                 onClick={() => onOrderClick(order)}
-                className="h-full bg-white dark:bg-slate-900 border-2 border-blue-200 dark:border-blue-900/30 rounded-xl p-3 shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all group overflow-hidden flex flex-col gap-2 cursor-pointer"
+                className={`h-full border-2 rounded-xl p-3 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col gap-2 cursor-pointer ${containerColor}`}
             >
                 <div className="flex justify-between items-start mb-1 pb-1 border-b border-slate-100 dark:border-slate-800">
-                    <span className="font-black text-[9px] text-blue-700 dark:text-blue-400 uppercase tracking-widest whitespace-nowrap">
+                    <span className={`font-black text-[9px] uppercase tracking-widest whitespace-nowrap ${timeColor}`}>
                         {order.shipping.scheduling.startTime || order.shipping.scheduling.time}
                         {order.shipping.scheduling.type === 'range' && ` → ${order.shipping.scheduling.endTime}`}
                     </span>
                     {order.shipping.scheduling.type === 'range' && (
-                        <span className="text-[7px] font-black bg-blue-600 text-white px-1 py-0.5 rounded uppercase tracking-tighter">
+                        <span className={`text-[7px] font-black px-1 py-0.5 rounded uppercase tracking-tighter ${badgeColor}`}>
                             Período
                         </span>
                     )}
@@ -37,20 +54,26 @@ const TableCell = ({ order, duration, onOrderClick }: Props) => {
                     {order.customerData?.fullName || "Consumidor"}
                 </div>
 
-                <div
-                    className="text-[8px] text-slate-400 dark:text-slate-500 font-bold leading-snug truncate"
-                    title={stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
-                >
-                    <i className="bi bi-geo-alt-fill text-red-400 mr-0.5" />
-                    {stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
-                </div>
+                {!isPickup && (
+                    <div
+                        className="text-[8px] text-slate-400 dark:text-slate-500 font-bold leading-snug truncate"
+                        title={stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
+                    >
+                        <i className="bi bi-geo-alt-fill text-red-400 mr-0.5" />
+                        {stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
+                    </div>
+                )}
 
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                    <span className={`text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${order.shipping?.deliveryMethod === 'pickup'
+                    <span className={`text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${order.orderType === 'assistance'
+                        ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100/50 dark:border-amber-900/10'
+                        : order.shipping?.deliveryMethod === 'pickup'
                         ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100/50 dark:border-amber-900/10'
                         : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100/50 dark:border-indigo-900/10'}`}
                     >
-                        {order.shipping?.deliveryMethod === 'pickup' ? settings.modalityLabels.pickup : settings.modalityLabels.delivery}
+                        {order.orderType === 'assistance'
+                            ? settings.orderTypeLabels.assistance
+                            : (order.shipping?.deliveryMethod === 'pickup' ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery)}
                     </span>
 
                     {order.shipping?.orderType && (

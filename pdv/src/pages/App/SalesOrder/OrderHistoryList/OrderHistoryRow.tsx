@@ -1,7 +1,7 @@
 import React from "react";
 import Order, { VisibilitySettings } from "../../../types/order.type";
 import { getSettings } from "../../../utils/settingsService";
-import { formatCurrency } from "../../../utils/formatters";
+import { formatCurrency, formatToBRDate } from "../../../utils/formatters";
 import { buttons } from "../OrderActions/orderActionsConfig";
 import { isOrderIncomplete } from "../../../utils/validations";
 
@@ -82,7 +82,9 @@ const OrderHistoryRow = ({
                 return (
                     <td key="orderDate" className="px-6 py-4 text-left">
                         <div className="flex flex-col gap-1">
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{showTrash ? (order.deletedAt || order.date) : order.date}</span>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                                {showTrash ? formatToBRDate(order.deletedAt || order.date) : formatToBRDate(order.date)}
+                            </span>
                             {order.status === 'draft' && isIncomplete && !showTrash && (
                                 <span className="text-[10px] font-black uppercase tracking-widest text-orange-400 dark:text-orange-500 bg-orange-50 dark:bg-orange-950/30 px-2 py-0.5 rounded-md w-fit">
                                     Incompleto
@@ -96,7 +98,11 @@ const OrderHistoryRow = ({
                 let isPastDelivery = false;
                 if (deliveryDateStr) {
                     try {
-                        const [day, month, year] = deliveryDateStr.split('/').map(Number);
+                        const dateParts = deliveryDateStr.includes('/') ? deliveryDateStr.split('/') : deliveryDateStr.split('-');
+                        const day = deliveryDateStr.includes('/') ? Number(dateParts[0]) : Number(dateParts[2]);
+                        const month = deliveryDateStr.includes('/') ? Number(dateParts[1]) : Number(dateParts[1]);
+                        const year = deliveryDateStr.includes('/') ? Number(dateParts[2]) : Number(dateParts[0]);
+
                         const deliveryDate = new Date(year, month - 1, day);
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
@@ -111,7 +117,7 @@ const OrderHistoryRow = ({
                         <div className="flex flex-col gap-1.5 relative">
                             <div className="flex flex-col">
                                 <span className={`text-sm font-bold ${isPastDelivery && order.status !== 'fulfilled' && order.status !== 'cancelled' ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-200'}`}>
-                                    {deliveryDateStr || "-"}
+                                    {formatToBRDate(deliveryDateStr)}
                                 </span>
                                 <span className="text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-widest">
                                     {order.shipping?.scheduling?.time || "-"}
@@ -179,7 +185,7 @@ const OrderHistoryRow = ({
                             {order.orderType === 'assistance' && (
                                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[9px] font-black uppercase tracking-widest w-fit">
                                     <i className="bi bi-tools text-[8px]" />
-                                    Assistência
+                                    {settings.orderTypeLabels.assistance}
                                 </span>
                             )}
                         </div>
@@ -232,17 +238,23 @@ const OrderHistoryRow = ({
                         )}
                     </td>
                 );
-            case 'modality':
+            case 'orderType':
                 const isPickup = order.shipping?.deliveryMethod === 'pickup';
-                const modalityLabel = isPickup ? settings.modalityLabels.pickup : settings.modalityLabels.delivery;
+                const isAssistance = order.orderType === 'assistance';
+
+                let typeLabel = isPickup ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery;
+                if (isAssistance) typeLabel = settings.orderTypeLabels.assistance;
+
                 return (
-                    <td key="modality" className="px-6 py-4 text-left">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${isPickup
+                    <td key="orderType" className="px-6 py-4 text-left">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${isAssistance
                             ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
-                            : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'}`}
+                            : isPickup
+                                ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
+                                : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'}`}
                         >
-                            <i className={`bi ${isPickup ? 'bi-hand-index-thumb-fill' : 'bi-truck'}`} />
-                            {modalityLabel}
+                            <i className={`bi ${isAssistance ? 'bi-tools' : (isPickup ? 'bi-hand-index-thumb-fill' : 'bi-truck')}`} />
+                            {typeLabel}
                         </span>
                     </td>
                 );
@@ -353,10 +365,20 @@ const OrderHistoryRow = ({
         }
     };
 
+    const isPickupRow = order.shipping?.deliveryMethod === 'pickup';
+    const isAssistanceRow = order.orderType === 'assistance';
+
+    let rowBgClass = 'bg-indigo-50/30 dark:bg-indigo-900/10 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/20'; // Delivery default
+    if (isAssistanceRow) {
+        rowBgClass = 'bg-rose-50/30 dark:bg-rose-900/10 hover:bg-rose-100/50 dark:hover:bg-rose-900/20';
+    } else if (isPickupRow) {
+        rowBgClass = 'bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-100/50 dark:hover:bg-amber-900/20';
+    }
+
     return (
         <tr
             onClick={() => onViewDetails(order)}
-            className={`transition-colors group cursor-pointer ${showMenu || showPicker ? 'relative z-50' : ''} ${order.status === 'scheduled' ? 'hover:bg-blue-50/30 dark:hover:bg-blue-900/10' : 'bg-slate-50/50 dark:bg-slate-900/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/50'}`}
+            className={`transition-colors group cursor-pointer border-b border-white dark:border-slate-800/50 ${showMenu || showPicker ? 'relative z-[60]' : ''} ${rowBgClass}`}
         >
             {/* Row Checkbox */}
             <td className="p-0 w-12 text-center">

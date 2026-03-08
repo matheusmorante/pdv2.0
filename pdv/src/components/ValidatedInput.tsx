@@ -23,8 +23,8 @@ const ValidatedInput = ({
             <div className="relative">
                 <input
                     {...props}
-                    className={`w-full bg-transparent border-0 border-b px-1 py-3 transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${error
-                            ? 'border-red-500 dark:border-red-500/50 focus:border-red-600'
+                    className={`w-full min-w-[120px] bg-transparent border px-3 py-3 rounded-2xl transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${error
+                        ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg shadow-red-100 dark:shadow-red-900/10'
                             : 'border-slate-200 dark:border-slate-800 focus:border-blue-600 dark:focus:border-blue-500'
                         } ${className}`}
                 />

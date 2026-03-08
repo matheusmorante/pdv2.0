@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-type OrderTypeOption = 'sale' | 'assistance';
+type OrderTypeOption = 'sale' | 'pickup' | 'assistance';
 
 interface NewOrderDropdownProps {
     onSelect: (type: OrderTypeOption) => void;
@@ -9,16 +9,23 @@ interface NewOrderDropdownProps {
 const ORDER_OPTIONS: { type: OrderTypeOption; label: string; icon: string; description: string; color: string }[] = [
     {
         type: 'sale',
-        label: 'Pedido de Venda',
-        icon: 'bi-cart-plus-fill',
-        description: 'Produtos e serviços com itens e pagamentos',
+        label: 'Entrega / Serviço',
+        icon: 'bi-truck',
+        description: 'Produtos e serviços para entrega ao cliente',
         color: 'text-blue-600',
+    },
+    {
+        type: 'pickup',
+        label: 'Pedido de Retirada',
+        icon: 'bi-hand-index-thumb-fill',
+        description: 'Produtos para retirada no local',
+        color: 'text-emerald-600',
     },
     {
         type: 'assistance',
         label: 'Pedido de Assistência',
         icon: 'bi-tools',
-        description: 'Atendimento técnico sem itens no pedido',
+        description: 'Atendimento técnico local ou em loja',
         color: 'text-amber-500',
     },
 ];

@@ -2,7 +2,6 @@ import React from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import Order from "../../../types/pdvAction.type";
 import { getSettings } from "../../../utils/settingsService";
-import { useAutoScroll } from "../../../utils/useAutoScroll";
 import {
     stringifyFullAddressWithObservation,
     stringifyItemsWithValues,
@@ -25,6 +24,35 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
         ? `${scheduling.startTime} - ${scheduling.endTime}`
         : (scheduling.startTime || scheduling.time || "Horário não definido");
 
+    const isPickup = order.shipping?.deliveryMethod === 'pickup';
+    const isAssistance = order.orderType === 'assistance';
+
+    let cardColor = 'border-slate-200 dark:border-slate-800 bg-emerald-50/20 dark:bg-emerald-900/5 hover:border-emerald-400 dark:hover:border-emerald-500';
+    let draggingColor = 'shadow-emerald-300 dark:shadow-emerald-900/40 ring-emerald-600';
+    let headerColor = 'bg-emerald-50/80 dark:bg-emerald-900/10 group-hover:bg-emerald-100/50 dark:group-hover:bg-emerald-900/20';
+    let timeColor = 'text-emerald-500 dark:text-emerald-400';
+    let labelText = 'Entrega';
+    let handleHoverColor = 'hover:text-emerald-600 dark:hover:text-emerald-400';
+    let badgeColor = 'bg-emerald-600 dark:bg-emerald-500 text-white';
+
+    if (isAssistance) {
+        cardColor = 'border-amber-100 dark:border-amber-900/30 bg-amber-50/20 dark:bg-amber-900/5 hover:border-amber-400 dark:hover:border-amber-500';
+        draggingColor = 'shadow-amber-300 dark:shadow-amber-900/40 ring-amber-600';
+        headerColor = 'bg-amber-50/80 dark:bg-amber-900/10 group-hover:bg-amber-100/50 dark:group-hover:bg-amber-900/20';
+        timeColor = 'text-amber-500 dark:text-amber-400';
+        labelText = 'Assistência';
+        handleHoverColor = 'hover:text-amber-600 dark:hover:text-amber-400';
+        badgeColor = 'bg-amber-600 dark:bg-amber-500 text-white';
+    } else if (isPickup) {
+        cardColor = 'border-blue-100 dark:border-blue-900/30 bg-blue-50/20 dark:bg-blue-900/5 hover:border-blue-400 dark:hover:border-blue-500';
+        draggingColor = 'shadow-blue-300 dark:shadow-blue-900/40 ring-blue-600';
+        headerColor = 'bg-blue-50/80 dark:bg-blue-900/10 group-hover:bg-blue-100/50 dark:group-hover:bg-blue-900/20';
+        timeColor = 'text-blue-500 dark:text-blue-400';
+        labelText = 'Retirada';
+        handleHoverColor = 'hover:text-blue-600 dark:hover:text-blue-400';
+        badgeColor = 'bg-blue-600 dark:bg-blue-500 text-white';
+    }
+
     return (
         <Draggable draggableId={order.id || `temp-${index}`} index={index}>
             {(provided, snapshot) => (
@@ -32,47 +60,51 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     onClick={() => onOrderClick(order)}
-                    className={`group border rounded-2xl shadow-sm overflow-hidden transition-all duration-300 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xl cursor-pointer ${snapshot.isDragging
-                        ? "shadow-2xl shadow-blue-300 dark:shadow-blue-900/40 scale-[1.05] ring-2 ring-blue-600 z-50 ring-offset-4"
+                    className={`group border rounded-2xl shadow-sm overflow-hidden transition-all duration-300 cursor-pointer ${cardColor} ${snapshot.isDragging
+                        ? `shadow-2xl scale-[1.05] ring-2 z-50 ring-offset-4 ${draggingColor}`
                         : "hover:-translate-y-1"
                         }`}
                 >
                     {/* Card Header: Drag Handle & Time */}
-                    <div className="bg-slate-50/80 dark:bg-slate-800/50 px-5 py-4 border-b dark:border-slate-800 flex justify-between items-center group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/20 transition-colors">
+                    <div className={`px-5 py-4 border-b dark:border-slate-800 flex justify-between items-center transition-colors ${headerColor}`}>
                         <div className="flex items-center gap-4">
                             <div
                                 {...provided.dragHandleProps}
                                 onClick={(e) => e.stopPropagation()}
-                                className="cursor-grab active:cursor-grabbing text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-transparent dark:border-slate-700"
+                                className={`cursor-grab active:cursor-grabbing text-slate-400 dark:text-slate-500 p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-transparent dark:border-slate-700 transition-colors ${handleHoverColor}`}
                                 title="Mover pedido"
                             >
                                 <i className="bi bi-grip-vertical text-xl" />
                             </div>
                             <div className="flex flex-col">
                                 <span className="font-black text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-0.5">
-                                    Entrega
+                                    {labelText}
                                 </span>
                                 <span className="font-black text-sm tracking-tight flex items-center text-slate-800 dark:text-slate-200">
-                                    <i className="bi bi-clock-fill mr-2 text-blue-500 dark:text-blue-400" />
+                                    <i className={`bi bi-clock-fill mr-2 ${timeColor}`} />
                                     {displayTime}
                                 </span>
                             </div>
                         </div>
                         {isRange && (
-                            <span className="text-[9px] uppercase font-black bg-blue-600 dark:bg-blue-500 text-white px-3 py-1 rounded-full tracking-widest shadow-sm">
+                            <span className={`text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest shadow-sm ${badgeColor}`}>
                                 Período
                             </span>
                         )}
                     </div>
 
-                    {/* Modalidade & Manuseio Labels */}
+                    {/* Tipo de Pedido & Manuseio Labels */}
                     <div className="flex flex-wrap gap-2 px-5 pt-4">
-                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border ${order.shipping?.deliveryMethod === 'pickup'
+                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border ${order.orderType === 'assistance'
+                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
+                            : order.shipping?.deliveryMethod === 'pickup'
                             ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
                             : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'}`}
                         >
-                            <i className={`bi ${order.shipping?.deliveryMethod === 'pickup' ? 'bi-hand-index-thumb-fill' : 'bi-truck'} mr-1.5`} />
-                            {order.shipping?.deliveryMethod === 'pickup' ? settings.modalityLabels.pickup : settings.modalityLabels.delivery}
+                            <i className={`bi ${order.orderType === 'assistance' ? 'bi-tools' : (order.shipping?.deliveryMethod === 'pickup' ? 'bi-hand-index-thumb-fill' : 'bi-truck')} mr-1.5`} />
+                            {order.orderType === 'assistance'
+                                ? settings.orderTypeLabels.assistance
+                                : (order.shipping?.deliveryMethod === 'pickup' ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery)}
                         </span>
 
                         {order.shipping?.orderType && (
@@ -94,12 +126,14 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-3 text-slate-500 dark:text-slate-400 font-bold bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800/50 transition-colors">
-                            <i className="bi bi-geo-alt-fill text-red-500 mt-0.5" />
-                            <span className="leading-snug text-xs">
-                                {stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
-                            </span>
-                        </div>
+                        {!isPickup && (
+                            <div className="flex items-start gap-3 text-slate-500 dark:text-slate-400 font-bold bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800/50 transition-colors">
+                                <i className="bi bi-geo-alt-fill text-red-500 mt-0.5" />
+                                <span className="leading-snug text-xs">
+                                    {stringifyFullAddressWithObservation(order.customerData?.fullAddress)}
+                                </span>
+                            </div>
+                        )}
 
                         <div className="bg-blue-50/30 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/30 rounded-xl text-[11px] font-mono text-blue-900 dark:text-blue-200 whitespace-pre-line leading-relaxed group-hover:bg-white dark:group-hover:bg-slate-900 transition-colors">
                             <div className="font-black uppercase tracking-wider mb-2 pb-1 border-b border-blue-100 dark:border-blue-900/50 text-[9px] opacity-60">
@@ -128,19 +162,9 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
  * Main component for the Card Visualization of the Delivery Schedule
  */
 const ScheduleCardView = ({ schedule, handleDragEnd, onOrderClick }: Props) => {
-    const containerRef = React.useRef<HTMLDivElement>(null);
-    const settings = getSettings();
-
-    useAutoScroll(containerRef, {
-        direction: 'vertical',
-        threshold: settings.autoScroll.threshold,
-        maxSpeed: settings.autoScroll.speed,
-        enabled: settings.autoScroll.scheduleCards
-    });
-
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
-            <div ref={containerRef} className="flex flex-col gap-12 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex flex-col gap-12 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
                 {Object.entries(schedule).map(([date, orders]) => (
                     <div key={date} className="w-full">
                         {/* Date Divider */}

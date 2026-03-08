@@ -76,7 +76,7 @@ export default function Dashboard() {
                             {showConfig && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowConfig(false)}></div>
-                                    <div className="absolute top-full mt-3 left-0 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] shadow-2xl p-6 z-50 animate-slide-up">
+                                    <div className="absolute top-full mt-3 left-0 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 z-50 animate-slide-up">
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Visibilidade</h4>
                                         <div className="space-y-4">
                                             {Object.entries(visibility).map(([key, val]) => (
@@ -181,7 +181,7 @@ export default function Dashboard() {
             {/* Bottom Actions */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 pb-10">
                 {visibility.reports && (
-                    <div className="xl:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center gap-8 shadow-sm">
+                    <div className="xl:col-span-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 shadow-sm">
                         <div className="w-full md:w-1/3 text-center md:text-left">
                             <h4 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">Relatórios Detalhes</h4>
                             <p className="text-sm text-slate-500 mb-6">Analise transações e gere documentos instantaneamente.</p>
@@ -208,7 +208,7 @@ export default function Dashboard() {
 
                 {visibility.quickAction && (
                     <div className={visibility.reports ? "lg:col-span-1" : "lg:col-span-3"}>
-                        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-10 rounded-[2.5rem] text-white overflow-hidden relative group shadow-xl h-full flex flex-col justify-between">
+                        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-10 rounded-3xl text-white overflow-hidden relative group shadow-xl h-full flex flex-col justify-between">
                             <div className="relative z-10">
                                 <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md">
                                     <i className="bi bi-box-seam text-2xl text-white"></i>

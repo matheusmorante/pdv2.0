@@ -24,13 +24,13 @@ const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, delivery
     const errorKey = `item_${idx}_description`;
     const error = errors[errorKey];
     const settings = getSettings();
-    const currentModality = item.deliveryMethod || deliveryMethod;
+    const currentType = item.deliveryMethod || deliveryMethod;
 
     return (
         <tr key={idx} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0">
             <td className="px-4 py-2 relative group/desc">
                 <input
-                    className={`w-full bg-transparent border-0 border-b px-2 py-1.5 outline-none transition-all text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-200 ${error ? 'border-red-500 ring-1 ring-red-500/10' : 'border-transparent focus:border-blue-500'
+                    className={`w-full min-w-[200px] bg-transparent border px-3 py-1.5 rounded-xl outline-none transition-all text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-200 ${error ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg shadow-red-100 dark:shadow-red-900/10' : 'border-slate-100 dark:border-slate-800 focus:border-blue-500'
                         }`}
                     placeholder="Descrição do produto..."
                     value={item.description}
@@ -47,29 +47,29 @@ const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, delivery
             </td>
             <td className="px-4 py-2">
                 <select
-                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-1 py-1.5 outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
-                    value={currentModality}
+                    className="w-full min-w-[100px] bg-transparent border border-slate-100 dark:border-slate-800 focus:border-blue-500 px-2 py-1.5 rounded-xl outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
+                    value={currentType}
                     onChange={(e) => {
-                        const newModality = e.target.value as 'delivery' | 'pickup';
-                        onChange(idx, 'deliveryMethod', newModality);
+                        const newType = e.target.value as 'delivery' | 'pickup';
+                        onChange(idx, 'deliveryMethod', newType);
                         // Auto-update handling type to match first option of the new delivery method
-                        const options = newModality === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions;
+                        const options = newType === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions;
                         if (options.length > 0) {
                             onChange(idx, 'handlingType', options[0]);
                         }
                     }}
                 >
-                    <option value="delivery" className="dark:bg-slate-900">{settings.modalityLabels.delivery}</option>
-                    <option value="pickup" className="dark:bg-slate-900">{settings.modalityLabels.pickup}</option>
+                    <option value="delivery" className="dark:bg-slate-900">{settings.orderTypeLabels.delivery}</option>
+                    <option value="pickup" className="dark:bg-slate-900">{settings.orderTypeLabels.pickup}</option>
                 </select>
             </td>
             <td className="px-4 py-2">
                 <select
-                    className="w-full bg-transparent border-0 border-b border-transparent focus:border-blue-500 px-1 py-1.5 outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
+                    className="w-full min-w-[120px] bg-transparent border border-slate-100 dark:border-slate-800 focus:border-blue-500 px-2 py-1.5 rounded-xl outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
                     value={item.handlingType}
                     onChange={(e) => onChange(idx, 'handlingType', e.target.value)}
                 >
-                    {(currentModality === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions).map(opt => (
+                    {(currentType === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions).map(opt => (
                         <option key={opt} value={opt} className="dark:bg-slate-900">{opt}</option>
                     ))}
                 </select>

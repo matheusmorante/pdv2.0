@@ -85,7 +85,7 @@ const Products = () => {
                     <div className="flex gap-4">
                         <button
                             onClick={() => { setEditingProduct(null); setIsFormModalOpen(true); }}
-                            className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
+                            className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
                             title="Cadastrar novo produto ou serviço"
                         >
                             <i className="bi bi-plus-lg text-lg xl:text-xl" />
@@ -141,7 +141,7 @@ const Products = () => {
                             {showSettings && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowSettings(false)} />
-                                    <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-2xl p-4 flex flex-col gap-3 z-50 animate-slide-up">
+                                    <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-2xl p-4 flex flex-col gap-3 z-50 animate-slide-up">
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Colunas da Tabela</h4>
                                         <div className="grid grid-cols-1 gap-2">
                                             {[
@@ -173,7 +173,7 @@ const Products = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden border border-slate-100 dark:border-slate-800 transition-colors">
+                    <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none md:shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                         <ProductList
                             onEdit={(p) => { setEditingProduct(p); setIsFormModalOpen(true); }}
                             filters={activeFilters}
@@ -189,7 +189,7 @@ const Products = () => {
             {isTrashOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsTrashOpen(false)} />
-                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-6xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800">
+                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-6xl h-[80vh] rounded-2xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800">
                         <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">

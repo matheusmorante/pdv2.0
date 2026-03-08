@@ -10,7 +10,7 @@ export interface DashboardStat {
 }
 
 export const StatsCard = ({ title, value, icon, trend, trendValue, color }: DashboardStat) => (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 group">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 group">
         <div className="flex justify-between items-start mb-4">
             <div className={`p-4 rounded-2xl ${color} bg-opacity-10 transition-transform group-hover:scale-110 duration-300 flex items-center justify-center`}>
                 <i className={`bi bi-${icon} text-2xl ${color.replace('bg-', 'text-')}`}></i>
