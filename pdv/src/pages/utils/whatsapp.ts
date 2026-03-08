@@ -1,4 +1,4 @@
-import Order from "../types/pdvAction.type";
+import Order from "../types/order.type";
 import { getSettings } from "./settingsService";
 import {
     stringifyFullAddress, stringifyFullAddressWithObservation,

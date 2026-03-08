@@ -1,10 +1,9 @@
-import { calcPaymentsSummary } from "./calculations";
+import { calcPaymentsSummary, calcItemsSummary } from "./calculations";
 import CustomerData from "../types/customerData.type";
 import { Item } from "../types/items.type"
 import { Payment } from "../types/payments.type";
 import Shipping from "../types/Shipping.type";
-import Order from "../types/pdvAction.type";
-import { calcItemsSummary } from "../App/SalesOrder/pdvUtils";
+import Order from "../types/order.type";
 
 export type ValidationErrors = Record<string, string>;
 

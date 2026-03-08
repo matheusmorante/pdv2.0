@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import Order from "../../types/pdvAction.type";
+import Order from "../../types/order.type";
 import { subscribeToOrders, updateOrder } from "../../utils/orderHistoryService";
 import { DropResult } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";

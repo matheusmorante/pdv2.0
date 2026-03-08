@@ -111,6 +111,9 @@ const AIChatAssistant = () => {
     const [isListening, setIsListening] = useState(false);
     const [isCallMode, setIsCallMode] = useState(false);
     const [pendingActionData, setPendingActionData] = useState<any>(null);
+    const [pendingActionIntent, setPendingActionIntent] = useState<string | null>(null);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
+
     const [isAutoSpeakEnabled, setIsAutoSpeakEnabled] = useState(() => {
         return localStorage.getItem('lisandro_auto_speak') === 'true';
     });
@@ -256,17 +259,33 @@ const AIChatAssistant = () => {
         if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
 
         try {
-            const intentData = await aiService.detectIntent(text, settings.aiPrompts.taskDetection, pendingActionData);
+            const messagesRev = [...messages].reverse();
+            const lastPendingActionIndex = messagesRev.findIndex(m => m.isAction && m.actionStatus === 'pending');
+            const lastPendingAction = lastPendingActionIndex >= 0 ? messagesRev[lastPendingActionIndex] : null;
+
+            const currentContext = pendingActionData || (lastPendingAction?.actionData || null);
+
+            const intentData = await aiService.detectIntent(text, settings.aiPrompts.taskDetection, currentContext);
 
             if (intentData.intent && intentData.intent !== 'chat') {
-                const newData = { ...(pendingActionData || {}), ...intentData.data };
+                const newData = { ...(currentContext || {}), ...intentData.data };
 
                 if (intentData.status === 'incomplete') {
                     setPendingActionData(newData);
-                    setMessages(prev => [...prev, { role: 'assistant', content: intentData.summary || "Faltam detalhes.", timestamp: new Date() }]);
+                    setPendingActionIntent(intentData.intent);
+                    setMessages(prev => {
+                        const next = [...prev];
+                        const oldIdx = next.findLastIndex(m => m.isAction && m.actionStatus === 'pending');
+                        if (oldIdx >= 0 && !pendingActionData) {
+                            next.splice(oldIdx, 1);
+                        }
+                        next.push({ role: 'assistant', content: intentData.summary || "Faltam detalhes.", timestamp: new Date() });
+                        return next;
+                    });
                     speak(intentData.summary || "Faltam detalhes.");
                 } else {
                     setPendingActionData(null);
+                    setPendingActionIntent(null);
                     const actionMsg: Message = {
                         role: 'assistant',
                         content: intentData.summary || "Finalizar?",
@@ -276,11 +295,20 @@ const AIChatAssistant = () => {
                         actionData: newData,
                         actionStatus: 'pending'
                     };
-                    setMessages(prev => [...prev, actionMsg]);
+                    setMessages(prev => {
+                        const next = [...prev];
+                        const oldIdx = next.findLastIndex(m => m.isAction && m.actionStatus === 'pending');
+                        if (oldIdx >= 0) {
+                            next[oldIdx] = actionMsg;
+                            return next;
+                        }
+                        return [...next, actionMsg];
+                    });
                     speak(intentData.summary || "Finalizar?");
                 }
+                setShowPreviewModal(true);
             } else {
-                const chatData = await aiService.chat(text, settings.aiPrompts.generalChat, pendingActionData);
+                const chatData = await aiService.chat(text, settings.aiPrompts.generalChat, currentContext);
                 setMessages(prev => [...prev, { role: 'assistant', content: chatData.answer, timestamp: new Date() }]);
                 speak(chatData.answer);
             }
@@ -385,6 +413,7 @@ const AIChatAssistant = () => {
             }
 
             setMessages(prev => prev.map((m, i) => i === msgIndex ? { ...m, actionStatus: 'success', content: 'Salvo com sucesso! ✨' } : m));
+            setShowPreviewModal(false);
         } catch (error) {
             toast.error("Erro ao salvar.");
             setMessages(prev => prev.map((m, i) => i === msgIndex ? { ...m, actionStatus: 'error' } : m));
@@ -420,6 +449,13 @@ const AIChatAssistant = () => {
                             >
                                 <i className={`bi ${isCallMode ? 'bi-telephone-fill' : 'bi-telephone'}`}></i>
                                 {isCallMode && <span className="text-[10px] font-black uppercase">Em Call</span>}
+                            </button>
+                            <button
+                                onClick={() => setShowPreviewModal(!showPreviewModal)}
+                                className={`p-2 rounded-lg transition-all ${showPreviewModal ? 'bg-white/20 text-white' : 'text-white/40 hover:text-white/60'}`}
+                                title={"Ver Rascunho"}
+                            >
+                                <i className="bi bi-card-checklist"></i>
                             </button>
                             <button
                                 onClick={toggleAutoSpeak}
@@ -659,6 +695,80 @@ const AIChatAssistant = () => {
                     </div>
                 )}
             </button>
+
+            {/* Floating Preview Modal */}
+            {(() => {
+                const latestPendingActionIndex = messages.findLastIndex(m => m.isAction && m.actionStatus === 'pending');
+                const latestPendingAction = latestPendingActionIndex >= 0 ? messages[latestPendingActionIndex] : null;
+                const previewData = pendingActionData || latestPendingAction?.actionData;
+                const previewType = pendingActionIntent || latestPendingAction?.actionType;
+                const isPreviewComplete = !pendingActionData && !!latestPendingAction;
+
+                if (!showPreviewModal || !previewData) return null;
+
+                return (
+                    <div className="absolute bottom-20 right-[400px] w-80 max-h-[500px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col animate-slide-in-right custom-scrollbar z-[70] overflow-hidden">
+                        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-5 border-b border-slate-100 dark:border-slate-800 shrink-0 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                    <i className={`bi ${previewType === 'create_order' ? 'bi-cart-check' : 'bi-box-seam'} text-xl`}></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                                        Rascunho
+                                    </h3>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <span className={`w-2 h-2 rounded-full ${isPreviewComplete ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400 animate-pulse'}`}></span>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            {isPreviewComplete ? 'Pronto (Revise)' : 'Faltam detalhes'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowPreviewModal(false)} className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                <i className="bi bi-x-lg text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div className="p-5 flex flex-col gap-3 overflow-y-auto">
+                            {Object.entries(previewData).map(([key, value]) => {
+                                if (['intent', 'status', 'summary'].includes(key)) return null;
+                                const isConfirmed = confirmedFields[key];
+
+                                return (
+                                    <div key={key} className={`flex flex-col gap-1 p-3 rounded-2xl border transition-all ${isConfirmed ? 'bg-emerald-50/30 border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-900/30' : 'bg-slate-50/50 border-slate-100 dark:bg-slate-800/30 dark:border-slate-800'}`}>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">{labelMap[key] || key}</span>
+                                            <span className={`text-xs font-bold ${isConfirmed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'} whitespace-pre-wrap break-words`}>
+                                                {String(formatValue(key, value))}
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {Object.keys(previewData).filter(k => !['intent', 'status', 'summary'].includes(k)).length === 0 && (
+                                <div className="text-center py-6 text-slate-400 text-xs font-bold italic">
+                                    Aguardando informações...
+                                </div>
+                            )}
+                        </div>
+
+                        {isPreviewComplete && (
+                            <div className="p-5 border-t border-slate-100 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
+                                <button
+                                    onClick={() => {
+                                        if (latestPendingActionIndex >= 0) confirmAction(latestPendingActionIndex);
+                                        setShowPreviewModal(false);
+                                    }}
+                                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-200 dark:shadow-none transition-all flex items-center justify-center gap-2"
+                                >
+                                    SALVAR <i className="bi bi-check-lg"></i>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import Order from "../types/pdvAction.type";
+import Order from "../types/order.type";
 import { supabase } from "./supabaseConfig";
 import { capitalizeOrder } from "./formatters";
 
@@ -9,9 +9,9 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
     supabase.from(TABLE_NAME)
         .select('*')
         .order('id', { ascending: false })
-        .then(({ data, error }) => {
+        .then(({ data, error }: { data: any, error: any }) => {
             if (data && !error) {
-                const orders = data.map(row => {
+                const orders = data.map((row: any) => {
                     try {
                         const rawData = { id: String(row.id), ...row.order_data } as Order;
                         return capitalizeOrder(rawData);
@@ -31,9 +31,9 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
              supabase.from(TABLE_NAME)
                 .select('*')
                 .order('id', { ascending: false })
-                .then(({ data }) => {
+                .then(({ data }: { data: any }) => {
                     if (data) {
-                        const orders = data.map(row => {
+                        const orders = data.map((row: any) => {
                             try {
                                 const rawData = { id: String(row.id), ...row.order_data } as Order;
                                 return capitalizeOrder(rawData);

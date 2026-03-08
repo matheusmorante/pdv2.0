@@ -11,29 +11,21 @@ export interface AIChatResponse {
     answer: string;
 }
 
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
-
-// Use Groq (Llama 3) if key is present, otherwise fallback to Gemini
-const USE_LLAMA = GROQ_KEY && GROQ_KEY !== "SUA_CHAVE_GROQ_AQUI";
 
 // Configs for Llama 3 (Groq Cloud)
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const LLAMA_MODEL = "llama-3.3-70b-versatile";
-
-// Configs for Gemini (Backup)
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`;
 
 const DEFAULT_SYSTEM_PROMPT = `Você é um assistente virtual de vendas especializado em materiais de construção civil. 
 Aja de forma profissional, educada e direta. Ajude os clientes a encontrar os produtos certos.
 Responda sempre em Português do Brasil. Seja conciso nas respostas.`;
 
 async function callAI(systemPrompt: string, userMessage: string, temperature = 0.7) {
-    if (USE_LLAMA) {
-        return callGroq(systemPrompt, userMessage, temperature);
-    } else {
-        return callGemini(systemPrompt, userMessage, temperature);
+    if (!GROQ_KEY || GROQ_KEY === "SUA_CHAVE_GROQ_AQUI") {
+        throw new Error("Sem chaves de AI (Groq) configuradas.");
     }
+    return callGroq(systemPrompt, userMessage, temperature);
 }
 
 async function callGroq(systemPrompt: string, userMessage: string, temperature = 0.7) {
@@ -63,33 +55,9 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature =
         const data = await response.json();
         return data.choices?.[0]?.message?.content || "";
     } catch (error: any) {
-        console.error("Llama (Groq) fail, falling back to Gemini if available...", error);
-        if (GEMINI_KEY) return callGemini(systemPrompt, userMessage, temperature);
+        console.error("Groq API Error:", error);
         throw error;
     }
-}
-
-async function callGemini(systemPrompt: string, userMessage: string, temperature = 0.7) {
-    if (!GEMINI_KEY) throw new Error("Sem chaves de AI configuradas.");
-
-    const payload = {
-        contents: [
-            { role: "user", parts: [{ text: systemPrompt }] },
-            { role: "model", parts: [{ text: "Entendido. Como posso ajudar?" }] },
-            { role: "user", parts: [{ text: userMessage }] }
-        ],
-        generationConfig: { temperature: temperature }
-    };
-
-    const response = await fetch(GEMINI_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) throw new Error("Falha na comunicação com o Gemini API");
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
 export const aiService = {
@@ -129,3 +97,4 @@ export const aiService = {
         return { description: rawText || "" };
     }
 };
+

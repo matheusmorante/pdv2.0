@@ -1,4 +1,4 @@
-import Order from "../../../types/pdvAction.type";
+import Order from "../../../types/order.type";
 
 export const getHour = (time?: string) => {
     if (!time) return -1;

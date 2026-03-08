@@ -1,5 +1,5 @@
 import React from "react";
-import Order from "../../../types/pdvAction.type";
+import Order from "../../../types/order.type";
 import { stringifyFullAddressWithObservation, stringifyItems } from "../../../utils/formatters";
 import { getSettings } from "../../../utils/settingsService";
 import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";

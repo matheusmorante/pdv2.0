@@ -1,6 +1,6 @@
 import React from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import Order from "../../../types/pdvAction.type";
+import Order from "../../../types/order.type";
 import { getSettings } from "../../../utils/settingsService";
 import { stringifyFullAddressWithObservation, formatCurrency } from "../../../utils/formatters";
 import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";

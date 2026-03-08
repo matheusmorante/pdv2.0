@@ -1,5 +1,4 @@
-import React from "react";
-import Order from "../../types/pdvAction.type";
+import Order from "../../types/order.type";
 import ModalHeader from "./OrderDetailsModalComponents/ModalHeader";
 import { CustomerSection, ShippingSection, SchedulingSection, OrderTypeLabelsSection, HandlingTypeSection } from "./OrderDetailsModalComponents/CustomerShippingInfo";
 import { ItemsTable, FinancialSummary } from "./OrderDetailsModalComponents/ItemsFinancialInfo";

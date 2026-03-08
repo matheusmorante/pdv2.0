@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import Order from "../../../types/pdvAction.type";
+import Order from "../../../types/order.type";
 import TableCell from "../ScheduleTableViewComponents/TableCell";
 import { calculateLanes, getHour } from "../ScheduleTableViewComponents/laneUtils";
 import { getSettings } from "../../../utils/settingsService";

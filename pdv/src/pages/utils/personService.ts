@@ -4,25 +4,26 @@ import Person from "../types/person.type";
 const TABLE_NAME = "people";
 
 const mapToDB = (collectionName: string, person: Partial<Person>) => {
+    const p = person as any;
     return {
         person_type: collectionName,
-        full_name: person.fullName,
-        nickname: person.nickname,
-        cpf_cnpj: person.cpfCnpj,
-        rg_ie: person.rgIe,
-        email: person.email,
-        phone: person.phone,
-        address: person.address,
-        observation: person.observation,
-        active: person.active,
-        deleted: person.deleted,
+        full_name: p.fullName,
+        nickname: p.nickname || p.tradeName,
+        cpf_cnpj: p.cpfCnpj,
+        rg_ie: p.rgIe,
+        email: p.email,
+        phone: p.phone,
+        address: p.address || p.fullAddress,
+        observation: p.observation,
+        active: p.active,
+        deleted: p.deleted,
         deleted_at: person.deletedAt ? new Date().toISOString() : null, // Simplification
         updated_at: new Date().toISOString()
     };
 };
 
 const mapFromDB = (data: any): Person => {
-    return {
+    const p: any = {
         id: String(data.id),
         fullName: data.full_name,
         nickname: data.nickname,
@@ -38,6 +39,7 @@ const mapFromDB = (data: any): Person => {
         createdAt: data.created_at,
         updatedAt: data.updated_at
     };
+    return p as Person;
 };
 
 export const subscribeToPeople = (collectionName: string, callback: (people: Person[]) => void) => {

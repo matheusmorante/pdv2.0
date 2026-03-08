@@ -69,3 +69,26 @@ export const calcPaymentsSummary = (
         amountRemaining
     }
 };
+
+export const calcItemsSummary = (items: Item[]): ItemsSummary => {
+    const totalQuantity = sumKeyValues(items, 'quantity');
+    const totalFixedDiscount = items.reduce((acc, item) => {
+        const discount = getFixedDiscount(item);
+        return acc + (discount * item.quantity);
+    }, 0);
+    const itemsTotalValue = calcItemsTotalValue(items);
+    const itemsSubtotal = itemsTotalValue + totalFixedDiscount;
+
+    return {
+        totalQuantity,
+        itemsSubtotal,
+        totalFixedDiscount,
+        itemsTotalValue,
+    };
+};
+
+export const currencyToNumber = (currency: string): number => {
+    if (typeof currency !== 'string') return 0;
+    const num = Number(currency.replace(/[^\d.]/g, ''));
+    return isNaN(num) ? 0 : num;
+};
