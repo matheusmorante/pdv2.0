@@ -28,7 +28,8 @@ export type Product = {
     category?: string;
     unitPrice: number;
     costPrice?: number; // Preço de custo base
-    freightCost?: number;
+    freightType?: 'fixed' | 'percentage';
+    freightCost?: number; // Can be a fixed value or a percentage
     ipiPercent?: number;
     finalPurchasePrice?: number; // (costPrice + freight) * (1 + ipi/100) aprox.
     initialStock?: number;

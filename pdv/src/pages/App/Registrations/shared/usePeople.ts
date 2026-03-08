@@ -70,10 +70,8 @@ export const usePeople = (collectionName: string, filters?: any) => {
     }, [filteredPeople, currentPage, itemsPerPage]);
 
     const handleDelete = async (id: string) => {
-        if (window.confirm("Mover para a lixeira?")) {
-            await moveToTrash(collectionName, id);
-            toast.info("Movido para a lixeira.");
-        }
+        await moveToTrash(collectionName, id);
+        toast.info("Movido para a lixeira.");
     };
 
     const handleRestore = async (id: string) => {
@@ -90,17 +88,15 @@ export const usePeople = (collectionName: string, filters?: any) => {
 
     const handleBulkTrash = async () => {
         if (selectedPeople.length === 0) return;
-        if (window.confirm(`Mover ${selectedPeople.length} item(ns) para a lixeira?`)) {
-            setLoading(true);
-            try {
-                await Promise.all(selectedPeople.map(id => moveToTrash(collectionName, id)));
-                toast.info(`${selectedPeople.length} item(ns) movido(s) para a lixeira.`);
-                setSelectedPeople([]);
-            } catch (error) {
-                toast.error("Erro ao mover alguns itens para a lixeira.");
-            } finally {
-                setLoading(false);
-            }
+        setLoading(true);
+        try {
+            await Promise.all(selectedPeople.map(id => moveToTrash(collectionName, id)));
+            toast.info(`${selectedPeople.length} item(ns) movido(s) para a lixeira.`);
+            setSelectedPeople([]);
+        } catch (error) {
+            toast.error("Erro ao mover alguns itens para a lixeira.");
+        } finally {
+            setLoading(false);
         }
     };
 

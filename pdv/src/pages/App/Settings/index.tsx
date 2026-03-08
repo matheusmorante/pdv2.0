@@ -14,6 +14,7 @@ import HandlingSection from './components/HandlingSection';
 import AutoScrollSection from './components/AutoScrollSection';
 import AppearanceSection from './components/AppearanceSection';
 import AIPromptsSection from './components/AIPromptsSection';
+import OrderAutomationSection from './components/OrderAutomationSection';
 import SaveButton from './components/SaveButton';
 
 const categories = [
@@ -24,6 +25,7 @@ const categories = [
     { id: 'scroll', label: 'Scroll Automático', icon: 'bi-mouse3-fill', keywords: ['scroll', 'rolagem', 'automática', 'velocidade', 'sensibilidade'] },
     { id: 'aparencia', label: 'Aparência', icon: 'bi-palette', keywords: ['tema', 'escuro', 'claro', 'modo'] },
     { id: 'ia', label: 'Inteligência Artificial', icon: 'bi-robot', keywords: ['ia', 'ai', 'robot', 'prompt', 'descrição', 'chat', 'assistente'] },
+    { id: 'automacao', label: 'Automação de Pedidos', icon: 'bi-magic', keywords: ['automação', 'imprimir', 'recibo', 'whatsapp', 'entrega', 'cliente'] },
 ];
 
 /**
@@ -183,6 +185,10 @@ export default function Settings(): any {
 
                     <SettingsSection id="ia" title="Assistente de IA" icon="bi-robot" isVisible={isVisible('ia')}>
                         <AIPromptsSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="automacao" title="Automação de Pedidos" icon="bi-magic" isVisible={isVisible('automacao')}>
+                        <OrderAutomationSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
                 </div>
             </div>

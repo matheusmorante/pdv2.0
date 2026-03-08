@@ -33,7 +33,11 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
             </Link>
 
             {/* Pessoas */}
-            <div className="relative h-full flex items-center">
+            <div
+                className="relative h-full flex items-center"
+                onMouseEnter={() => setActiveMenu('registrations')}
+                onMouseLeave={() => setActiveMenu(null)}
+            >
                 <button onClick={() => toggle('registrations')} className={menuBtnClass(activeMenu === 'registrations')}>
                     <i className="bi bi-people-fill"></i>
                     Pessoas
@@ -49,7 +53,11 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
             </div>
 
             {/* Estoque */}
-            <div className="relative h-full flex items-center">
+            <div
+                className="relative h-full flex items-center"
+                onMouseEnter={() => setActiveMenu('stock')}
+                onMouseLeave={() => setActiveMenu(null)}
+            >
                 <button onClick={() => toggle('stock')} className={menuBtnClass(activeMenu === 'stock')}>
                     <i className="bi bi-box-seam-fill"></i>
                     Estoque
@@ -57,14 +65,18 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 </button>
                 {activeMenu === 'stock' && (
                     <div className={dropdownClass}>
-                        <Link to="/stock/launch" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Lançamentos</Link>
-                        <Link to="/stock/reports" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Relatórios de Estoque</Link>
+                        <Link to="/stock" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Controle de Saldo</Link>
+                        <Link to="/stock/launch" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Histórico / Lançamentos</Link>
                     </div>
                 )}
             </div>
 
             {/* Pedidos */}
-            <div className="relative h-full flex items-center">
+            <div
+                className="relative h-full flex items-center"
+                onMouseEnter={() => setActiveMenu('salesOrder')}
+                onMouseLeave={() => setActiveMenu(null)}
+            >
                 <button onClick={() => toggle('salesOrder')} className={menuBtnClass(activeMenu === 'salesOrder')}>
                     <i className="bi bi-cart-fill"></i>
                     Pedidos
@@ -73,15 +85,12 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 {activeMenu === 'salesOrder' && (
                     <div className={dropdownClass}>
                         <Link to="/sales-order" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Lista de Pedidos</Link>
-                        <Link to="/delivery-schedule" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Cronograma de Entrega</Link>
+                        <Link to="/delivery-schedule" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Cronograma Logístico</Link>
                     </div>
                 )}
             </div>
 
-            <Link to="/sales" className={navLinkClass}>
-                <i className="bi bi-cash-stack"></i>
-                Vendas
-            </Link>
+
             <Link to="/reports" className={navLinkClass}>
                 <i className="bi bi-bar-chart-fill"></i>
                 Relatórios

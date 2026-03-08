@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { subscribeToOrders } from '../../utils/orderHistoryService';
 import Order from '../../types/order.type';
 
-export type Period = 'today' | 'week' | 'month' | 'year' | 'max';
+export type Period = 'custom' | 'today' | 'week' | 'month' | 'semester' | 'year';
 
 const parsePTBRDate = (dateStr: string): Date | null => {
     try {
@@ -26,7 +26,7 @@ const STATUS_LABELS: Record<string, string> = {
     cancelled: 'Cancelado'
 };
 
-export const useDashboardData = (period: Period) => {
+export const useDashboardData = (period: Period, customStartDate?: string, customEndDate?: string) => {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -53,16 +53,28 @@ export const useDashboardData = (period: Period) => {
                     return diff <= 7 * 24 * 60 * 60 * 1000;
                 }
                 case 'month': return oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
+                case 'semester':
+                    const currentHalf = now.getMonth() < 6 ? 0 : 1;
+                    const oHalf = oDate.getMonth() < 6 ? 0 : 1;
+                    return oHalf === currentHalf && oDate.getFullYear() === now.getFullYear();
                 case 'year': return oDate.getFullYear() === now.getFullYear();
-                case 'max': return true;
+                case 'custom':
+                    if (customStartDate && customEndDate) {
+                        const s = new Date(customStartDate + "T00:00:00");
+                        const e = new Date(customEndDate + "T23:59:59");
+                        return oDate >= s && oDate <= e;
+                    }
+                    return true;
                 default: return true;
             }
         });
-    }, [orders, period]);
+    }, [orders, period, customStartDate, customEndDate]);
 
     const stats = useMemo(() => {
-        // Uma venda é reconhecida quando está 'Atendida', 'Agendada' ou 'Completa' (antigo)
-        const recognizedStatuses = ['scheduled', 'fulfilled', 'completed'];
+        // DEFINIÇÃO DE VENDA: No sistema, uma venda é reconhecida quando um pedido
+        // deixa de ser 'Rascunho' e passa para 'Agendado' (scheduled) ou 'Atendido' (fulfilled).
+        // Pedidos em rascunho ou cancelados não contabilizam como venda.
+        const recognizedStatuses = ['scheduled', 'fulfilled'];
         const saleOrders = filteredOrders.filter(o => recognizedStatuses.includes(o.status || ''));
         const totalSales = saleOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
         const avgTicket = saleOrders.length > 0 ? totalSales / saleOrders.length : 0;
@@ -79,10 +91,10 @@ export const useDashboardData = (period: Period) => {
     }, [filteredOrders]);
 
     const salesOverTime = useMemo(() => {
-        const days = period === 'max' ? 14 : (period === 'year' ? 12 : 7);
+        const days = period === 'year' || period === 'semester' ? 12 : 7;
         const lastDays = Array.from({ length: days }, (_, i) => {
             const date = new Date();
-            if (period === 'year') {
+            if (period === 'year' || period === 'semester') {
                 date.setMonth(date.getMonth() - i);
                 return `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
             }
@@ -99,12 +111,12 @@ export const useDashboardData = (period: Period) => {
             const dayOrders = orders.filter(o =>
                 !o.deleted &&
                 (o.date?.includes(dateStr)) &&
-                (['scheduled', 'fulfilled', 'completed'].includes(o.status || ''))
+                (['scheduled', 'fulfilled'].includes(o.status || ''))
             );
             const total = dayOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
 
             let label = dateStr;
-            if (period === 'year') {
+            if (period === 'year' || period === 'semester') {
                 const [m] = dateStr.split('/');
                 label = months[parseInt(m) - 1];
             } else {

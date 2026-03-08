@@ -1,28 +1,43 @@
-import { db } from "./firebaseConfig";
-import { collection, doc, setDoc, deleteDoc, query, onSnapshot, runTransaction } from "firebase/firestore";
+import { supabase } from "./supabaseConfig";
 import Service from "../types/service.type";
 
-const COLLECTION_NAME = "services";
-const METADATA_COLLECTION = "metadata";
-const COUNTER_DOC = "serviceCounter";
+const TABLE_NAME = "services";
+
+const mapFromDB = (data: any): Service => ({
+    id: String(data.id),
+    ...data.service_data,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
+});
 
 export const subscribeToServices = (callback: (services: Service[]) => void) => {
-    const q = query(collection(db, COLLECTION_NAME));
-
-    return onSnapshot(q, (querySnapshot) => {
-        const services: Service[] = [];
-
-        querySnapshot.forEach((doc) => {
-            services.push({ id: doc.id, ...doc.data() } as Service);
+    // Initial fetch
+    supabase.from(TABLE_NAME)
+        .select('*')
+        .order('id', { ascending: false })
+        .then(({ data, error }) => {
+            if (data && !error) {
+                callback(data.map(mapFromDB));
+            } else if (error) {
+                console.error("Erro ao buscar serviços iniciais:", error);
+                callback([]);
+            }
         });
 
-        services.sort((a, b) => (a.description || "").localeCompare(b.description || ""));
+    const channel = supabase.channel('services_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => {
+             supabase.from(TABLE_NAME)
+                .select('*')
+                .order('id', { ascending: false })
+                .then(({ data }) => {
+                    if (data) callback(data.map(mapFromDB));
+                });
+        })
+        .subscribe();
 
-        callback(services);
-    }, (error) => {
-        console.error("Erro no listener do Firebase para serviços:", error);
-        callback([]);
-    });
+    return () => {
+        supabase.removeChannel(channel);
+    };
 };
 
 export const saveService = async (service: Service): Promise<void> => {
@@ -32,30 +47,17 @@ export const saveService = async (service: Service): Promise<void> => {
     }
 
     try {
-        await runTransaction(db, async (transaction) => {
-            const counterRef = doc(db, METADATA_COLLECTION, COUNTER_DOC);
-            const counterSnap = await transaction.get(counterRef);
+        const serviceToSave = { ...service };
+        delete serviceToSave.id;
 
-            let nextIdValue = 1;
-            if (counterSnap.exists()) {
-                nextIdValue = (counterSnap.data().current || 0) + 1;
-            }
-
-            const newId = String(nextIdValue);
-            const now = new Date().toLocaleString('pt-BR');
-            
-            const newService = {
-                ...service,
-                id: newId,
-                active: service.active ?? true,
-                deleted: false,
-                createdAt: now,
-                updatedAt: now
-            };
-
-            transaction.set(counterRef, { current: nextIdValue });
-            transaction.set(doc(db, COLLECTION_NAME, newId), newService);
-        });
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .insert([{ 
+                service_data: serviceToSave,
+                updated_at: new Date().toISOString()
+            }]);
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao salvar o serviço: ", error);
         throw error;
@@ -64,12 +66,24 @@ export const saveService = async (service: Service): Promise<void> => {
 
 export const updateService = async (id: string, serviceToUpdate: Partial<Service>): Promise<void> => {
     try {
-        const now = new Date().toLocaleString('pt-BR');
-        const updated = {
-            ...serviceToUpdate,
-            updatedAt: now
-        }
-        await setDoc(doc(db, COLLECTION_NAME, id), updated, { merge: true });
+        const { data: current } = await supabase
+            .from(TABLE_NAME)
+            .select('service_data')
+            .eq('id', parseInt(id))
+            .single();
+
+        const merged = { ...(current?.service_data || {}), ...serviceToUpdate };
+        delete merged.id;
+
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .update({ 
+                service_data: merged,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao atualizar o serviço: ", error);
         throw error;
@@ -102,7 +116,12 @@ export const restoreService = async (id: string): Promise<void> => {
 
 export const permanentDeleteService = async (id: string): Promise<void> => {
     try {
-        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .delete()
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao deletar permanentemente o serviço: ", error);
         throw error;

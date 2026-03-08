@@ -1,34 +1,95 @@
-import { db } from "./firebaseConfig";
-import { collection, doc, setDoc, deleteDoc, query, onSnapshot, runTransaction } from "firebase/firestore";
+import { supabase } from "./supabaseConfig";
 import Product from "../types/product.type";
 
-const COLLECTION_NAME = "products";
-const METADATA_COLLECTION = "metadata";
-const COUNTER_DOC = "productCounter";
+const TABLE_NAME = "products";
 
-const deepClean = (obj: any): any => {
-    return JSON.parse(JSON.stringify(obj, (key, value) => {
-        return value === undefined ? null : value;
-    }));
+const mapToDB = (product: Partial<Product>) => {
+    return {
+        code: product.code,
+        description: product.description,
+        category: product.category,
+        unit_price: product.unitPrice,
+        cost_price: product.costPrice,
+        freight_type: product.freightType,
+        freight_cost: product.freightCost,
+        ipi_percent: product.ipiPercent,
+        final_purchase_price: product.finalPurchasePrice,
+        initial_stock: product.initialStock,
+        stock: product.stock,
+        min_stock: product.minStock,
+        unit: product.unit,
+        active: product.active,
+        deleted: product.deleted,
+        supplier_id: product.supplierId,
+        images: product.images,
+        ecommerce_description: product.ecommerceDescription,
+        has_variations: product.hasVariations,
+        variations: product.variations,
+        item_type: product.itemType,
+        fiscal: product.fiscal,
+        updated_at: new Date().toISOString()
+    };
+};
+
+const mapFromDB = (data: any): Product => {
+    return {
+        id: String(data.id),
+        code: data.code,
+        description: data.description,
+        category: data.category,
+        unitPrice: Number(data.unit_price),
+        costPrice: Number(data.cost_price),
+        freightType: data.freight_type || 'fixed',
+        freightCost: Number(data.freight_cost),
+        ipiPercent: Number(data.ipi_percent),
+        finalPurchasePrice: Number(data.final_purchase_price),
+        initialStock: Number(data.initial_stock),
+        stock: Number(data.stock),
+        minStock: Number(data.min_stock),
+        unit: data.unit,
+        active: data.active,
+        deleted: data.deleted,
+        supplierId: data.supplier_id,
+        images: data.images,
+        ecommerceDescription: data.ecommerce_description,
+        hasVariations: data.has_variations,
+        variations: data.variations,
+        itemType: data.item_type || 'product',
+        fiscal: data.fiscal,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+    };
 };
 
 export const subscribeToProducts = (callback: (products: Product[]) => void) => {
-    const q = query(collection(db, COLLECTION_NAME));
-
-    return onSnapshot(q, (querySnapshot) => {
-        const products: Product[] = [];
-
-        querySnapshot.forEach((doc) => {
-            products.push({ id: doc.id, ...doc.data() } as Product);
+    // Initial fetch
+    supabase.from(TABLE_NAME)
+        .select('*')
+        .order('description', { ascending: true })
+        .then(({ data, error }) => {
+            if (data && !error) {
+                callback(data.map(mapFromDB));
+            } else if (error) {
+                console.error("Erro ao buscar produtos iniciais:", error);
+                callback([]);
+            }
         });
 
-        products.sort((a, b) => (a.description || "").localeCompare(b.description || ""));
+    const channel = supabase.channel('products_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => {
+            // Re-fetch all on any change to keep sorting simple
+            supabase.from(TABLE_NAME)
+                .select('*')
+                .order('description', { ascending: true })
+                .then(({ data }) => {
+                    if (data) callback(data.map(mapFromDB));
+                });
+        })
+        .subscribe();
 
-        callback(products);
-    }, (error) => {
-        console.error("Erro no listener do Firebase para produtos:", error);
-        callback([]);
-    });
+    return () => {
+        supabase.removeChannel(channel);
+    };
 };
 
 export const saveProduct = async (product: Product): Promise<void> => {
@@ -38,31 +99,13 @@ export const saveProduct = async (product: Product): Promise<void> => {
     }
 
     try {
-        await runTransaction(db, async (transaction) => {
-            const counterRef = doc(db, METADATA_COLLECTION, COUNTER_DOC);
-            const counterSnap = await transaction.get(counterRef);
-
-            let nextIdValue = 1;
-            if (counterSnap.exists()) {
-                nextIdValue = (counterSnap.data().current || 0) + 1;
-            }
-
-            const newId = String(nextIdValue);
-            const now = new Date().toLocaleString('pt-BR');
-            
-            const newProduct = {
-                ...product,
-                id: newId,
-                code: product.code || newId.padStart(4, '0'),
-                active: product.active ?? true,
-                deleted: false,
-                createdAt: now,
-                updatedAt: now
-            };
-
-            transaction.set(counterRef, { current: nextIdValue });
-            transaction.set(doc(db, COLLECTION_NAME, newId), deepClean(newProduct));
-        });
+        const dbProduct = mapToDB(product);
+        // Supabase serial ID will handle the auto-increment
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .insert([dbProduct]);
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao salvar o produto: ", error);
         throw error;
@@ -71,12 +114,13 @@ export const saveProduct = async (product: Product): Promise<void> => {
 
 export const updateProduct = async (id: string, productToUpdate: Partial<Product>): Promise<void> => {
     try {
-        const now = new Date().toLocaleString('pt-BR');
-        const updated = deepClean({
-            ...productToUpdate,
-            updatedAt: now
-        });
-        await setDoc(doc(db, COLLECTION_NAME, id), updated, { merge: true });
+        const dbProduct = mapToDB(productToUpdate);
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .update(dbProduct)
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao atualizar o produto: ", error);
         throw error;
@@ -109,7 +153,12 @@ export const restoreProduct = async (id: string): Promise<void> => {
 
 export const permanentDeleteProduct = async (id: string): Promise<void> => {
     try {
-        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .delete()
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao deletar permanentemente o produto: ", error);
         throw error;

@@ -1,28 +1,43 @@
-import { db } from "./firebaseConfig";
-import { collection, doc, setDoc, deleteDoc, query, onSnapshot, runTransaction } from "firebase/firestore";
+import { supabase } from "./supabaseConfig";
 import VariationType from "../types/variation.type";
 
-const COLLECTION_NAME = "variations";
-const METADATA_COLLECTION = "metadata";
-const COUNTER_DOC = "variationCounter";
+const TABLE_NAME = "variations";
+
+const mapFromDB = (data: any): VariationType => ({
+    id: String(data.id),
+    ...data.variation_data,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at
+});
 
 export const subscribeToVariations = (callback: (variations: VariationType[]) => void) => {
-    const q = query(collection(db, COLLECTION_NAME));
-
-    return onSnapshot(q, (querySnapshot) => {
-        const variations: VariationType[] = [];
-
-        querySnapshot.forEach((doc) => {
-            variations.push({ id: doc.id, ...doc.data() } as VariationType);
+    // Initial fetch
+    supabase.from(TABLE_NAME)
+        .select('*')
+        .order('id', { ascending: false })
+        .then(({ data, error }) => {
+            if (data && !error) {
+                callback(data.map(mapFromDB));
+            } else if (error) {
+                console.error("Erro ao buscar variações iniciais:", error);
+                callback([]);
+            }
         });
 
-        variations.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    const channel = supabase.channel('variations_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => {
+             supabase.from(TABLE_NAME)
+                .select('*')
+                .order('id', { ascending: false })
+                .then(({ data }) => {
+                    if (data) callback(data.map(mapFromDB));
+                });
+        })
+        .subscribe();
 
-        callback(variations);
-    }, (error) => {
-        console.error("Erro no listener do Firebase para variações:", error);
-        callback([]);
-    });
+    return () => {
+        supabase.removeChannel(channel);
+    };
 };
 
 export const saveVariation = async (variation: VariationType): Promise<void> => {
@@ -32,30 +47,17 @@ export const saveVariation = async (variation: VariationType): Promise<void> => 
     }
 
     try {
-        await runTransaction(db, async (transaction) => {
-            const counterRef = doc(db, METADATA_COLLECTION, COUNTER_DOC);
-            const counterSnap = await transaction.get(counterRef);
+        const variationToSave = { ...variation };
+        delete variationToSave.id;
 
-            let nextIdValue = 1;
-            if (counterSnap.exists()) {
-                nextIdValue = (counterSnap.data().current || 0) + 1;
-            }
-
-            const newId = String(nextIdValue);
-            const now = new Date().toLocaleString('pt-BR');
-            
-            const newVariation = {
-                ...variation,
-                id: newId,
-                active: variation.active ?? true,
-                deleted: false,
-                createdAt: now,
-                updatedAt: now
-            };
-
-            transaction.set(counterRef, { current: nextIdValue });
-            transaction.set(doc(db, COLLECTION_NAME, newId), newVariation);
-        });
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .insert([{ 
+                variation_data: variationToSave,
+                updated_at: new Date().toISOString()
+            }]);
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao salvar a variação: ", error);
         throw error;
@@ -64,12 +66,24 @@ export const saveVariation = async (variation: VariationType): Promise<void> => 
 
 export const updateVariation = async (id: string, variationToUpdate: Partial<VariationType>): Promise<void> => {
     try {
-        const now = new Date().toLocaleString('pt-BR');
-        const updated = {
-            ...variationToUpdate,
-            updatedAt: now
-        }
-        await setDoc(doc(db, COLLECTION_NAME, id), updated, { merge: true });
+        const { data: current } = await supabase
+            .from(TABLE_NAME)
+            .select('variation_data')
+            .eq('id', parseInt(id))
+            .single();
+
+        const merged = { ...(current?.variation_data || {}), ...variationToUpdate };
+        delete merged.id;
+
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .update({ 
+                variation_data: merged,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao atualizar a variação: ", error);
         throw error;
@@ -102,7 +116,12 @@ export const restoreVariation = async (id: string): Promise<void> => {
 
 export const permanentDeleteVariation = async (id: string): Promise<void> => {
     try {
-        await deleteDoc(doc(db, COLLECTION_NAME, id));
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .delete()
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error("Erro ao deletar permanentemente a variação: ", error);
         throw error;

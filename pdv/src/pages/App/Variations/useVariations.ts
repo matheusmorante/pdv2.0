@@ -17,7 +17,6 @@ export const useVariations = () => {
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!window.confirm("Tem certeza que deseja apagar esta variação?")) return;
         try {
             await moveToTrash(id);
             toast.success("Variação movida para a lixeira.");

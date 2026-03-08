@@ -32,6 +32,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         category: "Produtos",
         unitPrice: 0,
         costPrice: 0,
+        freightType: 'fixed',
         freightCost: 0,
         ipiPercent: 0,
         finalPurchasePrice: 0,
@@ -93,14 +94,23 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
     // Calculate final purchase price automatically
     useEffect(() => {
         const cost = formData.costPrice || 0;
-        const freight = formData.freightCost || 0;
-        const ipi = formData.ipiPercent || 0;
-        const final = (cost + freight) * (1 + ipi / 100);
+        const freightVal = formData.freightCost || 0;
+        const freightType = formData.freightType || 'fixed';
 
-        if (final !== formData.finalPurchasePrice) {
+        let freightAmount = 0;
+        if (freightType === 'percentage') {
+            freightAmount = cost * (freightVal / 100);
+        } else {
+            freightAmount = freightVal;
+        }
+
+        const ipi = formData.ipiPercent || 0;
+        const final = (cost + freightAmount) * (1 + ipi / 100);
+
+        if (Math.abs(final - (formData.finalPurchasePrice || 0)) > 0.01) {
             setFormData(prev => ({ ...prev, finalPurchasePrice: Number(final.toFixed(2)) }));
         }
-    }, [formData.costPrice, formData.freightCost, formData.ipiPercent]);
+    }, [formData.costPrice, formData.freightCost, formData.freightType, formData.ipiPercent]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -264,7 +274,12 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                                         stock: 0,
                                         initialStock: 0,
                                         minStock: 0,
-                                        ipiPercent: 0
+                                        ipiPercent: 0,
+                                        fiscal: {
+                                            ...(prev.fiscal || {}),
+                                            ncm: "00",
+                                            origem: "0"
+                                        }
                                     }));
                                     if (activeTab === 'variacoes' || activeTab === 'estoque') setActiveTab('geral');
                                 }}
@@ -289,7 +304,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                                 { id: 'estoque', label: 'Estoque & Fornec.', icon: 'bi-graph-up-arrow' },
                                 { id: 'variacoes', label: 'Variações', icon: 'bi-grid-3x3-gap' },
                             ] : []),
-                            { id: 'ecommerce', label: 'E-commerce', icon: 'bi-cart-check' },
+                            { id: 'ecommerce', label: 'E-commerce (Informações Específicas)', icon: 'bi-cart-check' },
                             { id: 'fiscal', label: 'Tributário / NF', icon: 'bi-file-earmark-text' },
                         ].map(tab => (
                             <button
@@ -394,13 +409,34 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                                     {formData.itemType === 'product' && (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="flex flex-col gap-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Frete (R$)</label>
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                                                        Frete ({formData.freightType === 'percentage' ? '%' : 'R$'})
+                                                    </label>
+                                                    <div className="flex bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg gap-0.5 scale-75 origin-right">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setFormData({ ...formData, freightType: 'fixed' })}
+                                                            className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase transition-all ${formData.freightType === 'fixed' || !formData.freightType ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                                                        >
+                                                            $
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setFormData({ ...formData, freightType: 'percentage' })}
+                                                            className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase transition-all ${formData.freightType === 'percentage' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                                                        >
+                                                            %
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 <input
                                                     type="number"
                                                     step="0.01"
                                                     value={formData.freightCost}
                                                     onChange={(e) => setFormData({ ...formData, freightCost: parseFloat(e.target.value) })}
                                                     className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none text-sm"
+                                                    placeholder={formData.freightType === 'percentage' ? "0.00 %" : "0.00"}
                                                 />
                                             </div>
                                             <div className="flex flex-col gap-2">

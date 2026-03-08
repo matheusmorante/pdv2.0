@@ -15,16 +15,25 @@ interface VisibilityConfig {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const PERIODS: { label: string, value: Period }[] = [
-    { label: 'Hoje', value: 'today' },
+    { label: 'Personalizado', value: 'custom' },
     { label: 'Semana', value: 'week' },
     { label: 'Mês', value: 'month' },
+    { label: 'Semestre', value: 'semester' },
     { label: 'Ano', value: 'year' },
-    { label: 'Máximo', value: 'max' },
 ];
 
 export default function Dashboard() {
     const [period, setPeriod] = useState<Period>('week');
-    const { loading, stats, salesOverTime, statusData } = useDashboardData(period);
+    const [customStartDate, setCustomStartDate] = useState(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        return d.toISOString().split('T')[0];
+    });
+    const [customEndDate, setCustomEndDate] = useState(() => {
+        const d = new Date();
+        return d.toISOString().split('T')[0];
+    });
+    const { loading, stats, salesOverTime, statusData } = useDashboardData(period, customStartDate, customEndDate);
     const [showConfig, setShowConfig] = useState(false);
 
     const [visibility, setVisibility] = useState<VisibilityConfig>(() => {
@@ -65,6 +74,11 @@ export default function Dashboard() {
                             Dash<span className="text-blue-600">board</span>
                         </h1>
                         
+                        <div className="hidden sm:flex px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-[9px] font-black uppercase tracking-widest items-center gap-1.5 cursor-help" title="Métricas baseadas em pedidos Agendados e Atendidos. Rascunhos e Cancelados não contabilizam.">
+                            <i className="bi bi-info-circle-fill"></i>
+                            Venda: Agendado/Atendido
+                        </div>
+
                         <div className="relative">
                             <button 
                                 onClick={() => setShowConfig(!showConfig)}
@@ -107,20 +121,39 @@ export default function Dashboard() {
                     </p>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                    <div className="bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-1">
-                        {PERIODS.map((p) => (
-                            <button
-                                key={p.value}
-                                onClick={() => setPeriod(p.value)}
-                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p.value ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                            >
-                                {p.label}
-                            </button>
-                        ))}
+                <div className="flex flex-col items-end gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                        {period === 'custom' && (
+                            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm animate-fade-in">
+                                <input
+                                    type="date"
+                                    value={customStartDate}
+                                    onChange={(e) => setCustomStartDate(e.target.value)}
+                                    className="px-3 py-1.5 text-[10px] font-black uppercase text-slate-600 dark:text-slate-300 bg-transparent outline-none cursor-pointer"
+                                />
+                                <span className="text-slate-300 dark:text-slate-600 font-bold">-</span>
+                                <input
+                                    type="date"
+                                    value={customEndDate}
+                                    onChange={(e) => setCustomEndDate(e.target.value)}
+                                    className="px-3 py-1.5 text-[10px] font-black uppercase text-slate-600 dark:text-slate-300 bg-transparent outline-none cursor-pointer"
+                                />
+                            </div>
+                        )}
+                        <div className="bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-1">
+                            {PERIODS.map((p) => (
+                                <button
+                                    key={p.value}
+                                    onClick={() => setPeriod(p.value)}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p.value ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     
-                    <div className="px-5 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest group">
+                    <div className="px-5 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest group w-fit">
                         <i className="bi bi-calendar3 text-blue-500 group-hover:rotate-12 transition-transform"></i>
                         {todayStr}
                     </div>

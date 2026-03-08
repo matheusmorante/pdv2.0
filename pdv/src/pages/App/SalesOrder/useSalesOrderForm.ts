@@ -22,6 +22,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
     const { customerData, setCustomerData } = useCustomerData();
     const [observation, setObservation] = useState("");
     const [seller, setSeller] = useState("");
+    const [marketingOrigin, setMarketingOrigin] = useState("Direto na Loja");
     const [currentOrderId, setCurrentOrderId] = useState<string | undefined>(undefined);
     const [status, setStatus] = useState<string>('draft');
     const [isSaving, setIsSaving] = useState(false);
@@ -37,14 +38,14 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
 
     // Stable state ref for callbacks
     const latestState = useRef({
-        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving
+        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, isSaving
     });
 
     useEffect(() => {
         latestState.current = {
-            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving
+            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, isSaving
         };
-    }, [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, isSaving]);
+    }, [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, isSaving]);
 
     const getOrderData = useCallback((newStatus?: 'draft' | 'scheduled' | 'fulfilled' | 'cancelled'): Order => {
         const s = latestState.current;
@@ -60,6 +61,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
             customerData: s.customerData,
             observation: s.observation,
             seller: s.seller,
+            marketingOrigin: s.marketingOrigin,
             date: dateNow(),
         };
     }, []);
@@ -86,7 +88,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
             if (payments.length > 1) return false;
             if (payments.length === 1 && payments[0].amount !== 0) return false;
             // Check Observation and Seller
-            if (observation !== '' || seller !== '') return false;
+            if (observation !== '' || seller !== '' || marketingOrigin !== 'Direto na Loja') return false;
 
             return true;
         })();
@@ -110,7 +112,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         return () => {
             if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
         };
-    }, [items, shipping, payments, customerData, observation, seller, getOrderData]);
+    }, [items, shipping, payments, customerData, observation, seller, marketingOrigin, getOrderData]);
 
     const loadOrderForEditing = useCallback((order: Order) => {
         setItems(order.items);
@@ -119,10 +121,11 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         setCustomerData(order.customerData);
         setObservation(order.observation);
         setSeller(order.seller as string);
+        setMarketingOrigin(order.marketingOrigin || 'Direto na Loja');
         setCurrentOrderId(order.id);
         setStatus(order.status || 'draft');
         setErrors({});
-    }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller]);
+    }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setMarketingOrigin]);
 
     const handleAutoCalculateDistance = useCallback(async (address: CustomerData['fullAddress']) => {
         if (!address.street || !address.city) return;
@@ -246,8 +249,9 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         customerData,
         observation,
         seller,
+        marketingOrigin,
         date: dateNow(),
-    }), [currentOrderId, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, status]);
+    }), [currentOrderId, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, status]);
 
     const isValidForCompletion = useMemo(() => validateBase(getOrderData('scheduled')), [getOrderData]);
 
@@ -258,6 +262,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         customerData,
         observation,
         seller,
+        marketingOrigin,
         currentOrderId,
         status,
         isSaving,
@@ -267,7 +272,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         currentOrder,
         isValidForCompletion,
         errors,
-    }), [items, shipping, payments, customerData, observation, seller, currentOrderId, status, isSaving, isCalculatingDistance, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion, errors]);
+    }), [items, shipping, payments, customerData, observation, seller, marketingOrigin, currentOrderId, status, isSaving, isCalculatingDistance, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion, errors]);
 
     const actions = useMemo(() => ({
         setItems,
@@ -301,6 +306,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
                 return next;
             });
         },
+        setMarketingOrigin,
         loadOrderForEditing,
         handleAutoCalculateDistance,
         handleSaveOrder: handleCompleteOrder,
@@ -308,7 +314,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         clearForm,
         setErrors,
         validateOrder,
-    }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, loadOrderForEditing, handleAutoCalculateDistance, handleCompleteOrder, clearForm]);
+    }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setMarketingOrigin, loadOrderForEditing, handleAutoCalculateDistance, handleCompleteOrder, clearForm]);
 
     return { state, actions };
 };

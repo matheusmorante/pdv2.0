@@ -125,7 +125,7 @@ export const useDeliverySchedule = () => {
     const handleShare = () => {
         const scheduleUrl = `${window.location.origin}/schedule`;
         const shareText = encodeURIComponent(
-            `📦 Cronograma de Entregas (${viewMode === "card" ? "Lista" : "Grade"})\n` +
+            `📦 Cronograma Logístico (${viewMode === "card" ? "Lista" : "Grade"})\n` +
             `🔗 Acesse online agora: ${scheduleUrl}`
         );
 

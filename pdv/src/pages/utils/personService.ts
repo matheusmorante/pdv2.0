@@ -1,24 +1,78 @@
-import { db } from "./firebaseConfig";
-import { collection, doc, setDoc, deleteDoc, query, onSnapshot, runTransaction, where } from "firebase/firestore";
+import { supabase } from "./supabaseConfig";
 import Person from "../types/person.type";
 
+const TABLE_NAME = "people";
+
+const mapToDB = (collectionName: string, person: Partial<Person>) => {
+    return {
+        person_type: collectionName,
+        full_name: person.fullName,
+        nickname: person.nickname,
+        cpf_cnpj: person.cpfCnpj,
+        rg_ie: person.rgIe,
+        email: person.email,
+        phone: person.phone,
+        address: person.address,
+        observation: person.observation,
+        active: person.active,
+        deleted: person.deleted,
+        deleted_at: person.deletedAt ? new Date().toISOString() : null, // Simplification
+        updated_at: new Date().toISOString()
+    };
+};
+
+const mapFromDB = (data: any): Person => {
+    return {
+        id: String(data.id),
+        fullName: data.full_name,
+        nickname: data.nickname,
+        cpfCnpj: data.cpf_cnpj,
+        rgIe: data.rg_ie,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        observation: data.observation,
+        active: data.active,
+        deleted: data.deleted,
+        deletedAt: data.deleted_at,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+    };
+};
+
 export const subscribeToPeople = (collectionName: string, callback: (people: Person[]) => void) => {
-    const q = query(collection(db, collectionName));
-
-    return onSnapshot(q, (querySnapshot) => {
-        const people: Person[] = [];
-
-        querySnapshot.forEach((doc) => {
-            people.push({ id: doc.id, ...doc.data() } as Person);
+    // Initial fetch
+    supabase.from(TABLE_NAME)
+        .select('*')
+        .eq('person_type', collectionName)
+        .order('full_name', { ascending: true })
+        .then(({ data, error }) => {
+            if (data && !error) {
+                callback(data.map(mapFromDB));
+            } else if (error) {
+                console.error(`Erro ao buscar ${collectionName} iniciais:`, error);
+                callback([]);
+            }
         });
 
-        people.sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
+    const channel = supabase.channel(`${collectionName}_changes`)
+        .on('postgres_changes', 
+            { event: '*', schema: 'public', table: TABLE_NAME, filter: `person_type=eq.${collectionName}` }, 
+            () => {
+                supabase.from(TABLE_NAME)
+                    .select('*')
+                    .eq('person_type', collectionName)
+                    .order('full_name', { ascending: true })
+                    .then(({ data }) => {
+                        if (data) callback(data.map(mapFromDB));
+                    });
+            }
+        )
+        .subscribe();
 
-        callback(people);
-    }, (error) => {
-        console.error(`Erro no listener do Firebase para ${collectionName}:`, error);
-        callback([]);
-    });
+    return () => {
+        supabase.removeChannel(channel);
+    };
 };
 
 export const savePerson = async (collectionName: string, person: Person): Promise<void> => {
@@ -28,32 +82,12 @@ export const savePerson = async (collectionName: string, person: Person): Promis
     }
 
     try {
-        await runTransaction(db, async (transaction) => {
-            const METADATA_COLLECTION = "metadata";
-            const COUNTER_DOC = `${collectionName}Counter`;
-            const counterRef = doc(db, METADATA_COLLECTION, COUNTER_DOC);
-            const counterSnap = await transaction.get(counterRef);
-
-            let nextIdValue = 1;
-            if (counterSnap.exists()) {
-                nextIdValue = (counterSnap.data().current || 0) + 1;
-            }
-
-            const newId = String(nextIdValue);
-            const now = new Date().toLocaleString('pt-BR');
-            
-            const newPerson = {
-                ...person,
-                id: newId,
-                active: person.active ?? true,
-                deleted: false,
-                createdAt: now,
-                updatedAt: now
-            };
-
-            transaction.set(counterRef, { current: nextIdValue });
-            transaction.set(doc(db, collectionName, newId), newPerson);
-        });
+        const dbPerson = mapToDB(collectionName, person);
+        const { error } = await supabase
+            .from(TABLE_NAME)
+                .insert([dbPerson]);
+        
+        if (error) throw error;
     } catch (error) {
         console.error(`Erro ao salvar em ${collectionName}: `, error);
         throw error;
@@ -62,12 +96,13 @@ export const savePerson = async (collectionName: string, person: Person): Promis
 
 export const updatePerson = async (collectionName: string, id: string, personToUpdate: Partial<Person>): Promise<void> => {
     try {
-        const now = new Date().toLocaleString('pt-BR');
-        const updated = {
-            ...personToUpdate,
-            updatedAt: now
-        }
-        await setDoc(doc(db, collectionName, id), updated, { merge: true });
+        const dbPerson = mapToDB(collectionName, personToUpdate);
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .update(dbPerson)
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error(`Erro ao atualizar em ${collectionName}: `, error);
         throw error;
@@ -102,7 +137,12 @@ export const restorePerson = async (collectionName: string, id: string): Promise
 
 export const permanentDeletePerson = async (collectionName: string, id: string): Promise<void> => {
     try {
-        await deleteDoc(doc(db, collectionName, id));
+        const { error } = await supabase
+            .from(TABLE_NAME)
+            .delete()
+            .eq('id', parseInt(id));
+        
+        if (error) throw error;
     } catch (error) {
         console.error(`Erro ao deletar permanentemente em ${collectionName}: `, error);
         throw error;

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { useTheme } from "./context/ThemeContext";
+import { useAuth } from "./context/AuthContext";
 import DesktopNav from "./components/layout/DesktopNav";
 import MobileNav from "./components/layout/MobileNav";
 import AIChatAssistant from "./components/shared/AIChatAssistant";
@@ -12,6 +13,7 @@ export default function AppLayout() {
   const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { logout } = useAuth();
 
   return (
     <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-screen font-['Inter',_sans-serif] transition-colors duration-300">
@@ -61,6 +63,13 @@ export default function AppLayout() {
           <Link to="/settings" className="hidden sm:block p-2 xl:p-3 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-all">
             <i className="bi bi-gear-fill text-lg xl:text-xl"></i>
           </Link>
+          <button
+            onClick={logout}
+            className="hidden sm:flex p-2 xl:p-3 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition-all rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/10"
+            title="Sair do Sistema"
+          >
+            <i className="bi bi-box-arrow-right text-lg xl:text-xl"></i>
+          </button>
           <div className="w-8 h-8 xl:w-10 xl:h-10 bg-slate-100 dark:bg-slate-800 rounded-full border-2 border-slate-200 dark:border-slate-700"></div>
         </div>
       </header>

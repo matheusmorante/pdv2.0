@@ -1,6 +1,7 @@
 import React from "react";
 import { stringifyFullAddressWithObservation, formatToBRDate } from "../../../utils/formatters";
 import { getSettings } from "../../../utils/settingsService";
+import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";
 
 export const CustomerSection = ({ fullName, phone, noPhone }: { fullName?: string, phone?: string, noPhone?: boolean }) => (
     <section>
@@ -23,6 +24,9 @@ export const OrderTypeLabelsSection = ({ deliveryMethod, orderType }: { delivery
     const settings = getSettings();
     const isAssistance = orderType === 'assistance';
     const isPickup = deliveryMethod === 'pickup';
+    const colors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
+    const colorKey = resolveOrderColor(orderType, deliveryMethod, colors);
+    const cls = getOrderTypeClasses(colorKey);
 
     let label = isPickup ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery;
     if (isAssistance) label = settings.orderTypeLabels.assistance;
@@ -32,11 +36,7 @@ export const OrderTypeLabelsSection = ({ deliveryMethod, orderType }: { delivery
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-5 flex items-center gap-2">
                 <i className="bi bi-tag-fill" /> Tipo de Pedido
             </h3>
-            <div className={`p-6 rounded-3xl border transition-colors duration-300 flex items-center gap-3 ${isAssistance
-                ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
-                : isPickup
-                    ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
-                    : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'}`}>
+            <div className={`p-6 rounded-3xl border transition-colors duration-300 flex items-center gap-3 ${cls.badge}`}>
                 <i className={`bi ${isAssistance ? 'bi-tools' : (isPickup ? 'bi-hand-index-thumb-fill' : 'bi-truck')} text-xl`} />
                 <span className="text-sm font-black uppercase tracking-widest">{label}</span>
             </div>

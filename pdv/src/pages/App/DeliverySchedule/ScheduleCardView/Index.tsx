@@ -2,10 +2,9 @@ import React from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import Order from "../../../types/pdvAction.type";
 import { getSettings } from "../../../utils/settingsService";
-import {
-    stringifyFullAddressWithObservation,
-    stringifyItemsWithValues,
-} from "../../../utils/formatters";
+import { stringifyFullAddressWithObservation, formatCurrency } from "../../../utils/formatters";
+import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";
+import { calcItemTotalValue } from "../../../utils/calculations";
 
 interface Props {
     schedule: Record<string, Order[]>;
@@ -24,34 +23,20 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
         ? `${scheduling.startTime} - ${scheduling.endTime}`
         : (scheduling.startTime || scheduling.time || "Horário não definido");
 
+    const colors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
+    const colorKey = resolveOrderColor(order.orderType, order.shipping?.deliveryMethod, colors);
+    const cls = getOrderTypeClasses(colorKey);
+
     const isPickup = order.shipping?.deliveryMethod === 'pickup';
     const isAssistance = order.orderType === 'assistance';
 
-    let cardColor = 'border-slate-200 dark:border-slate-800 bg-emerald-50/20 dark:bg-emerald-900/5 hover:border-emerald-400 dark:hover:border-emerald-500';
-    let draggingColor = 'shadow-emerald-300 dark:shadow-emerald-900/40 ring-emerald-600';
-    let headerColor = 'bg-emerald-50/80 dark:bg-emerald-900/10 group-hover:bg-emerald-100/50 dark:group-hover:bg-emerald-900/20';
-    let timeColor = 'text-emerald-500 dark:text-emerald-400';
-    let labelText = 'Entrega';
-    let handleHoverColor = 'hover:text-emerald-600 dark:hover:text-emerald-400';
-    let badgeColor = 'bg-emerald-600 dark:bg-emerald-500 text-white';
+    const labelText = isAssistance
+        ? settings.orderTypeLabels.assistance
+        : (isPickup ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery);
 
-    if (isAssistance) {
-        cardColor = 'border-amber-100 dark:border-amber-900/30 bg-amber-50/20 dark:bg-amber-900/5 hover:border-amber-400 dark:hover:border-amber-500';
-        draggingColor = 'shadow-amber-300 dark:shadow-amber-900/40 ring-amber-600';
-        headerColor = 'bg-amber-50/80 dark:bg-amber-900/10 group-hover:bg-amber-100/50 dark:group-hover:bg-amber-900/20';
-        timeColor = 'text-amber-500 dark:text-amber-400';
-        labelText = 'Assistência';
-        handleHoverColor = 'hover:text-amber-600 dark:hover:text-amber-400';
-        badgeColor = 'bg-amber-600 dark:bg-amber-500 text-white';
-    } else if (isPickup) {
-        cardColor = 'border-blue-100 dark:border-blue-900/30 bg-blue-50/20 dark:bg-blue-900/5 hover:border-blue-400 dark:hover:border-blue-500';
-        draggingColor = 'shadow-blue-300 dark:shadow-blue-900/40 ring-blue-600';
-        headerColor = 'bg-blue-50/80 dark:bg-blue-900/10 group-hover:bg-blue-100/50 dark:group-hover:bg-blue-900/20';
-        timeColor = 'text-blue-500 dark:text-blue-400';
-        labelText = 'Retirada';
-        handleHoverColor = 'hover:text-blue-600 dark:hover:text-blue-400';
-        badgeColor = 'bg-blue-600 dark:bg-blue-500 text-white';
-    }
+    const typeLabel = isAssistance
+        ? settings.orderTypeLabels.assistance
+        : (isPickup ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery);
 
     return (
         <Draggable draggableId={order.id || `temp-${index}`} index={index}>
@@ -60,18 +45,18 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     onClick={() => onOrderClick(order)}
-                    className={`group border rounded-2xl shadow-sm overflow-hidden transition-all duration-300 cursor-pointer ${cardColor} ${snapshot.isDragging
-                        ? `shadow-2xl scale-[1.05] ring-2 z-50 ring-offset-4 ${draggingColor}`
+                    className={`group border rounded-2xl shadow-sm overflow-hidden transition-all duration-300 cursor-pointer ${cls.cardBg} ${cls.cardBorder} ${snapshot.isDragging
+                        ? `shadow-2xl scale-[1.05] ring-2 z-50 ring-offset-4`
                         : "hover:-translate-y-1"
                         }`}
                 >
                     {/* Card Header: Drag Handle & Time */}
-                    <div className={`px-5 py-4 border-b dark:border-slate-800 flex justify-between items-center transition-colors ${headerColor}`}>
+                    <div className={`px-5 py-4 border-b dark:border-slate-800 flex justify-between items-center transition-colors ${cls.headerBg}`}>
                         <div className="flex items-center gap-4">
                             <div
                                 {...provided.dragHandleProps}
                                 onClick={(e) => e.stopPropagation()}
-                                className={`cursor-grab active:cursor-grabbing text-slate-400 dark:text-slate-500 p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-transparent dark:border-slate-700 transition-colors ${handleHoverColor}`}
+                                className={`cursor-grab active:cursor-grabbing text-slate-400 dark:text-slate-500 p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-transparent dark:border-slate-700 transition-colors ${cls.handleHover}`}
                                 title="Mover pedido"
                             >
                                 <i className="bi bi-grip-vertical text-xl" />
@@ -81,13 +66,13 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                                     {labelText}
                                 </span>
                                 <span className="font-black text-sm tracking-tight flex items-center text-slate-800 dark:text-slate-200">
-                                    <i className={`bi bi-clock-fill mr-2 ${timeColor}`} />
+                                    <i className={`bi bi-clock-fill mr-2 ${cls.timeText}`} />
                                     {displayTime}
                                 </span>
                             </div>
                         </div>
                         {isRange && (
-                            <span className={`text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest shadow-sm ${badgeColor}`}>
+                            <span className={`text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-widest shadow-sm ${cls.dotBg}`}>
                                 Período
                             </span>
                         )}
@@ -95,16 +80,9 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
 
                     {/* Tipo de Pedido & Manuseio Labels */}
                     <div className="flex flex-wrap gap-2 px-5 pt-4">
-                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border ${order.orderType === 'assistance'
-                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
-                            : order.shipping?.deliveryMethod === 'pickup'
-                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
-                            : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'}`}
-                        >
-                            <i className={`bi ${order.orderType === 'assistance' ? 'bi-tools' : (order.shipping?.deliveryMethod === 'pickup' ? 'bi-hand-index-thumb-fill' : 'bi-truck')} mr-1.5`} />
-                            {order.orderType === 'assistance'
-                                ? settings.orderTypeLabels.assistance
-                                : (order.shipping?.deliveryMethod === 'pickup' ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery)}
+                        <span className={`text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border ${cls.badge}`}>
+                            <i className={`bi ${isAssistance ? 'bi-tools' : (isPickup ? 'bi-hand-index-thumb-fill' : 'bi-truck')} mr-1.5`} />
+                            {typeLabel}
                         </span>
 
                         {order.shipping?.orderType && (
@@ -135,11 +113,33 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                             </div>
                         )}
 
-                        <div className="bg-blue-50/30 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/30 rounded-xl text-[11px] font-mono text-blue-900 dark:text-blue-200 whitespace-pre-line leading-relaxed group-hover:bg-white dark:group-hover:bg-slate-900 transition-colors">
-                            <div className="font-black uppercase tracking-wider mb-2 pb-1 border-b border-blue-100 dark:border-blue-900/50 text-[9px] opacity-60">
-                                Itens do Pedido
+                        <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
+                            {/* Header */}
+                            <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                <i className="bi bi-box-seam text-[10px] text-slate-400 dark:text-slate-500" />
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                                    Lista de Itens
+                                </span>
+                                <span className="ml-auto text-[9px] font-black text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full px-2 py-0.5">
+                                    {order.items?.length ?? 0}
+                                </span>
                             </div>
-                            {stringifyItemsWithValues(order.items)}
+                            {/* Item rows */}
+                            <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                {(order.items || []).map((item, i) => (
+                                    <div key={i} className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                                        {/* Qty badge */}
+                                        <span className={`flex-shrink-0 min-w-[2rem] text-center text-[10px] font-black px-1.5 py-0.5 rounded-md ${cls.dotBg}`}>
+                                            {item.quantity} Un
+                                        </span>
+                                        {/* Description */}
+                                        <span className="flex-1 text-xs font-bold text-slate-700 dark:text-slate-200 leading-snug">
+                                            {item.description}
+                                            {(item as any).supplierName && ` - ${(item as any).supplierName}`}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         {order.observation && (
@@ -172,7 +172,7 @@ const ScheduleCardView = ({ schedule, handleDragEnd, onOrderClick }: Props) => {
                             <div className="h-0.5 flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-800"></div>
                             <div className="flex flex-col items-center">
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 dark:text-slate-600 mb-2">
-                                    Cronograma Diário
+                                    Cronograma Logístico
                                 </span>
                                 <h3 className="text-sm font-black uppercase text-blue-600 dark:text-blue-400 tracking-widest bg-blue-50 dark:bg-blue-900/20 px-6 py-2 rounded-2xl border-2 border-blue-100 dark:border-blue-900/30 shadow-sm shadow-blue-50 dark:shadow-none transition-colors">
                                     {new Date(date + "T00:00:00").toLocaleDateString("pt-BR", {

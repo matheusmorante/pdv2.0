@@ -17,7 +17,6 @@ export const useServices = () => {
 
     const handleDelete = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!window.confirm("Tem certeza que deseja apagar este serviço?")) return;
         try {
             await moveToTrash(id);
             toast.success("Serviço movido para a lixeira.");

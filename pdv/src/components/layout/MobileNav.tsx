@@ -98,15 +98,12 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                         {activeMenu === 'salesOrder' && (
                             <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
                                 <Link to="/sales-order" onClick={onClose} className={mobileSubLinkClass}>Lista de Pedidos</Link>
-                                <Link to="/delivery-schedule" onClick={onClose} className={mobileSubLinkClass}>Cronograma</Link>
+                                <Link to="/delivery-schedule" onClick={onClose} className={mobileSubLinkClass}>Cronograma Logístico</Link>
                             </div>
                         )}
                     </div>
 
-                    <Link to="/sales" onClick={onClose} className={mobileLinkClass}>
-                        <i className="bi bi-cash-stack text-lg"></i>
-                        Vendas
-                    </Link>
+
                     <Link to="/reports" onClick={onClose} className={mobileLinkClass}>
                         <i className="bi bi-bar-chart-fill text-lg"></i>
                         Relatórios

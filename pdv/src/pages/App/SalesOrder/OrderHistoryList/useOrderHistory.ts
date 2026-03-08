@@ -96,10 +96,8 @@ export const useOrderHistory = (filters?: any) => {
     }, [filteredOrders, currentPage, itemsPerPage]);
 
     const handleDelete = async (id: string) => {
-        if (window.confirm("Mover este pedido para a lixeira?")) {
-            await moveToTrash(id);
-            toast.info("Pedido movido para a lixeira.");
-        }
+        await moveToTrash(id);
+        toast.info("Pedido movido para a lixeira.");
     };
 
     const handleRestore = async (id: string) => {
@@ -116,17 +114,15 @@ export const useOrderHistory = (filters?: any) => {
 
     const handleBulkTrash = async () => {
         if (selectedOrders.length === 0) return;
-        if (window.confirm(`Mover ${selectedOrders.length} pedido(s) para a lixeira?`)) {
-            setLoading(true);
-            try {
-                await Promise.all(selectedOrders.map(id => moveToTrash(id)));
-                toast.info(`${selectedOrders.length} pedido(s) movido(s) para a lixeira.`);
-                setSelectedOrders([]);
-            } catch (error) {
-                toast.error("Erro ao mover alguns pedidos para a lixeira.");
-            } finally {
-                setLoading(false);
-            }
+        setLoading(true);
+        try {
+            await Promise.all(selectedOrders.map(id => moveToTrash(id)));
+            toast.info(`${selectedOrders.length} pedido(s) movido(s) para a lixeira.`);
+            setSelectedOrders([]);
+        } catch (error) {
+            toast.error("Erro ao mover alguns pedidos para a lixeira.");
+        } finally {
+            setLoading(false);
         }
     };
 

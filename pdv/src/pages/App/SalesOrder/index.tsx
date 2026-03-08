@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import OrderHistoryList from "./OrderHistoryList";
 import OrderEditModal from "./OrderEditModal";
 import NewSaleOrder from "./NewSaleOrder";
@@ -107,6 +108,15 @@ const SalesOrder = () => {
                                 <i className="bi bi-trash3"></i>
                                 Lixeira
                             </button>
+
+                            <Link
+                                to="/delivery-schedule"
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-sm font-bold text-xs uppercase tracking-widest border bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50 hover:border-emerald-300 hover:bg-emerald-100 dark:hover:border-emerald-700`}
+                                title="Acessar o Cronograma Logístico"
+                            >
+                                <i className="bi bi-calendar3"></i>
+                                Cronograma
+                            </Link>
                         </div>
 
                         <div className="relative">

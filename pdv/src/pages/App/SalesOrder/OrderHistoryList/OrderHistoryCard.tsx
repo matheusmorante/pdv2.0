@@ -2,6 +2,7 @@ import React from "react";
 import Order from "../../../types/order.type";
 import { getSettings } from "../../../utils/settingsService";
 import { formatCurrency, formatToBRDate } from "../../../utils/formatters";
+import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";
 import { buttons } from "../OrderActions/orderActionsConfig";
 
 interface OrderHistoryCardProps {
@@ -43,15 +44,10 @@ const OrderHistoryCard = ({
 
     const currentStatus = statuses.find(s => s.id === (order.status || 'draft')) || statuses[0];
 
-    const isPickupCard = order.shipping?.deliveryMethod === 'pickup';
-    const isAssistanceCard = order.orderType === 'assistance';
-
-    let cardBgClass = 'bg-white dark:bg-slate-900';
-    if (isAssistanceCard) {
-        cardBgClass = 'bg-rose-50/20 dark:bg-rose-900/10';
-    } else if (isPickupCard) {
-        cardBgClass = 'bg-amber-50/20 dark:bg-amber-900/10';
-    }
+    const colors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
+    const colorKey = resolveOrderColor(order.orderType, order.shipping?.deliveryMethod, colors);
+    const cls = getOrderTypeClasses(colorKey);
+    const cardBgClass = cls.rowHover;
 
     return (
         <div 

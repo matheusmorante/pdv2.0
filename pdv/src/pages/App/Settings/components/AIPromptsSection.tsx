@@ -118,7 +118,7 @@ const AIPromptsSection = ({ settings, onChange }: AIPromptsSectionProps) => {
                 <div className="flex flex-col gap-4">
                     <div className="flex-1">
                         <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider flex items-center gap-2">
-                            Prompt: Chat Geral (Antigravity)
+                            Prompt: Chat Geral (Lizandro)
                         </h4>
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">Define a personalidade e o escopo do assistente de chat.</p>
                     </div>

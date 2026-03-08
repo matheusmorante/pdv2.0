@@ -2,6 +2,7 @@ import React from "react";
 import Order from "../../../types/pdvAction.type";
 import { stringifyFullAddressWithObservation, stringifyItems } from "../../../utils/formatters";
 import { getSettings } from "../../../utils/settingsService";
+import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";
 
 interface Props {
     order: Order;
@@ -12,22 +13,16 @@ interface Props {
 const TableCell = ({ order, duration, onOrderClick }: Props) => {
     const settings = getSettings();
 
+    const colors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
+    const colorKey = resolveOrderColor(order.orderType, order.shipping?.deliveryMethod, colors);
+    const cls = getOrderTypeClasses(colorKey);
+
     const isPickup = order.shipping?.deliveryMethod === 'pickup';
     const isAssistance = order.orderType === 'assistance';
 
-    let containerColor = 'bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/30 hover:border-blue-400 dark:hover:border-blue-500';
-    let timeColor = 'text-blue-700 dark:text-blue-400';
-    let badgeColor = 'bg-blue-600 text-white';
-
-    if (isAssistance) {
-        containerColor = 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-500';
-        timeColor = 'text-amber-700 dark:text-amber-500';
-        badgeColor = 'bg-amber-600 text-white';
-    } else if (isPickup) {
-        containerColor = 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-900/40 hover:border-emerald-400 dark:hover:border-emerald-500';
-        timeColor = 'text-emerald-700 dark:text-emerald-500';
-        badgeColor = 'bg-emerald-600 text-white';
-    }
+    const typeLabel = isAssistance
+        ? settings.orderTypeLabels.assistance
+        : (isPickup ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery);
 
     return (
         <td
@@ -36,15 +31,15 @@ const TableCell = ({ order, duration, onOrderClick }: Props) => {
         >
             <div
                 onClick={() => onOrderClick(order)}
-                className={`h-full border-2 rounded-xl p-3 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col gap-2 cursor-pointer ${containerColor}`}
+                className={`h-full border-2 rounded-xl p-3 shadow-sm hover:shadow-md transition-all group overflow-hidden flex flex-col gap-2 cursor-pointer ${cls.cardBg} ${cls.cardBorder}`}
             >
                 <div className="flex justify-between items-start mb-1 pb-1 border-b border-slate-100 dark:border-slate-800">
-                    <span className={`font-black text-[9px] uppercase tracking-widest whitespace-nowrap ${timeColor}`}>
+                    <span className={`font-black text-[9px] uppercase tracking-widest whitespace-nowrap ${cls.timeText}`}>
                         {order.shipping.scheduling.startTime || order.shipping.scheduling.time}
                         {order.shipping.scheduling.type === 'range' && ` → ${order.shipping.scheduling.endTime}`}
                     </span>
                     {order.shipping.scheduling.type === 'range' && (
-                        <span className={`text-[7px] font-black px-1 py-0.5 rounded uppercase tracking-tighter ${badgeColor}`}>
+                        <span className={`text-[7px] font-black px-1 py-0.5 rounded uppercase tracking-tighter ${cls.dotBg}`}>
                             Período
                         </span>
                     )}
@@ -65,15 +60,8 @@ const TableCell = ({ order, duration, onOrderClick }: Props) => {
                 )}
 
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                    <span className={`text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${order.orderType === 'assistance'
-                        ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100/50 dark:border-amber-900/10'
-                        : order.shipping?.deliveryMethod === 'pickup'
-                        ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100/50 dark:border-amber-900/10'
-                        : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100/50 dark:border-indigo-900/10'}`}
-                    >
-                        {order.orderType === 'assistance'
-                            ? settings.orderTypeLabels.assistance
-                            : (order.shipping?.deliveryMethod === 'pickup' ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery)}
+                    <span className={`text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${cls.badge}`}>
+                        {typeLabel}
                     </span>
 
                     {order.shipping?.orderType && (
@@ -84,7 +72,7 @@ const TableCell = ({ order, duration, onOrderClick }: Props) => {
                 </div>
 
                 <div className="mt-1 bg-slate-50/80 dark:bg-slate-800/50 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 group-hover:bg-blue-50/30 dark:group-hover:bg-blue-900/20 transition-colors">
-                    <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 opacity-60">Itens</p>
+                    <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 opacity-60">Lista de Itens</p>
                     <p className="text-[9px] font-mono text-slate-600 dark:text-slate-400 leading-tight line-clamp-2">
                         {stringifyItems(order.items || [])}
                     </p>

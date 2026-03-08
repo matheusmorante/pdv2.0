@@ -80,10 +80,8 @@ export const useProducts = (filters?: any) => {
     }, [filteredProducts, currentPage, itemsPerPage]);
 
     const handleDelete = async (id: string) => {
-        if (window.confirm("Mover este produto para a lixeira?")) {
-            await moveToTrash(id);
-            toast.info("Produto movido para a lixeira.");
-        }
+        await moveToTrash(id);
+        toast.info("Produto movido para a lixeira.");
     };
 
     const handleRestore = async (id: string) => {
@@ -100,17 +98,15 @@ export const useProducts = (filters?: any) => {
 
     const handleBulkTrash = async () => {
         if (selectedProducts.length === 0) return;
-        if (window.confirm(`Mover ${selectedProducts.length} produto(s) para a lixeira?`)) {
-            setLoading(true);
-            try {
-                await Promise.all(selectedProducts.map(id => moveToTrash(id)));
-                toast.info(`${selectedProducts.length} produto(s) movido(s) para a lixeira.`);
-                setSelectedProducts([]);
-            } catch (error) {
-                toast.error("Erro ao mover alguns produtos para a lixeira.");
-            } finally {
-                setLoading(false);
-            }
+        setLoading(true);
+        try {
+            await Promise.all(selectedProducts.map(id => moveToTrash(id)));
+            toast.info(`${selectedProducts.length} produto(s) movido(s) para a lixeira.`);
+            setSelectedProducts([]);
+        } catch (error) {
+            toast.error("Erro ao mover alguns produtos para a lixeira.");
+        } finally {
+            setLoading(false);
         }
     };
 

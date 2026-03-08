@@ -4,6 +4,7 @@ import { getSettings } from "../../../utils/settingsService";
 import { formatCurrency, formatToBRDate } from "../../../utils/formatters";
 import { buttons } from "../OrderActions/orderActionsConfig";
 import { isOrderIncomplete } from "../../../utils/validations";
+import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";
 
 interface OrderHistoryRowProps {
     order: Order;
@@ -182,12 +183,16 @@ const OrderHistoryRow = ({
                     <td key="customer" className="px-6 py-4 text-left">
                         <div className="flex flex-col gap-1">
                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{order.customerData?.fullName || "Não informado"}</span>
-                            {order.orderType === 'assistance' && (
-                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 text-[9px] font-black uppercase tracking-widest w-fit">
-                                    <i className="bi bi-tools text-[8px]" />
-                                    {settings.orderTypeLabels.assistance}
-                                </span>
-                            )}
+                            {order.orderType === 'assistance' && (() => {
+                                const assistColors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
+                                const assistCls = getOrderTypeClasses(assistColors.assistance);
+                                return (
+                                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest w-fit ${assistCls.badge}`}>
+                                        <i className="bi bi-tools text-[8px]" />
+                                        {settings.orderTypeLabels.assistance}
+                                    </span>
+                                );
+                            })()}
                         </div>
                     </td>
                 );
@@ -245,14 +250,12 @@ const OrderHistoryRow = ({
                 let typeLabel = isPickup ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery;
                 if (isAssistance) typeLabel = settings.orderTypeLabels.assistance;
 
+                const typeColors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
+                const typeCls = getOrderTypeClasses(resolveOrderColor(order.orderType, order.shipping?.deliveryMethod, typeColors));
+
                 return (
                     <td key="orderType" className="px-6 py-4 text-left">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${isAssistance
-                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
-                            : isPickup
-                                ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30'
-                                : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30'}`}
-                        >
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${typeCls.badge}`}>
                             <i className={`bi ${isAssistance ? 'bi-tools' : (isPickup ? 'bi-hand-index-thumb-fill' : 'bi-truck')}`} />
                             {typeLabel}
                         </span>
@@ -365,20 +368,15 @@ const OrderHistoryRow = ({
         }
     };
 
-    const isPickupRow = order.shipping?.deliveryMethod === 'pickup';
-    const isAssistanceRow = order.orderType === 'assistance';
-
-    let rowBgClass = 'bg-indigo-50/30 dark:bg-indigo-900/10 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/20'; // Delivery default
-    if (isAssistanceRow) {
-        rowBgClass = 'bg-rose-50/30 dark:bg-rose-900/10 hover:bg-rose-100/50 dark:hover:bg-rose-900/20';
-    } else if (isPickupRow) {
-        rowBgClass = 'bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-100/50 dark:hover:bg-amber-900/20';
-    }
+    const rowColors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
+    const rowColorKey = resolveOrderColor(order.orderType, order.shipping?.deliveryMethod, rowColors);
+    const cls = getOrderTypeClasses(rowColorKey);
+    const finalRowBg = cls.rowHover;
 
     return (
         <tr
             onClick={() => onViewDetails(order)}
-            className={`transition-colors group cursor-pointer border-b border-white dark:border-slate-800/50 ${showMenu || showPicker ? 'relative z-[60]' : ''} ${rowBgClass}`}
+            className={`transition-colors group cursor-pointer border-b border-white dark:border-slate-800/50 ${showMenu || showPicker ? 'relative z-[60]' : ''} ${finalRowBg} ${isSelected ? cls.rowActive : ''}`}
         >
             {/* Row Checkbox */}
             <td className="p-0 w-12 text-center">

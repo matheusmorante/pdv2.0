@@ -1,5 +1,4 @@
-import { db } from "./firebaseConfig";
-import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { supabase } from "./supabaseConfig";
 
 export interface OrderStatusConfig {
     id: string;
@@ -7,6 +6,8 @@ export interface OrderStatusConfig {
     color: 'slate' | 'amber' | 'emerald' | 'rose' | 'blue' | 'purple' | 'indigo' | 'fuchsia';
     isCore?: boolean;
 }
+
+export type OrderTypeColor = 'orange' | 'purple' | 'green' | 'blue' | 'amber' | 'rose' | 'indigo' | 'emerald' | 'cyan' | 'pink';
 
 export interface AppSettings {
     // Automação e Status
@@ -25,6 +26,11 @@ export interface AppSettings {
         delivery: string;
         pickup: string;
         assistance: string;
+    };
+    orderTypeColors: {
+        delivery: OrderTypeColor;
+        pickup: OrderTypeColor;
+        assistance: OrderTypeColor;
     };
     deliveryHandlingOptions: string[]; 
     pickupHandlingOptions: string[];
@@ -62,10 +68,18 @@ export interface AppSettings {
         aiName: string;
         aiAvatar: string;
     };
+    orderAutomation: {
+        autoPrintReceipt: boolean;
+        autoPrintDeliveryOrder: boolean;
+        autoSendWhatsAppDelivery: boolean;
+        autoSendCustomerOrder: boolean;
+        deliveryPhone: string;
+    };
 }
 
 const SETTINGS_KEY = 'pdv_app_settings';
-const FIREBASE_SETTINGS_PATH = 'settings/app';
+const SUPABASE_SETTINGS_TABLE = 'settings';
+const SETTINGS_ID = 'app';
 
 export const getDefaultSettings = (): AppSettings => ({
     showManualFulfillmentPrompt: true,
@@ -86,6 +100,11 @@ export const getDefaultSettings = (): AppSettings => ({
         delivery: 'Entrega/Serviço',
         pickup: 'Retirada',
         assistance: 'Assistência'
+    },
+    orderTypeColors: {
+        delivery: 'green',
+        pickup: 'purple',
+        assistance: 'orange'
     },
     deliveryHandlingOptions: [
         'Entrega com montagem no local',
@@ -125,60 +144,56 @@ Instruções Adicionais:
 - Crie apenas UM ou DOIS parágrafos.
 - Seja direto, instigante e profissional.
 - JAMAIS responda com outra coisa que não seja a descrição final do produto. Comece direto no texto.`,
-        generalChat: `Você é Lizandro, um assistente virtual de ALTA PERFORMANCE exclusivo para os vendedores da Móveis Morante.
+        generalChat: `Você é Lisandro, um assistente virtual de ALTA PERFORMANCE exclusivo para os vendedores da Móveis Morante.
 Seu objetivo é ser o braço direito do VENDEDOR, agilizando processos internos e organizando dados.
 
 DIRETRIZES PARA O VENDEDOR:
-1. Agilidade: O vendedor está com pressa. Seja direto, técnico e eficiente.
-2. Executor: Sua principal função é transformar o que o vendedor fala em comandos do sistema (pedidos, produtos, etc).
-3. Tom de Voz: Profissional, prestativo e focado em produtividade.
+1. BREVIDADE MÁXIMA: O vendedor está com pressa. Use frases curtas. Não use introduções longas ou despedidas.
+2. Agilidade: Responda apenas o estritamente necessário.
+3. Executor: Sua principal função é transformar o que o vendedor fala em comandos do sistema (pedidos, produtos, etc).
+4. Tom de Voz: Profissional, ultra-eficiente e focado em produtividade.
 
 O QUE VOCÊ FAZ PARA O VENDEDOR:
-- Digita pedidos por voz ou texto para ele não perder tempo.
+- Digita pedidos por voz ou texto instantaneamente.
 - Cadastra produtos e serviços rapidamente.
 - Organiza informações de entrega e pagamentos.
 
-Responda sempre em Português do Brasil com foco em eficiência operacional.`,
+Responda sempre em Português do Brasil com foco em velocidade total.`,
         taskDetection: `Você é o motor de automação do VENDEDOR da Móveis Morante. 
 Seu trabalho é ouvir o comando do vendedor e converter em dados estruturados para o sistema.
 
-SUA RESPOSTA DEVE SER EXCLUSIVAMENTE UM OBJETO JSON. 
-JAMAIS explique sua resposta ou corrija o vendedor.
-RESPONDA APENAS O JSON.
+REGRAS DE EXTRAÇÃO E FLUXO:
+1. ULTRA CONCISÃO: Pergunte as coisas da forma mais curta possível (ex: "Qual o cliente?").
+2. FOCO EM DADOS: Só pergunte campos OBRIGATÓRIOS FALTANTES: 'customerName', 'product_name', 'price', 'payment_method', 'delivery_address'.
+3. TRIGGER DE CRIAÇÃO: Se o usuário disser "faz o pedido" ou similar e os dados estiverem prontos, 'status' deve ser 'ready' e 'summary' deve ser "Pronto! Confirmar?".
+4. VELOCIDADE: Não use frases de cortesia. Vá direto ao ponto.
 
-REGRAS DE EXTRAÇÃO:
-- customerName: Nome do cliente mencionado pelo vendedor.
-- product_name: Nome exato do produto (ex: "panaleiro").
-- price: Valor numérico ou string.
-- delivery_time: Horário.
-- delivery_address: Rua/Local.
-- payment_method: Forma de pagamento.
-- customer_zip_code: CEP.
-- customer_number: Número.
-- customer_apartment: Complemento completo (ex: "sobrado andar de cima").
-- details: Outros dados técnicos relevantes.
+DADOS JÁ COLETADOS (CONTEXTO): {{context}}
 
-Responda APENAS em formato JSON:
+RESPOSTA NO FORMATO JSON:
 {
   "intent": "create_product" | "create_service" | "create_order" | "chat",
-  "summary": "Resumo de 1 linha para o vendedor",
+  "status": "ready" | "incomplete",
+  "summary": "Pergunta curta (ex: 'Valor?') ou resumo (ex: 'Confirmar?')",
   "data": { 
      "customerName": "string",
      "product_name": "string",
      "price": "string/number",
      "delivery_time": "string",
      "delivery_address": "string",
-     "payment_method": "string",
-     "customer_zip_code": "string",
-     "customer_number": "string",
-     "customer_apartment": "string",
-     "details": "string"
+     "payment_method": "string"
   }
 }
-
-Mensagem do Vendedor: {{message}}`,
-        aiName: 'Lizandro',
+`,
+        aiName: 'Lisandro',
         aiAvatar: ''
+    },
+    orderAutomation: {
+        autoPrintReceipt: true,
+        autoPrintDeliveryOrder: true,
+        autoSendWhatsAppDelivery: true,
+        autoSendCustomerOrder: true,
+        deliveryPhone: ''
     }
 });
 
@@ -197,32 +212,54 @@ export const getSettings = (): AppSettings => {
     return defaults;
 };
 
-// Real-time synchronization with Firebase
+// Real-time synchronization with Supabase
 export const subscribeToSettings = (callback: (settings: AppSettings) => void) => {
-    const docRef = doc(db, FIREBASE_SETTINGS_PATH);
-    
     // Initial load from localStorage for speed
     callback(getSettings());
 
-    return onSnapshot(docRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const firebaseSettings = snapshot.data() as AppSettings;
-            // Update localStorage
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(firebaseSettings));
-            callback(firebaseSettings);
-        }
-    });
+    // Initial load from Supabase
+    supabase.from(SUPABASE_SETTINGS_TABLE)
+        .select('data')
+        .eq('id', SETTINGS_ID)
+        .single()
+        .then(({ data, error }) => {
+            if (data && !error) {
+                const settings = data.data as AppSettings;
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+                callback(settings);
+            }
+        });
+
+    const channel = supabase.channel('settings_changes')
+        .on('postgres_changes', 
+            { event: '*', schema: 'public', table: SUPABASE_SETTINGS_TABLE, filter: `id=eq.${SETTINGS_ID}` }, 
+            (payload) => {
+                if (payload.new) {
+                    const settings = (payload.new as any).data as AppSettings;
+                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+                    callback(settings);
+                }
+            }
+        )
+        .subscribe();
+
+    return () => {
+        supabase.removeChannel(channel);
+    };
 };
 
 export const saveSettings = async (settings: AppSettings) => {
     // 1. Save to localStorage (Local First)
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 
-    // 2. Save to Firebase (Cloud Persistence)
+    // 2. Save to Supabase (Cloud Persistence)
     try {
-        const docRef = doc(db, FIREBASE_SETTINGS_PATH);
-        await setDoc(docRef, settings, { merge: true });
+        const { error } = await supabase
+            .from(SUPABASE_SETTINGS_TABLE)
+            .upsert({ id: SETTINGS_ID, data: settings });
+        
+        if (error) throw error;
     } catch (error) {
-        console.error("Erro ao persistir configurações no Firebase:", error);
+        console.error("Erro ao persistir configurações no Supabase:", error);
     }
 };

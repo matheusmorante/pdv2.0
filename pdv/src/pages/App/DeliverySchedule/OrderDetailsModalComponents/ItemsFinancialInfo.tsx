@@ -3,7 +3,7 @@ import React from "react";
 export const ItemsTable = ({ items }: { items: any[] }) => (
     <section>
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-5 flex items-center gap-2">
-            <i className="bi bi-box-seam-fill" /> Itens do Pedido
+            <i className="bi bi-box-seam-fill" /> Lista de Itens
         </h3>
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm transition-colors duration-300">
             <table className="w-full text-left border-collapse">

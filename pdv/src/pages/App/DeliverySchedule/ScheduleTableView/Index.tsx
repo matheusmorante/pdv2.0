@@ -3,6 +3,7 @@ import Order from "../../../types/pdvAction.type";
 import TableCell from "../ScheduleTableViewComponents/TableCell";
 import { calculateLanes, getHour } from "../ScheduleTableViewComponents/laneUtils";
 import { getSettings } from "../../../utils/settingsService";
+import { ORDER_TYPE_COLOR_OPTIONS } from "../../../utils/orderTypeColorUtils";
 
 interface Props {
     schedule: Record<string, Order[]>;
@@ -21,7 +22,7 @@ const ScheduleTableView = ({ schedule, onOrderClick }: Props) => {
                     <thead>
                         <tr className="bg-slate-900 dark:bg-slate-950 text-white">
                             <th className="p-6 w-40 text-xs font-black uppercase tracking-[0.2em] border-r border-slate-800 dark:border-slate-900">
-                                Cronograma
+                                Cronograma Logístico
                             </th>
                             {HOURS.map((h) => (
                                 <th key={h} className="p-4 text-[10px] font-black border-r border-slate-800 dark:border-slate-900 last:border-0 opacity-70 tracking-widest">
@@ -89,15 +90,21 @@ const ScheduleTableView = ({ schedule, onOrderClick }: Props) => {
             </div>
 
             <div className="mt-8 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6 px-4">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Entrega Única</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded bg-blue-600 shadow-sm shadow-blue-200 dark:shadow-none"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Entrega por Período</span>
-                    </div>
+                <div className="flex flex-wrap items-center gap-6">
+                    {ORDER_TYPE_COLOR_OPTIONS.filter(opt =>
+                        opt.value === settings.orderTypeColors.delivery ||
+                        opt.value === settings.orderTypeColors.pickup ||
+                        opt.value === settings.orderTypeColors.assistance
+                    ).map(opt => {
+                        const type = Object.entries(settings.orderTypeColors).find(([_, val]) => val === opt.value)?.[0];
+                        const label = type ? (settings.orderTypeLabels as any)[type] : opt.label;
+                        return (
+                            <div key={opt.value} className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded ${opt.dotClass} shadow-sm transition-transform hover:scale-110`}></div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">{label}</span>
+                            </div>
+                        );
+                    })}
                 </div>
                 <div className="text-[10px] text-slate-300 dark:text-slate-700 font-black uppercase tracking-[0.1em]">
                     Visualização Avançada v2.0
