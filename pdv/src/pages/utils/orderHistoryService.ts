@@ -100,24 +100,40 @@ export const saveOrder = async (order: Order): Promise<string> => {
     }
 };
 
-export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Promise<void> => {
+/**
+ * Atualiza um pedido. Quando `currentOrder` é fornecido (estado local),
+ * o pré-fetch no banco é evitado — apenas o update é executado.
+ */
+export const updateOrder = async (
+    id: string,
+    orderToUpdate: Partial<Order>,
+    currentOrder?: Order
+): Promise<void> => {
     try {
-        // Fetch the full current row (select('*') is always safe, avoids 400 from JSONB column select)
-        const { data: current, error: fetchError } = await supabase
-            .from(TABLE_NAME)
-            .select('*')
-            .eq('id', id)
-            .single();
+        let merged: any;
 
-        if (fetchError) {
-            console.error('Erro ao buscar pedido para atualização:', fetchError);
-            throw fetchError;
+        if (currentOrder) {
+            // Temos o pedido completo em memória — skip do SELECT no banco
+            const { id: _id, ...rest } = { ...currentOrder, ...orderToUpdate } as any;
+            merged = rest;
+        } else {
+            // Fallback: busca o pedido completo no banco antes de mesclar
+            const { data: current, error: fetchError } = await supabase
+                .from(TABLE_NAME)
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (fetchError) {
+                // Se o fetch falhar mas tivermos a atualização parcial, tenta mesmo assim
+                console.warn('Pré-fetch falhou, aplicando atualização parcial:', fetchError);
+                const { id: _id, ...rest } = orderToUpdate as any;
+                merged = rest;
+            } else {
+                const { id: _id, ...rest } = { ...(current?.order_data || {}), ...orderToUpdate } as any;
+                merged = rest;
+            }
         }
-
-        // Merge current order_data with the partial update
-        const currentOrderData = current?.order_data || {};
-        const merged = { ...currentOrderData, ...orderToUpdate };
-        delete (merged as any).id;
 
         const { error } = await supabase
             .from(TABLE_NAME)
