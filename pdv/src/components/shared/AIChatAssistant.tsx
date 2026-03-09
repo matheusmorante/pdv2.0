@@ -47,7 +47,7 @@ const labelMap: Record<string, string> = {
 
 const formatValue = (key: string, value: any) => {
     if (!value && value !== 0) return '-';
-    
+
     if (key === 'price' || key === 'unitPrice' || key === 'amount') {
         const num = typeof value === 'string' ? parseFloat(value.replace(/[^\d.,]/g, '').replace(',', '.')) : value;
         if (!isNaN(num) && typeof num === 'number') {
@@ -69,17 +69,17 @@ const AIChatAssistant = () => {
     }, []);
 
     const aiName = settings.aiPrompts.aiName || 'Lisandro';
-    const aiAvatar = settings.aiPrompts.aiAvatar || ''; 
-    
+    const aiAvatar = settings.aiPrompts.aiAvatar || '';
+
     const STORAGE_KEY = 'lisandro_chat_history';
     const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
     const [messages, setMessages] = useState<Message[]>(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
-        const initialMsg: Message = { 
-            role: 'assistant', 
-            content: `Olá! Sou ${aiName}, seu assistente de IA. Como posso ajudar hoje? Posso criar produtos, pedidos ou tirar dúvidas!`, 
-            timestamp: new Date() 
+        const initialMsg: Message = {
+            role: 'assistant',
+            content: `Olá! Sou ${aiName}, seu assistente de IA. Como posso ajudar hoje? Posso criar produtos, pedidos ou tirar dúvidas!`,
+            timestamp: new Date()
         };
 
         if (saved) {
@@ -374,10 +374,10 @@ const AIChatAssistant = () => {
         try {
             if (msg.actionType === 'create_product' || msg.actionType === 'create_service') {
                 const itemType = msg.actionType === 'create_service' ? 'service' : 'product';
-                const price = typeof msg.actionData.price === 'string' 
-                    ? parseFloat(msg.actionData.price.replace(/[^\d.,]/g, '').replace(',', '.')) 
+                const price = typeof msg.actionData.price === 'string'
+                    ? parseFloat(msg.actionData.price.replace(/[^\d.,]/g, '').replace(',', '.'))
                     : (msg.actionData.price || 0);
-                
+
                 const productData: Partial<Product> = {
                     description: msg.actionData.description || msg.actionData.product_name || "Novo Item via IA",
                     unitPrice: isNaN(price) ? 0 : price,
@@ -391,18 +391,18 @@ const AIChatAssistant = () => {
             } else if (msg.actionType === 'create_order') {
                 const orderData: Partial<Order> = {
                     orderType: 'sale',
-                    customerData: { 
-                        fullName: msg.actionData.customerName || msg.actionData.customer_name || "Consumidor Final", 
-                        phone: "", 
-                        fullAddress: { 
-                            cep: msg.actionData.customer_zip_code || "", 
-                            street: msg.actionData.delivery_address || "", 
-                            number: msg.actionData.customer_number || "", 
-                            neighborhood: "", 
-                            city: "", 
-                            complement: msg.actionData.customer_apartment || "", 
-                            observation: "" 
-                        } 
+                    customerData: {
+                        fullName: msg.actionData.customerName || msg.actionData.customer_name || "Consumidor Final",
+                        phone: "",
+                        fullAddress: {
+                            cep: msg.actionData.customer_zip_code || "",
+                            street: msg.actionData.delivery_address || "",
+                            number: msg.actionData.customer_number || "",
+                            neighborhood: "",
+                            city: "",
+                            complement: msg.actionData.customer_apartment || "",
+                            observation: ""
+                        }
                     },
                     items: [],
                     observation: `IA: ${msg.actionData.product_name || ""} ${msg.actionData.delivery_time ? `| Ent: ${msg.actionData.delivery_time}` : ""}`,
@@ -421,7 +421,7 @@ const AIChatAssistant = () => {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-4">
+        <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-4">
             {isOpen && (
                 <div className="w-[380px] h-[550px] bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col overflow-hidden animate-slide-up">
                     <header className="p-6 bg-indigo-600 text-white flex items-center justify-between">
@@ -441,7 +441,7 @@ const AIChatAssistant = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={toggleCallMode}
                                 className={`p-2 rounded-lg transition-all flex items-center gap-1.5 ${isCallMode ? 'bg-red-500 text-white animate-pulse' : 'text-white/40 hover:text-white/60'}`}
@@ -483,18 +483,17 @@ const AIChatAssistant = () => {
                                             )}
                                         </div>
                                     )}
-                                    <div className={`px-5 py-3 rounded-2xl text-sm ${
-                                        msg.role === 'user' 
-                                            ? 'bg-indigo-600 text-white rounded-tr-none shadow-lg shadow-indigo-200 dark:shadow-none font-medium' 
-                                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700 shadow-sm'
-                                    }`}>
+                                    <div className={`px-5 py-3 rounded-2xl text-sm ${msg.role === 'user'
+                                        ? 'bg-indigo-600 text-white rounded-tr-none shadow-lg shadow-indigo-200 dark:shadow-none font-medium'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700 shadow-sm'
+                                        }`}>
                                         <div className="whitespace-pre-wrap leading-relaxed">
-                                            {msg.role === 'assistant' 
-                                                ? msg.content.split(/(\*\*.*?\*\*)/).map((part, i) => 
-                                                    part.startsWith('**') && part.endsWith('**') 
-                                                        ? <strong key={i}>{part.slice(2, -2)}</strong> 
+                                            {msg.role === 'assistant'
+                                                ? msg.content.split(/(\*\*.*?\*\*)/).map((part, i) =>
+                                                    part.startsWith('**') && part.endsWith('**')
+                                                        ? <strong key={i}>{part.slice(2, -2)}</strong>
                                                         : part
-                                                  )
+                                                )
                                                 : msg.content
                                             }
                                         </div>
@@ -566,21 +565,21 @@ const AIChatAssistant = () => {
                                                                                         placeholder="Novo valor..."
                                                                                         className="w-full bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-900/50 outline-none text-[11px] font-medium"
                                                                                     />
-                                                                                    <div className="flex gap-2">
+                                                                                    <div className="flex gap-3 mt-2 w-full">
                                                                                         <button
                                                                                             onClick={() => {
                                                                                                 setAdjustingField(null);
                                                                                                 setAdjustmentText("");
                                                                                             }}
-                                                                                            className="flex-1 py-1.5 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600"
+                                                                                            className="flex-1 py-2 text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                                                                                         >
-                                                                                            X
+                                                                                            CANCELAR
                                                                                         </button>
                                                                                         <button
                                                                                             onClick={() => handleAdjustment(idx, key)}
-                                                                                            className="flex-1 py-1.5 bg-blue-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-blue-700"
+                                                                                            className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-md shadow-blue-200 dark:shadow-none transition-all"
                                                                                         >
-                                                                                            OK
+                                                                                            CONFIRMAR
                                                                                         </button>
                                                                                     </div>
                                                                                 </div>
@@ -601,10 +600,10 @@ const AIChatAssistant = () => {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-3 mt-2 w-full">
                                                     <button
                                                         onClick={() => confirmAction(idx)}
-                                                        className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none transition-all flex items-center justify-center gap-1.5"
+                                                        className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none transition-all flex items-center justify-center gap-2"
                                                     >
                                                         <i className="bi bi-check-lg"></i>
                                                         SALVAR
@@ -615,7 +614,7 @@ const AIChatAssistant = () => {
                                                             if (isCallMode) recognitionRef.current?.start();
                                                             else toggleListening();
                                                         }}
-                                                        className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-1.5"
+                                                        className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
                                                     >
                                                         <i className="bi bi-chat-left-text"></i>
                                                         AJUSTAR
@@ -678,20 +677,19 @@ const AIChatAssistant = () => {
 
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-16 h-16 rounded-[2rem] flex items-center justify-center text-white shadow-2xl transition-all hover:scale-110 active:scale-95 overflow-hidden ${
-                    isOpen ? 'bg-slate-800 dark:bg-slate-700 rotate-90' : 'bg-indigo-600 shadow-indigo-300 dark:shadow-none'
-                }`}
+                className={`w-16 h-16 rounded-[2rem] flex items-center justify-center text-white shadow-2xl transition-all hover:scale-110 active:scale-95 overflow-hidden ${isOpen ? 'bg-slate-800 dark:bg-slate-700 rotate-90' : 'bg-indigo-600 shadow-indigo-300 dark:shadow-none'
+                    }`}
             >
                 {isOpen ? (
                     <i className="bi bi-x-lg text-2xl"></i>
                 ) : (
                     <div className="relative w-full h-full flex items-center justify-center">
-                         {aiAvatar ? (
-                             <img src={aiAvatar} alt={aiName} className="w-full h-full object-cover" />
-                         ) : (
-                             <i className="bi bi-robot text-3xl"></i>
-                         )}
-                         <span className="absolute top-3 right-3 w-3 h-3 bg-emerald-400 border-2 border-indigo-600 rounded-full z-10"></span>
+                        {aiAvatar ? (
+                            <img src={aiAvatar} alt={aiName} className="w-full h-full object-cover" />
+                        ) : (
+                            <i className="bi bi-robot text-3xl"></i>
+                        )}
+                        <span className="absolute top-3 right-3 w-3 h-3 bg-emerald-400 border-2 border-indigo-600 rounded-full z-10"></span>
                     </div>
                 )}
             </button>
@@ -707,7 +705,7 @@ const AIChatAssistant = () => {
                 if (!showPreviewModal || !previewData) return null;
 
                 return (
-                    <div className="absolute bottom-20 right-[400px] w-80 max-h-[500px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col animate-slide-in-right custom-scrollbar z-[70] overflow-hidden">
+                    <div className="absolute bottom-20 right-[400px] w-80 max-h-[500px] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col animate-slide-in-right custom-scrollbar z-[10000] overflow-hidden">
                         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-5 border-b border-slate-100 dark:border-slate-800 shrink-0 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">

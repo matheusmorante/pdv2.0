@@ -1,59 +1,30 @@
 import express from 'express';
 import cors from 'cors';
-import { getLlama, LlamaChatSession, resolveModelFile } from 'node-llama-cpp';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-let llama;
-let model;
-let context;
-let chatSession;
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDSieSZV89ERk-V5L5M1RWMDsrqN-emt7Q");
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-app.get('/', (req, res) => res.send("AI Server is running (v4 - Stable)"));
+app.get('/', (req, res) => res.send("AI Server is running (v5 - Gemini Stable)"));
 
-async function bootstrapLlama() {
-    console.log("==========================================");
-    console.log("Inicializando Lizandro IA (Versão Estável) ...");
-    try {
-        llama = await getLlama();
-        const modelUri = "hf:mradermacher/Phi-3-mini-4k-instruct-GGUF/Phi-3-mini-4k-instruct.Q4_K_M.gguf";
-        const modelPath = await resolveModelFile(modelUri);
-
-        model = await llama.loadModel({ modelPath });
-
-        // Criamos o contexto com 1 sequência dedicada
-        context = await model.createContext({ sequences: 1 });
-
-        // Criamos uma única sessão que será reutilizada
-        chatSession = new LlamaChatSession({
-            contextSequence: context.getSequence()
-        });
-
-        console.log("LIZANDRO ESTÁ ONLINE E PRONTO!");
-        console.log("==========================================");
-    } catch (error) {
-        console.error("Erro fatal ao iniciar a IA:", error);
-    }
-}
-
-bootstrapLlama();
-
-// Rota genérica para qualquer prompt
 async function safePrompt(prompt, systemPrompt = null) {
-    if (!chatSession) throw new Error("IA ainda carregando...");
-
-    // Resetamos o histórico antes de cada operação para evitar interferência
-    // e economia de tokens no contexto
-    chatSession.setChatHistory([]);
-
-    // Se houver um systemPrompt específico (como o de detecção), aplicamos
-    // Note: Em algumas versões, o systemPrompt é definido na criação da sessão.
-    // Para manter estável, vamos apenas concatenar ou usar o padrão.
-
-    const response = await chatSession.prompt(prompt);
-    return response;
+    try {
+        const fullPrompt = systemPrompt ? `${systemPrompt}\n\nUser: ${prompt}` : prompt;
+        const result = await model.generateContent(fullPrompt);
+        const response = await result.response;
+        return response.text();
+    } catch (error) {
+        console.error("Gemini Error:", error);
+        throw error;
+    }
 }
 
 app.post('/api/generate-description', async (req, res) => {
@@ -76,8 +47,8 @@ app.post('/api/generate-description', async (req, res) => {
 
 app.post('/api/ai-chat', async (req, res) => {
     try {
-        const { message } = req.body;
-        const answer = await safePrompt(message);
+        const { message, systemPrompt } = req.body;
+        const answer = await safePrompt(message, systemPrompt);
         res.json({ answer });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -90,7 +61,7 @@ app.post('/api/ai-detect-intent', async (req, res) => {
         let prompt = detectionPrompt || `Analise: {{message}}`;
         prompt = prompt.replace(/{{message}}/g, message);
 
-        const answer = await safePrompt(prompt);
+        const answer = await safePrompt(prompt, "Responda APENAS com um objeto JSON válido.");
         console.log("Resposta Lizandro:", answer);
 
         const jsonMatch = answer.match(/\{[\s\S]*\}/);
@@ -111,9 +82,12 @@ app.post('/api/ai-detect-intent', async (req, res) => {
 });
 
 const port = process.env.PORT || 3001;
-app.listen(port, '0.0.0.0', () => console.log(`Servidor rodando na porta ${port}`));
+app.listen(port, '0.0.0.0', () => {
+    console.log("==========================================");
+    console.log(`LIZANDRO (GEMINI) ONLINE NA PORTA ${port}`);
+    console.log("==========================================");
+});
 
-// Handle graceful shutdown for Cloud Run
 process.on('SIGTERM', () => {
     console.log('Recebido SIGTERM, desligando graciosamente...');
     process.exit(0);
