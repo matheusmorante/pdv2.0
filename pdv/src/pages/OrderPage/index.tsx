@@ -3,17 +3,31 @@ import ItemsTable from "./ItemsTable";
 import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
 import PrintRouteMap from "./PrintRouteMap";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { stringifyFullAddress } from "../utils/formatters";
 
 const OrderPage = () => {
     const storedOrder = sessionStorage.getItem('order');
     const order = storedOrder ? JSON.parse(storedOrder) : null;
+    const printCalled = useRef(false);
+
+    const handleMapReady = () => {
+        if (printCalled.current) return;
+        printCalled.current = true;
+        // Small delay to ensure image renders in DOM before print
+        setTimeout(() => window.print(), 300);
+    };
+
+    const isDeliveryOrder = order?.shipping?.deliveryMethod !== 'pickup';
+    const hasMapData = isDeliveryOrder && (order?.shipping?.routeGeoJSON || order?.shipping?.destinationCoords);
 
     useEffect(() => {
-        // Delay print to allow canvas render to finish
-        const timer = setTimeout(() => window.print(), 500);
-        return () => clearTimeout(timer);
+        // If no map to render, print immediately
+        if (!hasMapData) {
+            const timer = setTimeout(() => window.print(), 300);
+            return () => clearTimeout(timer);
+        }
+        // Otherwise, print is triggered by handleMapReady
     }, []);
 
 
@@ -38,10 +52,11 @@ const OrderPage = () => {
             <ItemsTable items={order.items} summary={order.itemsSummary} />
 
             {/* Route Map — only for delivery orders with route data */}
-            {order.shipping?.deliveryMethod !== 'pickup' && (
+            {isDeliveryOrder && (
                 <PrintRouteMap
                     shipping={order.shipping}
                     customerAddress={stringifyFullAddress(order.customerData?.fullAddress)}
+                    onReady={handleMapReady}
                 />
             )}
 
