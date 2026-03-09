@@ -116,6 +116,16 @@ const PrintRouteMap = ({ shipping, customerAddress, onReady }: Props) => {
         }
 
         setImgSrc(url);
+
+        // Fallback: forcefully trigger onReady if the image takes more than 3.5 seconds
+        const timer = setTimeout(() => {
+            setImgError(prev => {
+                if (!prev) onReady?.();
+                return true; // Force error state so we don't stay "loading"
+            });
+        }, 3500);
+
+        return () => clearTimeout(timer);
     }, []);
 
     if (isPickup) return null;
@@ -170,9 +180,9 @@ const PrintRouteMap = ({ shipping, customerAddress, onReady }: Props) => {
 
                 {/* Error fallback */}
                 {imgError && (
-                    <div className="w-full h-[100px] flex flex-col items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest gap-1">
+                    <div className="w-full h-[100px] flex flex-col items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest gap-1 bg-slate-100">
                         <span>⚠</span>
-                        <span>Mapa não disponível (sem conexão com o servidor de mapas)</span>
+                        <span>Não foi possível carregar o mapa</span>
                     </div>
                 )}
 
