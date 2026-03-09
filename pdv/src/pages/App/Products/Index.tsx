@@ -4,6 +4,7 @@ import ProductList from "./ProductList";
 import ProductFormModal from "./ProductFormModal";
 import Product, { ProductVisibilitySettings } from "../../types/product.type";
 import { Link } from "react-router-dom";
+import PriceHistoryModal from "./PriceHistoryModal";
 
 interface ProductFiltersData {
     search: string;
@@ -20,6 +21,8 @@ const Products = () => {
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [historyProduct, setHistoryProduct] = useState<Product | null>(null);
 
     const [filters, setFilters] = useState<ProductFiltersData>({
         search: "",
@@ -34,6 +37,7 @@ const Products = () => {
         description: true,
         category: true,
         unitPrice: true,
+        costPrice: true,
         stock: true,
         unit: true,
         actions: true,
@@ -124,6 +128,14 @@ const Products = () => {
                                 <i className="bi bi-ui-radios"></i>
                                 Configurar Variações
                             </Link>
+
+                            <button
+                                onClick={() => { setHistoryProduct(null); setIsHistoryModalOpen(true); }}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-sm font-bold text-xs uppercase tracking-widest border bg-white text-emerald-600 border-emerald-200 dark:bg-slate-900 dark:border-emerald-900/30 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                            >
+                                <i className="bi bi-clock-history"></i>
+                                Histórico de Preços
+                            </button>
                         </div>
 
                         <div className="relative">
@@ -148,6 +160,7 @@ const Products = () => {
                                                 { key: 'code', label: 'Código' },
                                                 { key: 'description', label: 'Descrição' },
                                                 { key: 'category', label: 'Categoria' },
+                                                { key: 'costPrice', label: 'Preço de Custo' },
                                                 { key: 'unitPrice', label: 'Preço de Venda' },
                                                 { key: 'stock', label: 'Estoque' },
                                                 { key: 'unit', label: 'Unidade' },
@@ -176,6 +189,7 @@ const Products = () => {
                     <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none md:shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                         <ProductList
                             onEdit={(p) => { setEditingProduct(p); setIsFormModalOpen(true); }}
+                            onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
                             filters={activeFilters}
                             visibilitySettings={visibilitySettings}
                             onToggleColumn={toggleVisibility}
@@ -204,6 +218,7 @@ const Products = () => {
                         <div className="flex-1 overflow-y-auto custom-scrollbar">
                             <ProductList
                                 onEdit={(p) => { setEditingProduct(p); setIsFormModalOpen(true); }}
+                                onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
                                 filters={trashFilters}
                                 visibilitySettings={visibilitySettings}
                                 onToggleColumn={toggleVisibility}
@@ -219,6 +234,12 @@ const Products = () => {
                 isOpen={isFormModalOpen}
                 onClose={() => { setIsFormModalOpen(false); setEditingProduct(null); }}
                 product={editingProduct}
+            />
+
+            <PriceHistoryModal
+                isOpen={isHistoryModalOpen}
+                onClose={() => { setIsHistoryModalOpen(false); setHistoryProduct(null); }}
+                product={historyProduct}
             />
         </div>
     );

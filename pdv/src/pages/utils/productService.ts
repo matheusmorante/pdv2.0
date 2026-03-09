@@ -4,33 +4,36 @@ import Product from "../types/product.type";
 const TABLE_NAME = "products";
 
 const mapToDB = (product: Partial<Product>) => {
-    return {
-        code: product.code,
-        description: product.description,
-        brand: product.brand,
-        category: product.category,
-        condition: product.condition || '',
-        unit_price: product.unitPrice,
-        cost_price: product.costPrice,
-        freight_type: product.freightType,
-        freight_cost: product.freightCost,
-        ipi_percent: product.ipiPercent,
-        final_purchase_price: product.finalPurchasePrice,
-        initial_stock: product.initialStock,
-        stock: product.stock,
-        min_stock: product.minStock,
-        unit: product.unit,
-        active: product.active,
-        deleted: product.deleted,
-        supplier_id: product.supplierId,
-        images: product.images,
-        ecommerce_description: product.ecommerceDescription,
-        has_variations: product.hasVariations,
-        variations: product.variations,
-        item_type: product.itemType,
-        fiscal: product.fiscal,
+    const data: any = {
         updated_at: new Date().toISOString()
     };
+
+    if (product.code !== undefined) data.code = product.code;
+    if (product.description !== undefined) data.description = product.description;
+    if (product.brand !== undefined) data.brand = product.brand;
+    if (product.category !== undefined) data.category = product.category;
+    if (product.condition !== undefined) data.condition = product.condition;
+    if (product.unitPrice !== undefined) data.unit_price = product.unitPrice;
+    if (product.costPrice !== undefined) data.cost_price = product.costPrice;
+    if (product.freightType !== undefined) data.freight_type = product.freightType;
+    if (product.freightCost !== undefined) data.freight_cost = product.freightCost;
+    if (product.ipiPercent !== undefined) data.ipi_percent = product.ipiPercent;
+    if (product.finalPurchasePrice !== undefined) data.final_purchase_price = product.finalPurchasePrice;
+    if (product.initialStock !== undefined) data.initial_stock = product.initialStock;
+    if (product.stock !== undefined) data.stock = product.stock;
+    if (product.minStock !== undefined) data.min_stock = product.minStock;
+    if (product.unit !== undefined) data.unit = product.unit;
+    if (product.active !== undefined) data.active = product.active;
+    if (product.deleted !== undefined) data.deleted = product.deleted;
+    if (product.supplierId !== undefined) data.supplier_id = product.supplierId;
+    if (product.images !== undefined) data.images = product.images;
+    if (product.ecommerceDescription !== undefined) data.ecommerce_description = product.ecommerceDescription;
+    if (product.hasVariations !== undefined) data.has_variations = product.hasVariations;
+    if (product.variations !== undefined) data.variations = product.variations;
+    if (product.itemType !== undefined) data.item_type = product.itemType;
+    if (product.fiscal !== undefined) data.fiscal = product.fiscal;
+
+    return data;
 };
 
 const mapFromDB = (data: any): Product => {
@@ -126,6 +129,15 @@ export const saveProduct = async (product: Product): Promise<void> => {
 
 export const updateProduct = async (id: string, productToUpdate: Partial<Product>): Promise<void> => {
     try {
+        // Fetch current product for history log
+        const { data: currentItem, error: fetchError } = await supabase
+            .from(TABLE_NAME)
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+
         const dbProduct = mapToDB(productToUpdate);
         const { error } = await supabase
             .from(TABLE_NAME)
@@ -133,6 +145,27 @@ export const updateProduct = async (id: string, productToUpdate: Partial<Product
             .eq('id', id);
 
         if (error) throw error;
+
+        // Price History Logic
+        const oldUnitPrice = Number(currentItem.unit_price);
+        const newUnitPrice = productToUpdate.unitPrice !== undefined ? Number(productToUpdate.unitPrice) : oldUnitPrice;
+        const oldCostPrice = Number(currentItem.cost_price);
+        const newCostPrice = productToUpdate.costPrice !== undefined ? Number(productToUpdate.costPrice) : oldCostPrice;
+
+        if (oldUnitPrice !== newUnitPrice || oldCostPrice !== newCostPrice) {
+            let changeType = 'both';
+            if (oldUnitPrice !== newUnitPrice && oldCostPrice === newCostPrice) changeType = 'unit_price';
+            else if (oldUnitPrice === newUnitPrice && oldCostPrice !== newCostPrice) changeType = 'cost_price';
+
+            await supabase.from('product_price_history').insert([{
+                product_id: id,
+                old_unit_price: oldUnitPrice,
+                new_unit_price: newUnitPrice,
+                old_cost_price: oldCostPrice,
+                new_cost_price: newCostPrice,
+                change_type: changeType
+            }]);
+        }
 
         if (productToUpdate.categoryIds !== undefined) {
             await supabase.from('product_categories').delete().eq('product_id', id);

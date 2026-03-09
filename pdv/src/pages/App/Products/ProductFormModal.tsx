@@ -14,9 +14,10 @@ interface ProductFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     product?: Product | null;
+    onSuccess?: (product: Product) => void;
 }
 
-const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) => {
+const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormModalProps) => {
     const [activeTab, setActiveTab] = useState<'geral' | 'variacoes' | 'ecommerce' | 'estoque' | 'fiscal'>('geral');
     const [loading, setLoading] = useState(false);
     const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
@@ -264,8 +265,10 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
 
         setLoading(true);
         try {
-            await saveProduct({ ...formData, itemType: formData.itemType || 'product' } as Product);
+            const savedProduct = { ...formData, itemType: formData.itemType || 'product' } as Product;
+            await saveProduct(savedProduct);
             toast.success(product ? "Atualizado com sucesso!" : "Criado com sucesso!");
+            if (onSuccess) onSuccess(savedProduct);
             onClose();
         } catch (error) {
             toast.error("Erro ao salvar o produto.");

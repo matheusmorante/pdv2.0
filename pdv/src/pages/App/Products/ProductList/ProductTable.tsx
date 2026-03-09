@@ -8,6 +8,7 @@ import { getSettings } from "../../../utils/settingsService";
 interface ProductTableProps {
     products: Product[];
     onEdit: (product: Product) => void;
+    onShowHistory?: (product: Product) => void;
     onDelete: (id: string) => void;
     onRestore: (id: string) => void;
     onPermanentDelete: (id: string) => void;
@@ -36,6 +37,7 @@ const COLUMNS_DEF: ColumnDef[] = [
     { key: 'code', label: 'Código' },
     { key: 'description', label: 'Descrição' },
     { key: 'category', label: 'Categoria' },
+    { key: 'costPrice', label: 'Preço Custo', align: 'text-right' },
     { key: 'unitPrice', label: 'Preço Venda', align: 'text-right' },
     { key: 'stock', label: 'Estoque', align: 'text-center' },
     { key: 'unit', label: 'Unid.', align: 'text-center' },
@@ -43,14 +45,14 @@ const COLUMNS_DEF: ColumnDef[] = [
 ];
 
 const ProductTable = ({
-    products, onEdit, onDelete, onRestore, onPermanentDelete, onToggleActive,
+    products, onEdit, onShowHistory, onDelete, onRestore, onPermanentDelete, onToggleActive,
     visibilitySettings, onToggleColumn, showTrash, filters, onSort,
     selectedProducts, onToggleSelection, onSelectAll, onClearSelection,
     onBulkTrash, onBulkRestore, onBulkPermanentDelete
 }: ProductTableProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const settings = getSettings();
-    
+
     const allIdsOnPage = products.map(p => p.id!).filter(Boolean);
     const isAllSelected = allIdsOnPage.length > 0 && allIdsOnPage.every(id => selectedProducts.includes(id));
     const isIndeterminate = selectedProducts.length > 0 && !isAllSelected;
@@ -134,22 +136,22 @@ const ProductTable = ({
                                 <span className="sm:hidden">Lixeira</span>
                             </button>
                         ) : (
-                                <div className="flex gap-2">
+                            <div className="flex gap-2">
                                 <button
                                     onClick={onBulkRestore}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-3 md:px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-3 md:px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2"
                                 >
                                     <i className="bi bi-arrow-counterclockwise" />
-                                        <span className="hidden sm:inline">Restaurar</span>
+                                    <span className="hidden sm:inline">Restaurar</span>
                                 </button>
                                 <button
                                     onClick={onBulkPermanentDelete}
-                                        className="bg-red-600 hover:bg-red-700 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-3 md:px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2"
+                                    className="bg-red-600 hover:bg-red-700 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest px-3 md:px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2"
                                 >
                                     <i className="bi bi-trash3-fill" />
-                                        <span className="hidden sm:inline">Excluir</span>
+                                    <span className="hidden sm:inline">Excluir</span>
                                 </button>
-                                </div>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -236,6 +238,7 @@ const ProductTable = ({
                                     key={product.id}
                                     product={product}
                                     onEdit={onEdit}
+                                    onShowHistory={onShowHistory}
                                     onDelete={onDelete}
                                     onRestore={onRestore}
                                     onPermanentDelete={onPermanentDelete}

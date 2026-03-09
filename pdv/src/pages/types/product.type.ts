@@ -67,6 +67,7 @@ export type ProductVisibilitySettings = {
     code: boolean;
     description: boolean;
     category: boolean;
+    costPrice: boolean;
     unitPrice: boolean;
     stock: boolean;
     unit: boolean;

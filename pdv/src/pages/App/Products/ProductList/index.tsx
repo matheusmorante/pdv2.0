@@ -6,13 +6,14 @@ import { toast } from "react-toastify";
 
 interface ProductListProps {
     onEdit: (product: Product) => void;
+    onShowHistory?: (product: Product) => void;
     filters?: any;
     visibilitySettings: ProductVisibilitySettings;
     onToggleColumn: (column: keyof ProductVisibilitySettings) => void;
     onSort?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
 };
 
-const ProductList = ({ onEdit, filters, visibilitySettings, onToggleColumn, onSort }: ProductListProps) => {
+const ProductList = ({ onEdit, onShowHistory, filters, visibilitySettings, onToggleColumn, onSort }: ProductListProps) => {
     const {
         products,
         loading,
@@ -80,6 +81,7 @@ const ProductList = ({ onEdit, filters, visibilitySettings, onToggleColumn, onSo
                 <ProductTable
                     products={products}
                     onEdit={onEdit}
+                    onShowHistory={onShowHistory}
                     onDelete={handleDelete}
                     onRestore={handleRestore}
                     onPermanentDelete={handlePermanentDelete}

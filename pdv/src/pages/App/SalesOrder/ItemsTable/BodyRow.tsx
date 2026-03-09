@@ -9,6 +9,8 @@ import CurrencyDisplay from '../../../../components/CurrencyDisplay';
 import { ValidationErrors } from '../../../utils/validations';
 
 import { getSettings } from '../../../utils/settingsService';
+import ProductSearchModal from '../ProductSearchModal';
+import Product from '../../../types/product.type';
 
 interface Props {
     item: Item,
@@ -21,28 +23,54 @@ interface Props {
 }
 
 const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, deliveryMethod, errors }: Props) => {
+    const [isSearchModalOpen, setIsSearchModalOpen] = React.useState(false);
     const errorKey = `item_${idx}_description`;
     const error = errors[errorKey];
     const settings = getSettings();
     const currentType = item.deliveryMethod || deliveryMethod;
 
+    const handleSelectProduct = (product: Product) => {
+        onChange(idx, 'description', product.description);
+        onChange(idx, 'unitPrice', product.unitPrice || 0);
+        // If it has variations, we might want to handle it, but for now simple sync
+    };
+
     return (
         <tr key={idx} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0">
             <td className="px-4 py-2 relative group/desc">
-                <input
-                    className={`w-full min-w-[200px] bg-transparent border px-3 py-1.5 rounded-xl outline-none transition-all text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-200 ${error ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg shadow-red-100 dark:shadow-red-900/10' : 'border-slate-100 dark:border-slate-800 focus:border-blue-500'
-                        }`}
-                    placeholder="Descrição do produto..."
-                    value={item.description}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        onChange(idx, 'description', e.target.value)
-                    }
-                />
-                {error && (
-                    <div className="absolute left-4 -top-8 hidden group-hover/desc:flex items-center px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-lg z-50 whitespace-nowrap">
-                        {error}
-                        <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-500 rotate-45" />
+                <div className="flex gap-2">
+                    <div className="relative flex-1">
+                        <input
+                            className={`w-full min-w-[200px] bg-transparent border px-3 py-1.5 rounded-xl outline-none transition-all text-sm placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-200 ${error ? 'border-red-500 ring-4 ring-red-500/10 shadow-lg shadow-red-100 dark:shadow-red-900/10' : 'border-slate-100 dark:border-slate-800 focus:border-blue-500'
+                                }`}
+                            placeholder="Descrição do produto..."
+                            value={item.description}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                onChange(idx, 'description', e.target.value)
+                            }
+                        />
+                        {error && (
+                            <div className="absolute left-4 -top-8 hidden group-hover/desc:flex items-center px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-lg z-50 whitespace-nowrap">
+                                {error}
+                                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-500 rotate-45" />
+                            </div>
+                        )}
                     </div>
+                    <button
+                        type="button"
+                        onClick={() => setIsSearchModalOpen(true)}
+                        className="flex items-center justify-center w-8 h-8 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all shadow-sm border border-blue-100 dark:border-blue-800"
+                        title="Pesquisar Produto"
+                    >
+                        <i className="bi bi-search text-xs" />
+                    </button>
+                </div>
+
+                {isSearchModalOpen && (
+                    <ProductSearchModal
+                        onClose={() => setIsSearchModalOpen(false)}
+                        onSelect={handleSelectProduct}
+                    />
                 )}
             </td>
             <td className="px-4 py-2">

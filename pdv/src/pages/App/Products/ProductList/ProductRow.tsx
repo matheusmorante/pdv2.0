@@ -9,6 +9,7 @@ interface ProductRowProps {
     onRestore: (id: string) => void;
     onPermanentDelete: (id: string) => void;
     onToggleActive: (id: string, currentStatus: boolean) => void;
+    onShowHistory?: (product: Product) => void;
     visibilitySettings: ProductVisibilitySettings;
     showTrash?: boolean;
     orderedColumnKeys?: string[];
@@ -23,6 +24,7 @@ const ProductRow = ({
     onRestore,
     onPermanentDelete,
     onToggleActive,
+    onShowHistory,
     visibilitySettings,
     showTrash,
     orderedColumnKeys,
@@ -53,8 +55,8 @@ const ProductRow = ({
                                 </span>
                                 {product.itemType === 'product' && product.condition && (
                                     <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${product.condition === 'salvado' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                                            product.condition === 'usado' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
-                                                'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                                        product.condition === 'usado' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
+                                            'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
                                         }`}>
                                         {product.condition === 'salvado' ? 'Salvado' : product.condition === 'usado' ? 'Usado' : 'Novo'}
                                     </span>
@@ -68,12 +70,28 @@ const ProductRow = ({
                         </div>
                     </td>
                 );
+            case 'costPrice':
+                return (
+                    <td key="costPrice" className="px-6 py-4 text-right">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onShowHistory?.(product); }}
+                            className="text-sm font-black text-emerald-600 dark:text-emerald-400 hover:scale-105 transition-transform cursor-pointer"
+                            title="Ver histórico de preço de custo"
+                        >
+                            {formatCurrency(product.costPrice || 0)}
+                        </button>
+                    </td>
+                );
             case 'unitPrice':
                 return (
                     <td key="unitPrice" className="px-6 py-4 text-right">
-                        <span className="text-sm font-black text-blue-600 dark:text-blue-400">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onShowHistory?.(product); }}
+                            className="text-sm font-black text-blue-600 dark:text-blue-400 hover:scale-105 transition-transform cursor-pointer"
+                            title="Ver histórico de preço de venda"
+                        >
                             {formatCurrency(product.unitPrice || 0)}
-                        </span>
+                        </button>
                     </td>
                 );
             case 'stock':
