@@ -2,14 +2,18 @@ import CustomerData from "./CustomerData";
 import ItemsTable from "./ItemsTable";
 import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
+import PrintRouteMap from "./PrintRouteMap";
 import { useEffect } from "react";
+import { stringifyFullAddress } from "../utils/formatters";
 
 const OrderPage = () => {
     const storedOrder = sessionStorage.getItem('order');
     const order = storedOrder ? JSON.parse(storedOrder) : null;
 
     useEffect(() => {
-        window.print();
+        // Delay print to allow canvas render to finish
+        const timer = setTimeout(() => window.print(), 500);
+        return () => clearTimeout(timer);
     }, []);
 
 
@@ -32,6 +36,14 @@ const OrderPage = () => {
             </div>
             <CustomerData customerData={order.customerData} />
             <ItemsTable items={order.items} summary={order.itemsSummary} />
+
+            {/* Route Map — only for delivery orders with route data */}
+            {order.shipping?.deliveryMethod !== 'pickup' && (
+                <PrintRouteMap
+                    shipping={order.shipping}
+                    customerAddress={stringifyFullAddress(order.customerData?.fullAddress)}
+                />
+            )}
 
             <div className="flex flex-row justify-around gap-6">
                 <ShippingData shipping={order.shipping} />
