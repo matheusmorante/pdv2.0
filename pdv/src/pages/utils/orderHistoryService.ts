@@ -102,13 +102,21 @@ export const saveOrder = async (order: Order): Promise<string> => {
 
 export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Promise<void> => {
     try {
-        const { data: current } = await supabase
+        // Fetch the full current row (select('*') is always safe, avoids 400 from JSONB column select)
+        const { data: current, error: fetchError } = await supabase
             .from(TABLE_NAME)
-            .select('order_data')
+            .select('*')
             .eq('id', id)
             .single();
 
-        const merged = { ...(current?.order_data || {}), ...orderToUpdate };
+        if (fetchError) {
+            console.error('Erro ao buscar pedido para atualização:', fetchError);
+            throw fetchError;
+        }
+
+        // Merge current order_data with the partial update
+        const currentOrderData = current?.order_data || {};
+        const merged = { ...currentOrderData, ...orderToUpdate };
         delete (merged as any).id;
 
         const { error } = await supabase
