@@ -94,7 +94,7 @@ export const useOrderHistory = (filters?: any) => {
             .sort((a, b) => {
                 let comparison = 0;
                 const sortBy = filters?.sortBy || 'date';
-                
+
                 if (sortBy === "customer") {
                     comparison = (a.customerData?.fullName || "").localeCompare(b.customerData?.fullName || "");
                 } else if (sortBy === "totalValue") {
@@ -185,7 +185,7 @@ export const useOrderHistory = (filters?: any) => {
     };
 
     const toggleSelection = (id: string) => {
-        setSelectedOrders(prev => 
+        setSelectedOrders(prev =>
             prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
         );
     };
@@ -193,7 +193,7 @@ export const useOrderHistory = (filters?: any) => {
     const selectAll = () => {
         const allIdsOnPage = paginatedOrders.map(o => o.id!).filter(Boolean);
         const allSelected = allIdsOnPage.every(id => selectedOrders.includes(id));
-        
+
         if (allSelected) {
             setSelectedOrders(prev => prev.filter(id => !allIdsOnPage.includes(id)));
         } else {
@@ -205,14 +205,18 @@ export const useOrderHistory = (filters?: any) => {
     const clearSelection = () => setSelectedOrders([]);
 
     const handleStatusUpdate = async (id: string, newStatus: Order['status']) => {
-        // Optimistic update: reflect change immediately in local state
+        // Find full order in local state to avoid a pre-fetch (which was returning 400)
+        const currentOrder = orders.find(o => o.id === id);
+
+        // Optimistic update
         setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
         try {
-            await updateOrder(id, { status: newStatus });
+            // Pass currentOrder so updateOrder skips the SELECT entirely
+            await updateOrder(id, { status: newStatus }, currentOrder);
             toast.success("Status do pedido atualizado!");
         } catch (error) {
-            // Rollback optimistic update on failure
-            setOrders(prev => prev.map(o => o.id === id ? { ...o } : o));
+            // Rollback on failure
+            setOrders(prev => prev.map(o => o.id === id ? { ...o, status: currentOrder?.status } as Order : o));
             console.error("Erro ao atualizar status:", error);
             toast.error("Erro ao atualizar status do pedido.");
         }
