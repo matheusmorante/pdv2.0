@@ -4,7 +4,6 @@ import Header from "./Header";
 import ItemsTable from "./ItemsTable";
 import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
-import MapRoute from "../App/SalesOrder/ShippingComponents/MapRoute";
 
 const ReceiptPage = () => {
     const storedOrder = sessionStorage.getItem('order');
@@ -12,10 +11,7 @@ const ReceiptPage = () => {
 
     useEffect(() => {
         if (order) {
-            // Give extra time for MapLibre to render before showing print dialog
-            const timer = setTimeout(() => {
-                window.print();
-            }, 1500);
+            const timer = setTimeout(() => window.print(), 400);
             return () => clearTimeout(timer);
         }
     }, [order]);
@@ -47,16 +43,6 @@ const ReceiptPage = () => {
             <div className="flex flex-col lg:flex-row w-full justify-between gap-6">
                 <div className="flex flex-col gap-4 w-[40%]">
                     {order?.shipping?.scheduling?.time && <ShippingData shipping={order.shipping} />}
-                    {order?.shipping?.destinationCoords && (
-                        <div className="w-full">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Rota de Entrega</p>
-                            <MapRoute
-                                destinationCoords={order.shipping.destinationCoords}
-                                routeGeoJSON={order.shipping.routeGeoJSON}
-                                className="h-48 w-full border-2 border-slate-200"
-                            />
-                        </div>
-                    )}
                 </div>
                 <PaymentsTable
                     payments={order?.payments || []}
