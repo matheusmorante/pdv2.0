@@ -226,9 +226,13 @@ export const useOrderHistory = (filters?: any) => {
 
             // If it's the review action, update the order in the background
             if (actionKey === "sendCustomerReviews" && order.id && !order.reviewRequested) {
+                // Optimistic update: hide the button immediately
+                setOrders(prev => prev.map(o => o.id === order.id ? { ...o, reviewRequested: true } : o));
                 try {
                     await updateOrder(order.id, { reviewRequested: true });
                 } catch (error) {
+                    // Rollback optimistic update on failure
+                    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, reviewRequested: false } : o));
                     console.error("Erro ao marcar avaliação como enviada:", error);
                 }
             }
