@@ -18,8 +18,8 @@ const OrderPage = () => {
         setTimeout(() => window.print(), 300);
     };
 
-    const isDeliveryOrder = order?.shipping?.deliveryMethod !== 'pickup';
-    const hasMapData = isDeliveryOrder && (order?.shipping?.routeGeoJSON || order?.shipping?.destinationCoords);
+    const isDeliveryOrder = !!order?.shipping && order.shipping.deliveryMethod !== 'pickup';
+    const hasMapData = isDeliveryOrder && (order.shipping.routeGeoJSON || order.shipping.destinationCoords);
 
     useEffect(() => {
         // If no map to render, print immediately
