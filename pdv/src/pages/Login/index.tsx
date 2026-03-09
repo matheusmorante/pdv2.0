@@ -119,7 +119,7 @@ const Login = () => {
                                 const { error } = await supabase.auth.signInWithOAuth({
                                     provider: 'google',
                                     options: {
-                                        redirectTo: (window as any).location.origin
+                                        redirectTo: import.meta.env.VITE_APP_URL || window.location.origin
                                     }
                                 });
                                 if (error) throw error;
@@ -152,8 +152,9 @@ const Login = () => {
                     Sistema de Alta Performance • v2.1
                 </p>
             </div>
-            
-            <style dangerouslySetInnerHTML={{ __html: `
+
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                 .animate-slide-up { animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
             ` }} />

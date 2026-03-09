@@ -14,7 +14,7 @@ const Signup = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (password !== confirmPassword) {
             toast.error('As senhas não coincidem!');
             return;
@@ -109,7 +109,7 @@ const Signup = () => {
                                         placeholder="Min 6"
                                         required
                                     />
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-500 transition-colors"
@@ -167,7 +167,7 @@ const Signup = () => {
                                 const { error } = await supabase.auth.signInWithOAuth({
                                     provider: 'google',
                                     options: {
-                                        redirectTo: (window as any).location.origin
+                                        redirectTo: import.meta.env.VITE_APP_URL || window.location.origin
                                     }
                                 });
                                 if (error) throw error;
@@ -195,13 +195,14 @@ const Signup = () => {
                         </p>
                     </div>
                 </div>
-                
+
                 <p className="text-center mt-8 text-[9px] font-black uppercase tracking-[0.3em] text-slate-300 dark:text-slate-700">
                     Segurança e Performance • Morante Tech
                 </p>
             </div>
-            
-            <style dangerouslySetInnerHTML={{ __html: `
+
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                 .animate-slide-up { animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
             ` }} />
