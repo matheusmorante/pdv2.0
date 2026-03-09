@@ -20,7 +20,17 @@ const useShipping = (initialDeliveryMethod: 'delivery' | 'pickup' = 'delivery') 
                     endTime: "",
                     type: "range"
                 },
-                autoCalculateValue: false
+                autoCalculateValue: false,
+                useCustomerAddress: true,
+                deliveryAddress: {
+                    cep: '',
+                    street: '',
+                    number: '',
+                    complement: '',
+                    observation: '',
+                    neighborhood: '',
+                    city: ''
+                }
             }
         );
 

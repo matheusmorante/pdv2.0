@@ -3,9 +3,11 @@ import React from "react";
 interface FormHeaderProps {
     currentOrderId?: string;
     onClearForm: () => void;
+    orderDate: string;
+    setOrderDate: (date: string) => void;
 }
 
-const FormHeader = ({ currentOrderId, onClearForm }: FormHeaderProps) => (
+const FormHeader = ({ currentOrderId, onClearForm, orderDate, setOrderDate }: FormHeaderProps) => (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-8 border-b border-slate-100 dark:border-slate-800 mb-10 pt-8">
         <div className="flex flex-wrap items-end gap-6 w-full md:w-auto order-2 md:order-1">
             {currentOrderId && (
@@ -22,15 +24,43 @@ const FormHeader = ({ currentOrderId, onClearForm }: FormHeaderProps) => (
             )}
         </div>
 
-        <div className="flex flex-col gap-1 order-1 md:order-2 md:text-right">
-            {currentOrderId && (
+        <div className="flex flex-col gap-2 order-1 md:order-2 md:text-right w-full md:w-auto">
+            {currentOrderId ? (
                 <>
                     <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
                         Detalhes do Pedido
                     </h3>
-                    <p className="text-xs uppercase font-black text-slate-400 dark:text-slate-500 tracking-[0.2em]">
-                        Pedido #{currentOrderId}
-                    </p>
+                    <div className="flex flex-col md:items-end gap-1">
+                        <p className="text-xs uppercase font-black text-slate-400 dark:text-slate-500 tracking-[0.2em]">
+                            Pedido #{currentOrderId}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                            <i className="bi bi-calendar-event text-slate-400 dark:text-slate-500"></i>
+                            <input
+                                type="datetime-local"
+                                value={orderDate}
+                                onChange={(e) => setOrderDate(e.target.value)}
+                                className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 w-fit"
+                                title="Data e Hora da Venda"
+                            />
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <>
+                    <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+                        Novo Pedido
+                    </h3>
+                    <div className="flex items-center gap-2 mt-2 w-full md:justify-end">
+                        <i className="bi bi-calendar-event text-slate-400 dark:text-slate-500"></i>
+                        <input
+                            type="datetime-local"
+                            value={orderDate}
+                            onChange={(e) => setOrderDate(e.target.value)}
+                            className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 w-fit"
+                            title="Data e Hora da Venda"
+                        />
+                    </div>
                 </>
             )}
         </div>

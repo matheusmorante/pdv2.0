@@ -82,14 +82,21 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
         const recognizedStatuses = ['scheduled', 'fulfilled'];
         const saleOrders = filteredOrders.filter(o => recognizedStatuses.includes(o.status || ''));
         const totalSales = saleOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
-        const avgTicket = saleOrders.length > 0 ? totalSales / saleOrders.length : 0;
+
+        // Variavel saleCount representa apenas as vendas aprovadas
+        const saleCount = saleOrders.length;
+        const avgTicket = saleCount > 0 ? totalSales / saleCount : 0;
+
+        // totalOrdersCount representa TUDO que caiu naquele período, indepedente de ser venda ou rascunho
+        const totalOrdersCount = filteredOrders.length;
 
         // Pedidos pendentes são aqueles que ainda não foram atendidos (Rascunho e Agendado)
         const pendingOrders = filteredOrders.filter(o => o.status === 'scheduled' || o.status === 'draft').length;
 
         return {
             totalSales,
-            orderCount: saleOrders.length,
+            saleCount,
+            totalOrdersCount,
             avgTicket,
             pendingOrders
         };
@@ -106,7 +113,7 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
                 return `${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
             }
             if (period === 'last_month') {
-                date.setDate(0); 
+                date.setDate(0);
             }
             date.setDate(date.getDate() - i);
             const d = String(date.getDate()).padStart(2, '0');

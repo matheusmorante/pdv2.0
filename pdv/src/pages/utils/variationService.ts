@@ -26,7 +26,7 @@ export const subscribeToVariations = (callback: (variations: VariationType[]) =>
 
     const channel = supabase.channel('variations_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => {
-             supabase.from(TABLE_NAME)
+            supabase.from(TABLE_NAME)
                 .select('*')
                 .order('id', { ascending: false })
                 .then(({ data }: { data: any }) => {
@@ -52,11 +52,11 @@ export const saveVariation = async (variation: VariationType): Promise<void> => 
 
         const { error } = await supabase
             .from(TABLE_NAME)
-            .insert([{ 
+            .insert([{
                 variation_data: variationToSave,
                 updated_at: new Date().toISOString()
             }]);
-        
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao salvar a variação: ", error);
@@ -69,7 +69,7 @@ export const updateVariation = async (id: string, variationToUpdate: Partial<Var
         const { data: current } = await supabase
             .from(TABLE_NAME)
             .select('variation_data')
-            .eq('id', parseInt(id))
+            .eq('id', id)
             .single();
 
         const merged = { ...(current?.variation_data || {}), ...variationToUpdate };
@@ -77,12 +77,12 @@ export const updateVariation = async (id: string, variationToUpdate: Partial<Var
 
         const { error } = await supabase
             .from(TABLE_NAME)
-            .update({ 
+            .update({
                 variation_data: merged,
                 updated_at: new Date().toISOString()
             })
-            .eq('id', parseInt(id));
-        
+            .eq('id', id);
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao atualizar a variação: ", error);
@@ -92,9 +92,9 @@ export const updateVariation = async (id: string, variationToUpdate: Partial<Var
 
 export const moveToTrash = async (id: string): Promise<void> => {
     try {
-        await updateVariation(id, { 
-            deleted: true, 
-             active: false
+        await updateVariation(id, {
+            deleted: true,
+            active: false
         });
     } catch (error) {
         console.error("Erro ao mover variação para lixeira: ", error);
@@ -104,7 +104,7 @@ export const moveToTrash = async (id: string): Promise<void> => {
 
 export const restoreVariation = async (id: string): Promise<void> => {
     try {
-        await updateVariation(id, { 
+        await updateVariation(id, {
             deleted: false,
             active: true
         });
@@ -119,8 +119,8 @@ export const permanentDeleteVariation = async (id: string): Promise<void> => {
         const { error } = await supabase
             .from(TABLE_NAME)
             .delete()
-            .eq('id', parseInt(id));
-        
+            .eq('id', id);
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao deletar permanentemente a variação: ", error);

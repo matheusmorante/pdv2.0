@@ -105,7 +105,7 @@ export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Pr
         const { data: current } = await supabase
             .from(TABLE_NAME)
             .select('order_data')
-            .eq('id', parseInt(id, 10))
+            .eq('id', id)
             .single();
 
         const merged = { ...(current?.order_data || {}), ...orderToUpdate };
@@ -117,7 +117,7 @@ export const updateOrder = async (id: string, orderToUpdate: Partial<Order>): Pr
                 order_data: merged,
                 updated_at: new Date().toISOString()
             })
-            .eq('id', parseInt(id, 10));
+            .eq('id', id);
 
         if (error) throw error;
     } catch (error) {
@@ -155,7 +155,7 @@ export const permanentDeleteOrder = async (id: string): Promise<void> => {
         const { error } = await supabase
             .from(TABLE_NAME)
             .delete()
-            .eq('id', parseInt(id, 10));
+            .eq('id', id);
 
         if (error) throw error;
     } catch (error) {

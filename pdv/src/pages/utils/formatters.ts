@@ -5,18 +5,20 @@ import Order from "../types/order.type";
 import { calcItemTotalValue, calcPaymentTotalValue } from "./calculations";
 
 export const stringifyFullAddress = (
-    { street, number, complement, neighborhood, city }
-        : CustomerData['fullAddress']
+    address: CustomerData['fullAddress'] | null | undefined
 ) => {
+    if (!address) return '';
+    const { street, number, complement, neighborhood, city } = address;
     return [street, number, complement, neighborhood, city]
         .filter(Boolean)
         .join(', ')
 };
 
 export const stringifyFullAddressWithObservation = (
-    { street, number, complement, observation, neighborhood, city }
-        : CustomerData['fullAddress']
+    address: CustomerData['fullAddress'] | null | undefined
 ) => {
+    if (!address) return '';
+    const { street, number, complement, observation, neighborhood, city } = address;
     return [street, number, complement, observation, neighborhood, city]
         .filter(Boolean)
         .join(', ')
@@ -45,11 +47,11 @@ export const stringifyPayments = (payments: Payment[]) => {
 export const formatToBRDate = (value: string | undefined | null) => {
     if (!value) return "-";
     if (value.includes('/') && value.length >= 8) return value; // Already formatted
-    
+
     // Handle YYYY-MM-DD
     const date = new Date(value);
     if (isNaN(date.getTime())) return value;
-    
+
     return date.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
@@ -60,7 +62,7 @@ export const formatToBRDate = (value: string | undefined | null) => {
 export const formatDate = (value: string) => {
     if (!value) return "Não agendado";
     if (value.includes('/') && value.length >= 8) return value; // Already formatted
-    
+
     const date = new Date(value);
     if (isNaN(date.getTime())) return value;
     return date.toLocaleDateString("pt-BR", {

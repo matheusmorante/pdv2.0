@@ -74,20 +74,20 @@ export default function Dashboard() {
                         <h1 className="text-3xl xl:text-5xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">
                             Dash<span className="text-blue-600">board</span>
                         </h1>
-                        
-                        <div className="hidden sm:flex px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-[9px] font-black uppercase tracking-widest items-center gap-1.5 cursor-help" title="Métricas baseadas em pedidos Agendados e Atendidos. Rascunhos e Cancelados não contabilizam.">
+
+                        <div className="hidden sm:flex px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-[9px] font-black uppercase tracking-widest items-center gap-1.5 cursor-help" title="Venda: Somente Agendados ou Atendidos. Pedidos: Todos os criados (inclui Rascunhos e Cancelados).">
                             <i className="bi bi-info-circle-fill"></i>
-                            Venda: Agendado/Atendido
+                            Vendas vs Pedidos
                         </div>
 
                         <div className="relative">
-                            <button 
+                            <button
                                 onClick={() => setShowConfig(!showConfig)}
                                 className="p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:scale-110 active:scale-95 flex items-center justify-center"
                             >
                                 <i className="bi bi-gear-fill text-lg"></i>
                             </button>
-                            
+
                             {showConfig && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowConfig(false)}></div>
@@ -95,16 +95,16 @@ export default function Dashboard() {
                                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Visibilidade</h4>
                                         <div className="space-y-4">
                                             {Object.entries(visibility).map(([key, val]) => (
-                                                <button 
+                                                <button
                                                     key={key}
                                                     onClick={() => setVisibility(v => ({ ...v, [key as keyof VisibilityConfig]: !val }))}
                                                     className="flex items-center justify-between w-full group"
                                                 >
                                                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300 capitalize">
-                                                        {key === 'revenueChart' ? 'Receita' : 
-                                                         key === 'statusChart' ? 'Status' : 
-                                                         key === 'quickAction' ? 'Ação Rápida' : 
-                                                         key === 'reports' ? 'Relatórios' : 'Métricas'}
+                                                        {key === 'revenueChart' ? 'Receita' :
+                                                            key === 'statusChart' ? 'Status' :
+                                                                key === 'quickAction' ? 'Ação Rápida' :
+                                                                    key === 'reports' ? 'Relatórios' : 'Métricas'}
                                                     </span>
                                                     <div className={`w-10 h-6 rounded-full p-1 transition-all ${val ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
                                                         <div className={`w-4 h-4 bg-white rounded-full transition-all ${val ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -121,7 +121,7 @@ export default function Dashboard() {
                         Acompanhe o desempenho das suas vendas em tempo real.
                     </p>
                 </div>
-                
+
                 <div className="flex flex-col items-end gap-3">
                     <div className="flex flex-wrap items-center gap-3">
                         {period === 'custom' && (
@@ -153,7 +153,7 @@ export default function Dashboard() {
                             ))}
                         </div>
                     </div>
-                    
+
                     <div className="px-5 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest group w-fit">
                         <i className="bi bi-calendar3 text-blue-500 group-hover:rotate-12 transition-transform"></i>
                         {todayStr}
@@ -163,13 +163,14 @@ export default function Dashboard() {
 
             {/* Metrics */}
             {visibility.stats && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                    <StatsCard 
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
+                    <StatsCard
                         title="Faturamento" value={formatCurrency(stats.totalSales)} icon="currency-dollar"
                         trend={period !== 'today' ? 'up' : undefined} trendValue="12.5%" color="bg-blue-600"
                     />
-                    <StatsCard title="Pedidos" value={stats.orderCount} icon="bag-check-fill" color="bg-emerald-600" />
-                    <StatsCard title="Ticket Médio" value={formatCurrency(stats.avgTicket)} icon="graph-up-arrow" color="bg-amber-600" />
+                    <StatsCard title="Vendas" value={stats.saleCount} icon="cart-check-fill" color="bg-emerald-600" />
+                    <StatsCard title="Pedidos Totais" value={stats.totalOrdersCount} icon="bag-plus-fill" color="bg-slate-600" />
+                    <StatsCard title="Ticket Médio (Vendas)" value={formatCurrency(stats.avgTicket)} icon="graph-up-arrow" color="bg-amber-600" />
                     <StatsCard title="Pendentes" value={stats.pendingOrders} icon="clock-history" color="bg-rose-600" />
                 </div>
             )}
@@ -191,8 +192,8 @@ export default function Dashboard() {
                                 <div className="flex-1 w-full relative flex items-center justify-center">
                                     <SimplePieChart data={statusData} />
                                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                        <span className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.orderCount}</span>
-                                        <span className="text-[10px] font-black uppercase text-slate-400">Total</span>
+                                        <span className="text-2xl font-black text-slate-800 dark:text-slate-100">{stats.totalOrdersCount}</span>
+                                        <span className="text-[10px] font-black uppercase text-slate-400">Pedidos Totais</span>
                                     </div>
                                 </div>
                                 <div className="mt-4 grid grid-cols-2 gap-2">
@@ -249,10 +250,10 @@ export default function Dashboard() {
                                 </div>
                                 <h3 className="text-2xl font-black mb-3">Novo Pedido</h3>
                                 <p className="text-blue-100 text-sm font-medium opacity-80 leading-relaxed mb-8">
-                                    Próximo cliente aguardando?<br/>Crie um novo pedido agora.
+                                    Próximo cliente aguardando?<br />Crie um novo pedido agora.
                                 </p>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => window.location.href = '/sales-order'}
                                 className="relative z-10 w-full bg-white text-blue-700 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 transition-all shadow-xl"
                             >

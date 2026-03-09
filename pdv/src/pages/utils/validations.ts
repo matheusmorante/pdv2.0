@@ -45,23 +45,17 @@ export const validateCustomerData = (customer: CustomerData): ValidationErrors =
 
     if (!customer) return { customer: "Dados do cliente ausentes." };
 
-    if (!customer.fullName) errors['customer_fullName'] = "Nome completo é obrigatório.";
-    if (!customer.noPhone && !customer.phone) errors['customer_phone'] = "Celular/WhatsApp é obrigatório.";
+    if (!customer.fullName || !customer.fullName.trim()) errors['customer_fullName'] = "Nome completo é obrigatório.";
+    if (!customer.phone || !customer.phone.trim()) errors['customer_phone'] = "Telefone/Celular é obrigatório.";
 
-    const addr = customer.fullAddress;
-    if (!addr) {
-        errors['customer_address'] = "Endereço é obrigatório.";
-    } else {
-        if (!addr.street) errors['customer_street'] = "Rua é obrigatória.";
-        if (!addr.number) errors['customer_number'] = "Número é obrigatório.";
-        if (!addr.neighborhood) errors['customer_neighborhood'] = "Bairro é obrigatório.";
-        if (!addr.city) errors['customer_city'] = "Cidade é obrigatória.";
-    }
+    // Only strictly valid the structural presence. Address validation will be handled
+    // by Shipping validation depending on the "useCustomerAddress" toggle.
+    // If it's a delivery and useCustomerAddress is true, it verifies if customer address exists.
 
     return errors;
 }
 
-export const validateShipping = (shipping: Shipping): ValidationErrors => {
+export const validateShipping = (shipping: Shipping, customer: CustomerData): ValidationErrors => {
     const errors: ValidationErrors = {};
     if (!shipping) return { shipping: "Dados de entrega ausentes." };
 
@@ -71,6 +65,24 @@ export const validateShipping = (shipping: Shipping): ValidationErrors => {
     } else {
         if (!scheduling.date) errors['shipping_date'] = "Data de entrega é obrigatória.";
         if (!scheduling.startTime) errors['shipping_time'] = "Horário/Período é obrigatório.";
+    }
+
+    if (shipping.deliveryMethod === 'delivery') {
+        if (shipping.useCustomerAddress !== false) {
+            // Using customer address
+            const addr = customer?.fullAddress;
+            if (!addr?.street) errors['customer_street'] = "Rua é obrigatória (Cadastro do Cliente).";
+            if (!addr?.number) errors['customer_number'] = "Número é obrigatório (Cadastro do Cliente).";
+            if (!addr?.neighborhood) errors['customer_neighborhood'] = "Bairro é obrigatório (Cadastro do Cliente).";
+            if (!addr?.city) errors['customer_city'] = "Cidade é obrigatória (Cadastro do Cliente).";
+        } else {
+            // Using custom delivery address
+            const dAddr = shipping.deliveryAddress;
+            if (!dAddr?.street) errors['deliveryAddress_street'] = "Rua é obrigatória (Endereço de Entrega).";
+            if (!dAddr?.number) errors['deliveryAddress_number'] = "Número é obrigatório (Endereço de Entrega).";
+            if (!dAddr?.neighborhood) errors['deliveryAddress_neighborhood'] = "Bairro é obrigatório (Endereço de Entrega).";
+            if (!dAddr?.city) errors['deliveryAddress_city'] = "Cidade é obrigatória (Endereço de Entrega).";
+        }
     }
 
     return errors;
@@ -99,7 +111,7 @@ export const validateOrder = (order: Order): ValidationErrors => {
     return {
         ...validateItems(items),
         ...validateSeller(order.seller),
-        ...validateShipping(order.shipping),
+        ...validateShipping(order.shipping, order.customerData),
         ...validatePayments(payments, amountRemaining),
         ...validateCustomerData(order.customerData)
     };

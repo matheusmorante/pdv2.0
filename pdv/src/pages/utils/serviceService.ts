@@ -26,7 +26,7 @@ export const subscribeToServices = (callback: (services: Service[]) => void) => 
 
     const channel = supabase.channel('services_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => {
-             supabase.from(TABLE_NAME)
+            supabase.from(TABLE_NAME)
                 .select('*')
                 .order('id', { ascending: false })
                 .then(({ data }: { data: any }) => {
@@ -52,11 +52,11 @@ export const saveService = async (service: Service): Promise<void> => {
 
         const { error } = await supabase
             .from(TABLE_NAME)
-            .insert([{ 
+            .insert([{
                 service_data: serviceToSave,
                 updated_at: new Date().toISOString()
             }]);
-        
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao salvar o serviço: ", error);
@@ -69,7 +69,7 @@ export const updateService = async (id: string, serviceToUpdate: Partial<Service
         const { data: current } = await supabase
             .from(TABLE_NAME)
             .select('service_data')
-            .eq('id', parseInt(id))
+            .eq('id', id)
             .single();
 
         const merged = { ...(current?.service_data || {}), ...serviceToUpdate };
@@ -77,12 +77,12 @@ export const updateService = async (id: string, serviceToUpdate: Partial<Service
 
         const { error } = await supabase
             .from(TABLE_NAME)
-            .update({ 
+            .update({
                 service_data: merged,
                 updated_at: new Date().toISOString()
             })
-            .eq('id', parseInt(id));
-        
+            .eq('id', id);
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao atualizar o serviço: ", error);
@@ -92,9 +92,9 @@ export const updateService = async (id: string, serviceToUpdate: Partial<Service
 
 export const moveToTrash = async (id: string): Promise<void> => {
     try {
-        await updateService(id, { 
-            deleted: true, 
-             active: false
+        await updateService(id, {
+            deleted: true,
+            active: false
         });
     } catch (error) {
         console.error("Erro ao mover serviço para lixeira: ", error);
@@ -104,7 +104,7 @@ export const moveToTrash = async (id: string): Promise<void> => {
 
 export const restoreService = async (id: string): Promise<void> => {
     try {
-        await updateService(id, { 
+        await updateService(id, {
             deleted: false,
             active: true
         });
@@ -119,8 +119,8 @@ export const permanentDeleteService = async (id: string): Promise<void> => {
         const { error } = await supabase
             .from(TABLE_NAME)
             .delete()
-            .eq('id', parseInt(id));
-        
+            .eq('id', id);
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao deletar permanentemente o serviço: ", error);

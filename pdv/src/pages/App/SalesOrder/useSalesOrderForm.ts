@@ -14,6 +14,45 @@ import CustomerData from "../../types/customerData.type";
 import { autoCalculateRouteDistance } from "../../utils/maps";
 import { getSettings } from "../../utils/settingsService";
 
+const getCurrentDatetimeLocal = () => {
+    const now = new Date();
+    // Ajuste simples para o fuso horário local
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+};
+
+const formatToBRDateTime = (datetimeLocalStr: string) => {
+    if (!datetimeLocalStr) return dateNow();
+    try {
+        const [date, time] = datetimeLocalStr.split('T');
+        if (!date || !time) return dateNow();
+
+        const [y, m, d] = date.split('-');
+        return `${d}/${m}/${y}, ${time}:00`;
+    } catch {
+        return dateNow();
+    }
+};
+
+const parseBRDateTimeToLocal = (brDateTimeStr: string) => {
+    if (!brDateTimeStr) return getCurrentDatetimeLocal();
+    try {
+        const [datePart, timePart] = brDateTimeStr.split(', ');
+        if (!datePart) return getCurrentDatetimeLocal();
+
+        const [d, m, y] = datePart.split('/');
+        if (!d || !m || !y) return getCurrentDatetimeLocal();
+
+        let time = (timePart || '00:00:00').split(':').slice(0, 2).join(':'); // HH:mm
+        if (time.length < 5) time = '00:00';
+
+        // Retorna YYYY-MM-DDTHH:mm
+        return `${y.padStart(4, '2020')}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${time}`;
+    } catch {
+        return getCurrentDatetimeLocal();
+    }
+};
+
 export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' = 'delivery') => {
     const { items, setItems } = useItems();
     const { shipping, setShipping } = useShipping(initialDeliveryMethod);
@@ -22,6 +61,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
     const [observation, setObservation] = useState("");
     const [seller, setSeller] = useState("");
     const [marketingOrigin, setMarketingOrigin] = useState("Direto na Loja");
+    const [orderDate, setOrderDate] = useState(() => getCurrentDatetimeLocal());
     const [currentOrderId, setCurrentOrderId] = useState<string | undefined>(undefined);
     const [status, setStatus] = useState<string>('draft');
     const [isSaving, setIsSaving] = useState(false);
@@ -37,14 +77,14 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
 
     // Stable state ref for callbacks
     const latestState = useRef({
-        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, isSaving
+        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving
     });
 
     useEffect(() => {
         latestState.current = {
-            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, isSaving
+            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving
         };
-    }, [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, isSaving]);
+    }, [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving]);
 
     const getOrderData = useCallback((newStatus?: 'draft' | 'scheduled' | 'fulfilled' | 'cancelled'): Order => {
         const s = latestState.current;
@@ -61,7 +101,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
             observation: s.observation,
             seller: s.seller,
             marketingOrigin: s.marketingOrigin,
-            date: dateNow(),
+            date: formatToBRDateTime(s.orderDate),
         };
     }, []);
 
@@ -111,7 +151,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         return () => {
             if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
         };
-    }, [items, shipping, payments, customerData, observation, seller, marketingOrigin, getOrderData]);
+    }, [items, shipping, payments, customerData, observation, seller, marketingOrigin, orderDate, getOrderData]);
 
     const loadOrderForEditing = useCallback((order: Order) => {
         setItems(order.items);
@@ -121,6 +161,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         setObservation(order.observation);
         setSeller(order.seller as string);
         setMarketingOrigin(order.marketingOrigin || 'Direto na Loja');
+        setOrderDate(parseBRDateTimeToLocal(order.date));
         setCurrentOrderId(order.id);
         setStatus(order.status || 'draft');
         setErrors({});
@@ -249,8 +290,8 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         observation,
         seller,
         marketingOrigin,
-        date: dateNow(),
-    }), [currentOrderId, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, status]);
+        date: formatToBRDateTime(orderDate),
+    }), [currentOrderId, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, status, orderDate]);
 
     const isValidForCompletion = useMemo(() => validateBase(getOrderData('scheduled')), [getOrderData]);
 
@@ -271,7 +312,8 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         currentOrder,
         isValidForCompletion,
         errors,
-    }), [items, shipping, payments, customerData, observation, seller, marketingOrigin, currentOrderId, status, isSaving, isCalculatingDistance, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion, errors]);
+        orderDate,
+    }), [items, shipping, payments, customerData, observation, seller, marketingOrigin, currentOrderId, status, isSaving, isCalculatingDistance, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion, errors, orderDate]);
 
     const actions = useMemo(() => ({
         setItems,
@@ -313,6 +355,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         clearForm,
         setErrors,
         validateOrder,
+        setOrderDate,
     }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setMarketingOrigin, loadOrderForEditing, handleAutoCalculateDistance, handleCompleteOrder, clearForm]);
 
     return { state, actions };

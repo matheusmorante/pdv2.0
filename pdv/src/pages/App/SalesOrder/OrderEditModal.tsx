@@ -27,7 +27,7 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
     const handleUpdate = useCallback(async (e?: React.MouseEvent) => {
         e?.preventDefault();
 
-        const updatedOrder = { ...form.state.currentOrder, id: order.id, date: order.date };
+        const updatedOrder = { ...form.state.currentOrder, id: order.id };
 
         // Validate before updating
         const validationErrors = form.actions.validateOrder(updatedOrder);

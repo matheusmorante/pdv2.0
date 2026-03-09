@@ -4,6 +4,8 @@ import Person from "../../types/person.type";
 import { subscribeToPeople } from "../../utils/personService";
 import { ValidationErrors } from "../../utils/validations";
 import CustomerSearchModal from "./CustomerSearchModal";
+import PersonFormModal from "../Registrations/shared/PersonFormModal";
+import { getAddressByCep } from "../../utils/maps";
 
 interface Props {
     customerData: CustomerData;
@@ -11,47 +13,51 @@ interface Props {
     errors: ValidationErrors;
 }
 
+const EMPTY_ADDRESS = {
+    cep: '', street: '', number: '',
+    complement: '', neighborhood: '', city: '', observation: ''
+};
+
 const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) => {
     const [customers, setCustomers] = useState<Person[]>([]);
     const [searchTerm, setSearchTerm] = useState(customerData.fullName || '');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+    const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const unsubscribe = subscribeToPeople('customers', (data) => {
-            const activeCustomers = data.filter(c => c.active && !c.deleted);
-            setCustomers(activeCustomers);
+            setCustomers(data.filter(c => c.active && !c.deleted));
         });
-        return () => {
-            if (unsubscribe) unsubscribe();
-        };
+        return () => { if (unsubscribe) unsubscribe(); };
     }, []);
 
     useEffect(() => {
-        if (!isDropdownOpen) {
-            setSearchTerm(customerData.fullName || '');
-        }
+        if (!isDropdownOpen) setSearchTerm(customerData.fullName || '');
     }, [customerData.fullName, isDropdownOpen]);
 
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        const handler = (e: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
                 setIsDropdownOpen(false);
             }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [wrapperRef]);
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    const clearCustomer = () => {
+        setCustomerData({ fullName: '', phone: '', noPhone: false, fullAddress: EMPTY_ADDRESS });
+        setSearchTerm('');
+    };
 
     const handleSelectCustomer = (customer: Person) => {
         setCustomerData({
             fullName: customer.fullName || customer.tradeName || '',
             phone: customer.phone || '',
             noPhone: customer.noPhone || false,
-            fullAddress: customer.fullAddress || {
-                cep: '', street: '', number: '', complement: '', neighborhood: '', city: '', observation: ''
-            }
+            fullAddress: customer.fullAddress || EMPTY_ADDRESS
         });
         setSearchTerm(customer.fullName || customer.tradeName || '');
         setIsDropdownOpen(false);
@@ -60,40 +66,67 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
         setIsDropdownOpen(true);
+        if (e.target.value === '') clearCustomer();
+    };
 
-        // If they clear the input, clear the customerData
-        if (e.target.value === '') {
-            setCustomerData({
-                fullName: '',
-                phone: '',
-                noPhone: false,
-                fullAddress: {
-                    cep: '', street: '', number: '', complement: '', neighborhood: '', city: '', observation: ''
+    const updateAddress = (field: keyof typeof EMPTY_ADDRESS, value: string) => {
+        setCustomerData(prev => ({
+            ...prev,
+            fullAddress: { ...prev.fullAddress, [field]: value }
+        }));
+    };
+
+    const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+        const cep = e.target.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+            try {
+                const data = await getAddressByCep(cep);
+                if (data && !(data as any).error) {
+                    setCustomerData(prev => ({
+                        ...prev,
+                        fullAddress: {
+                            ...prev.fullAddress,
+                            street: data.street || prev.fullAddress.street,
+                            neighborhood: data.neighborhood || prev.fullAddress.neighborhood,
+                            city: data.city || prev.fullAddress.city,
+                        }
+                    }));
                 }
-            });
+            } catch { /* ignore */ }
         }
     };
 
     const filteredCustomers = customers.filter(c => {
-        const nameMatch = (c.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.tradeName || '').toLowerCase().includes(searchTerm.toLowerCase());
-        const phoneMatch = (c.phone || '').includes(searchTerm);
-        return nameMatch || phoneMatch;
+        const s = searchTerm.toLowerCase();
+        return (c.fullName || '').toLowerCase().includes(s) ||
+            (c.tradeName || '').toLowerCase().includes(s) ||
+            (c.phone || '').includes(searchTerm);
     });
 
-    const isError = !!errors['customer_fullName'];
+    const isNameError = !!errors['customer_fullName'];
+    const isPhoneError = !!errors['customer_phone'];
+
+    const field = (hasError?: boolean) =>
+        `w-full bg-white dark:bg-slate-900 border px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 transition-all ${hasError
+            ? 'border-red-500 focus:ring-red-500/30'
+            : 'border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'
+        }`;
 
     return (
         <div className="space-y-6" ref={wrapperRef}>
+
+            {/* ── Customer search ─────────────────────────────── */}
             <div className="flex flex-col relative w-full group">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2 ml-1">
                     Selecionar Cliente
                 </label>
+
                 <div className="relative flex gap-2">
+                    {/* Search input */}
                     <div className="relative flex-1">
                         <input
                             type="text"
-                            className={`w-full bg-slate-50 dark:bg-slate-900 border px-4 py-3 rounded-2xl transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${isError
+                            className={`w-full bg-slate-50 dark:bg-slate-900 border px-4 py-3 rounded-2xl text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 transition-all ${isNameError
                                 ? 'border-red-500 focus:border-red-600 ring-4 ring-red-500/10'
                                 : 'border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'
                                 }`}
@@ -104,75 +137,62 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                             {searchTerm && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSearchTerm('');
-                                        setCustomerData({
-                                            fullName: '',
-                                            phone: '',
-                                            noPhone: false,
-                                            fullAddress: { cep: '', street: '', number: '', complement: '', neighborhood: '', city: '', observation: '' }
-                                        });
-                                        setIsDropdownOpen(true);
-                                    }}
-                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                                >
-                                    <i className="bi bi-x-circle-fill"></i>
+                                <button type="button" onClick={clearCustomer}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                                    <i className="bi bi-x-circle-fill" />
                                 </button>
                             )}
-                            <i className={`bi bi-chevron-down text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}></i>
+                            <i className={`bi bi-chevron-down text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                         </div>
                     </div>
 
-                    {/* Advanced search button */}
-                    <button
-                        type="button"
+                    {/* Advanced search */}
+                    <button type="button"
                         onClick={() => { setIsDropdownOpen(false); setIsSearchModalOpen(true); }}
-                        title="Busca avançada de clientes"
-                        className="shrink-0 flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-lg shadow-blue-200 dark:shadow-none active:scale-95 font-black text-xs uppercase tracking-widest"
-                    >
-                        <i className="bi bi-people-fill" />
+                        title="Busca avançada"
+                        className="shrink-0 flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-lg shadow-blue-200 dark:shadow-none active:scale-95 font-black text-xs uppercase tracking-widest">
+                        <i className="bi bi-search" />
                         <span className="hidden sm:inline">Buscar</span>
+                    </button>
+
+                    {/* New customer */}
+                    <button type="button"
+                        onClick={() => { setIsDropdownOpen(false); setIsNewCustomerModalOpen(true); }}
+                        title="Cadastrar Novo Cliente"
+                        className="shrink-0 flex items-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl transition-all shadow-lg shadow-emerald-200 dark:shadow-none active:scale-95 font-black text-xs uppercase tracking-widest">
+                        <i className="bi bi-person-plus-fill" />
+                        <span className="hidden sm:inline">Novo</span>
                     </button>
                 </div>
 
-                {isError && (
-                    <div className="absolute left-0 -top-8 hidden group-hover:flex items-center px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-lg z-50 whitespace-nowrap animate-in fade-in slide-in-from-bottom-1">
-                        {errors['customer_fullName']}
+                {/* Error tooltip */}
+                {isNameError && (
+                    <div className="absolute left-0 -top-8 hidden group-hover:flex items-center px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-lg z-50 whitespace-nowrap">
+                        {errors['customer_fullName'] || errors['customer_phone']}
                         <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-500 rotate-45" />
                     </div>
                 )}
 
-                {/* Dropdown with max height and z-index */}
+                {/* Dropdown */}
                 {isDropdownOpen && (
                     <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden animate-slide-up max-h-60 overflow-y-auto custom-scrollbar">
                         {filteredCustomers.length === 0 ? (
-                            <div className="p-4 text-center text-sm text-slate-400">
-                                Nenhum cliente encontrado.
-                            </div>
+                            <div className="p-4 text-center text-sm text-slate-400">Nenhum cliente encontrado.</div>
                         ) : (
-                            filteredCustomers.map(customer => (
-                                <button
-                                    key={customer.id}
-                                    type="button"
-                                    onClick={() => handleSelectCustomer(customer)}
-                                    className="w-full text-left p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-between group last:border-0"
-                                >
+                            filteredCustomers.map(c => (
+                                <button key={c.id} type="button"
+                                    onClick={() => handleSelectCustomer(c)}
+                                    className="w-full text-left p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-between last:border-0">
                                     <div>
-                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                            {customer.fullName || customer.tradeName}
-                                        </p>
-                                        <div className="flex gap-3 text-xs text-slate-400 mt-1">
-                                            {customer.phone && (
-                                                <span className="flex items-center gap-1">
-                                                    <i className="bi bi-telephone"></i> {customer.phone}
-                                                </span>
-                                            )}
-                                        </div>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{c.fullName || c.tradeName}</p>
+                                        {c.phone && (
+                                            <span className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                                                <i className="bi bi-telephone" /> {c.phone}
+                                            </span>
+                                        )}
                                     </div>
-                                    {customerData.fullName === (customer.fullName || customer.tradeName) && (
-                                        <i className="bi bi-check-circle-fill text-blue-500 text-lg"></i>
+                                    {customerData.fullName === (c.fullName || c.tradeName) && (
+                                        <i className="bi bi-check-circle-fill text-blue-500 text-lg" />
                                     )}
                                 </button>
                             ))
@@ -181,44 +201,138 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                 )}
             </div>
 
-            {/* Visualizando Dados já preenchidos caso tenha selecionado um cliente */}
+            {/* ── Customer detail fields (shown when a name is present) ── */}
             {customerData.fullName && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-3xl border border-slate-100 dark:border-slate-700/50 animate-fade-in space-y-3">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-100 dark:border-slate-700/50 animate-fade-in space-y-5">
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                        <i className="bi bi-geo-alt-fill"></i> Dados do Endereço
+                        <i className="bi bi-person-lines-fill" /> Dados do Cliente
                     </p>
 
-                    {customerData.fullAddress.street ? (
-                        <div className="text-sm text-slate-600 dark:text-slate-300">
-                            <strong>{customerData.fullAddress.street}</strong>
-                            {customerData.fullAddress.number ? `, ${customerData.fullAddress.number}` : ''}
-                            {customerData.fullAddress.complement ? ` - ${customerData.fullAddress.complement}` : ''}
-                            <br />
-                            {customerData.fullAddress.neighborhood} - {customerData.fullAddress.city}
-                            <br />
-                            CEP: {customerData.fullAddress.cep || 'N/A'}
-                            {customerData.fullAddress.observation && (
-                                <div className="mt-2 text-xs text-amber-600 dark:text-amber-500 italic bg-amber-50 dark:bg-amber-900/10 p-2 rounded-lg border border-amber-100 dark:border-amber-900/20">
-                                    Obs: {customerData.fullAddress.observation}
-                                </div>
+                    {/* Nome + Telefone */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">
+                                Nome do Cliente <span className="text-red-500">*</span>
+                            </label>
+                            <input type="text" className={field(isNameError)}
+                                placeholder="Nome Completo"
+                                value={customerData.fullName}
+                                onChange={e => setCustomerData(prev => ({ ...prev, fullName: e.target.value }))}
+                            />
+                            {errors['customer_fullName'] && (
+                                <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['customer_fullName']}</p>
                             )}
                         </div>
-                    ) : (
-                        <div className="text-sm italic text-slate-400">Cliente sem endereço cadastrado.</div>
-                    )}
+
+                        <div className="flex-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">
+                                Telefone / Celular <span className="text-red-500">*</span>
+                            </label>
+                            <input type="tel" className={field(isPhoneError)}
+                                placeholder="(00) 00000-0000"
+                                value={customerData.phone}
+                                onChange={e => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
+                            />
+                            {errors['customer_phone'] && (
+                                <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['customer_phone']}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className="space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                            <i className="bi bi-geo-alt-fill text-blue-500" /> Endereço de Entrega
+                        </p>
+
+                        {/* CEP + Rua + Número */}
+                        <div className="flex flex-col md:flex-row gap-3">
+                            <div className="md:w-36">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">CEP</label>
+                                <input type="text" className={field()} placeholder="00000-000" maxLength={9}
+                                    value={customerData.fullAddress?.cep || ''}
+                                    onChange={e => updateAddress('cep', e.target.value)}
+                                    onBlur={handleCepBlur}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Rua / Avenida</label>
+                                <input type="text" className={field()} placeholder="Nome da rua"
+                                    value={customerData.fullAddress?.street || ''}
+                                    onChange={e => updateAddress('street', e.target.value)}
+                                />
+                            </div>
+                            <div className="md:w-28">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Número</label>
+                                <input type="text" className={field()} placeholder="123"
+                                    value={customerData.fullAddress?.number || ''}
+                                    onChange={e => updateAddress('number', e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Complemento + Bairro + Cidade */}
+                        <div className="flex flex-col md:flex-row gap-3">
+                            <div className="flex-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Complemento</label>
+                                <input type="text" className={field()} placeholder="Apto, Bloco..."
+                                    value={customerData.fullAddress?.complement || ''}
+                                    onChange={e => updateAddress('complement', e.target.value)}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Bairro</label>
+                                <input type="text" className={field()} placeholder="Seu bairro"
+                                    value={customerData.fullAddress?.neighborhood || ''}
+                                    onChange={e => updateAddress('neighborhood', e.target.value)}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Cidade</label>
+                                <input type="text" className={field()} placeholder="Nome da cidade"
+                                    value={customerData.fullAddress?.city || ''}
+                                    onChange={e => updateAddress('city', e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Observação */}
+                        <div>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">
+                                Ponto de Referência / Observação
+                            </label>
+                            <input type="text"
+                                className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-amber-100 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-amber-300 dark:placeholder:text-amber-700/50"
+                                placeholder="Ex: Casa verde em frente à padaria..."
+                                value={customerData.fullAddress?.observation || ''}
+                                onChange={e => updateAddress('observation', e.target.value)}
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Advanced Customer Search Modal */}
+            {/* ── Modals ────────────────────────────────────────── */}
             {isSearchModalOpen && (
                 <CustomerSearchModal
-                    onSelect={(selected) => {
-                        setCustomerData(selected);
-                        setSearchTerm(selected.fullName);
+                    onSelect={(selected: any) => {
+                        setCustomerData({
+                            ...selected,
+                            fullAddress: selected.fullAddress || selected.address || EMPTY_ADDRESS
+                        });
+                        setSearchTerm(selected.fullName || '');
                     }}
                     onClose={() => setIsSearchModalOpen(false)}
                 />
             )}
+
+            <PersonFormModal
+                isOpen={isNewCustomerModalOpen}
+                onClose={() => setIsNewCustomerModalOpen(false)}
+                onSuccess={handleSelectCustomer}
+                collectionName="customers"
+                title="Cliente"
+            />
         </div>
     );
 };

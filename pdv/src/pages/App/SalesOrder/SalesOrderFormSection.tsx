@@ -27,6 +27,8 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                 <FormHeader
                     currentOrderId={state.currentOrderId}
                     onClearForm={actions.clearForm}
+                    orderDate={state.orderDate}
+                    setOrderDate={actions.setOrderDate}
                 />
 
                 {/* Main Form Content */}

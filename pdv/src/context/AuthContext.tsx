@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { supabase } from '../pages/utils/supabaseConfig';
 import { User } from '@supabase/supabase-js';
 
-export type UserRole = 'administrator' | 'deliverer' | 'seller' | 'accountant' | 'manager';
+export type UserRole = 'administrator' | 'deliverer' | 'seller' | 'accountant' | 'manager' | 'pending';
 
 export interface Profile {
     id: string;
@@ -19,6 +19,7 @@ interface AuthContextType {
     loading: boolean;
     isAdmin: boolean;
     isManager: boolean;
+    isPending: boolean;
     logout: () => Promise<void>;
 }
 
@@ -97,6 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         isAdmin: profile?.role === 'administrator',
         isManager: profile?.role === 'manager' || profile?.role === 'administrator',
+        isPending: !profile?.role || profile?.role === 'pending',
         logout
     }), [user, profile, loading]);
 

@@ -12,7 +12,17 @@ type Shipping = {
     },
     destinationCoords?: [number, number], // [lng, lat] (GeoJSON/MapLibre format)
     routeGeoJSON?: any, // GeoJSON geometry from routing API
-    autoCalculateValue?: boolean
+    autoCalculateValue?: boolean,
+    useCustomerAddress?: boolean,
+    deliveryAddress?: {
+        cep: string,
+        street: string,
+        number: string,
+        complement: string,
+        observation: string,
+        neighborhood: string,
+        city: string
+    }
 };
 
 export default Shipping;

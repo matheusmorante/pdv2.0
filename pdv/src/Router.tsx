@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import SalesOrder from './pages/App/SalesOrder';
 import Dashboard from './pages/App/Dashboard/Index';
 import AppLayout from './AppLayout';
+import PendingApproval from './pages/PendingApproval';
 import ReceiptPage from './pages/ReceiptPage';
 import WarrantyTermPage from './pages/WarrantyTermPage';
 import DeliverySchedule from './pages/App/DeliverySchedule';
@@ -22,7 +23,7 @@ import UsersManagementPage from './pages/App/Users/Index';
 import ProfilePage from './pages/App/Profile/Index';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, isPending } = useAuth();
   const logger = (globalThis as any).console;
 
   if (loading) {
@@ -37,6 +38,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (isPending) {
+    return <PendingApproval />;
   }
 
   return <>{children}</>;

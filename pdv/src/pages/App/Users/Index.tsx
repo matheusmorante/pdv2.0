@@ -105,20 +105,22 @@ const UsersManagement = () => {
                                     <td className="px-8 py-5 text-sm text-slate-500 font-bold">{profile.email}</td>
                                     <td className="px-8 py-5">
                                         <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border 
-                                            ${profile.role === 'administrator' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                                              profile.role === 'manager' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                                              profile.role === 'deliverer' ? 'bg-purple-50 text-purple-600 border-purple-100' : 
-                                              profile.role === 'seller' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-                                              'bg-amber-50 text-amber-600 border-amber-100'}`}>
-                                            {profile.role}
+                                            ${profile.role === 'administrator' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                profile.role === 'manager' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                                    profile.role === 'deliverer' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                        profile.role === 'seller' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                            profile.role === 'pending' ? 'bg-slate-50 text-slate-600 border-slate-200' :
+                                                                'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                                            {profile.role === 'pending' ? 'Pendente' : profile.role}
                                         </span>
                                     </td>
                                     <td className="px-8 py-5 text-right">
-                                        <select 
+                                        <select
                                             value={profile.role}
                                             onChange={(e: any) => handleRoleChange(profile.id, e.target.value as UserRole)}
                                             className="bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-2 text-xs font-bold text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"
                                         >
+                                            <option value="pending">Pendente (Aprov)</option>
                                             <option value="administrator">Administrador</option>
                                             <option value="manager">Gerente</option>
                                             <option value="seller">Vendedor</option>

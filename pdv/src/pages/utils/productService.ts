@@ -104,7 +104,7 @@ export const saveProduct = async (product: Product): Promise<void> => {
         const { error } = await supabase
             .from(TABLE_NAME)
             .insert([dbProduct]);
-        
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao salvar o produto: ", error);
@@ -118,8 +118,8 @@ export const updateProduct = async (id: string, productToUpdate: Partial<Product
         const { error } = await supabase
             .from(TABLE_NAME)
             .update(dbProduct)
-            .eq('id', parseInt(id));
-        
+            .eq('id', id);
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao atualizar o produto: ", error);
@@ -129,9 +129,9 @@ export const updateProduct = async (id: string, productToUpdate: Partial<Product
 
 export const moveToTrash = async (id: string): Promise<void> => {
     try {
-        await updateProduct(id, { 
-            deleted: true, 
-             active: false
+        await updateProduct(id, {
+            deleted: true,
+            active: false
         });
     } catch (error) {
         console.error("Erro ao mover produto para lixeira: ", error);
@@ -141,7 +141,7 @@ export const moveToTrash = async (id: string): Promise<void> => {
 
 export const restoreProduct = async (id: string): Promise<void> => {
     try {
-        await updateProduct(id, { 
+        await updateProduct(id, {
             deleted: false,
             active: true
         });
@@ -156,8 +156,8 @@ export const permanentDeleteProduct = async (id: string): Promise<void> => {
         const { error } = await supabase
             .from(TABLE_NAME)
             .delete()
-            .eq('id', parseInt(id));
-        
+            .eq('id', id);
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao deletar permanentemente o produto: ", error);

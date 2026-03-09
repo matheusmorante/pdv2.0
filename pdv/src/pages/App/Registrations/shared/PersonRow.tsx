@@ -57,24 +57,32 @@ const PersonRow = ({
                         </div>
                     </td>
                 );
+            case 'cpfCnpj':
+                return (
+                    <td key="cpfCnpj" className="px-6 py-4 text-left">
+                        <span className="font-mono text-xs text-slate-600 dark:text-slate-400">
+                            {person.cpfCnpj || "-"}
+                        </span>
+                    </td>
+                );
             case 'email':
                 return (
                     <td key="email" className="px-6 py-4 text-left">
-                         <span className="text-sm text-slate-600 dark:text-slate-400">{person.email || "-"}</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">{person.email || "-"}</span>
                     </td>
                 );
             case 'phone':
-                 return (
+                return (
                     <td key="phone" className="px-6 py-4 text-left">
-                         <span className="text-sm text-slate-600 dark:text-slate-400">{person.phone || "-"}</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">{person.phone || "-"}</span>
                     </td>
                 );
             case 'address':
-                 return (
+                return (
                     <td key="address" className="px-6 py-4 text-left">
-                         <span className="text-xs text-slate-500 dark:text-slate-400">
-                            {person.fullAddress?.street 
-                                ? `${person.fullAddress.street}, ${person.fullAddress.number || 'S/N'}` 
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                            {person.fullAddress?.street
+                                ? `${person.fullAddress.street}, ${person.fullAddress.number || 'S/N'}`
                                 : "-"}
                         </span>
                     </td>
@@ -105,8 +113,8 @@ const PersonRow = ({
                                 <>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onToggleActive(person.id!, person.active); }}
-                                        className={`p-2 rounded-xl transition-all shadow-sm border ${person.active 
-                                            ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30' 
+                                        className={`p-2 rounded-xl transition-all shadow-sm border ${person.active
+                                            ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30'
                                             : 'text-slate-400 hover:text-slate-500 bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}
                                         title={person.active ? "Desativar" : "Ativar"}
                                     >

@@ -6,12 +6,13 @@ import { toast } from "react-toastify";
 interface PersonFormModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSuccess?: (person: Person) => void;
     person?: Person | null;
     collectionName: string;
     title: string;
 }
 
-const PersonFormModal = ({ isOpen, onClose, person, collectionName, title }: PersonFormModalProps) => {
+const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, title }: PersonFormModalProps) => {
     const [formData, setFormData] = useState<Partial<Person>>({
         personType: "PF",
         fullName: "",
@@ -78,8 +79,9 @@ const PersonFormModal = ({ isOpen, onClose, person, collectionName, title }: Per
 
         setLoading(true);
         try {
-            await savePerson(collectionName, formData as Person);
+            const savedPerson = await savePerson(collectionName, formData as Person);
             toast.success(person ? "Atualizado com sucesso!" : "Criado com sucesso!");
+            if (onSuccess) onSuccess(savedPerson);
             onClose();
         } catch (error) {
             toast.error("Erro ao salvar.");
@@ -113,8 +115,8 @@ const PersonFormModal = ({ isOpen, onClose, person, collectionName, title }: Per
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* PF/PJ Toggle */}
                         <div className="md:col-span-2 flex items-center gap-6 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Tipo de Pessoa:</label>
-                             <div className="flex gap-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Tipo de Pessoa:</label>
+                            <div className="flex gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, personType: 'PF' })}
@@ -129,7 +131,7 @@ const PersonFormModal = ({ isOpen, onClose, person, collectionName, title }: Per
                                 >
                                     Jurídica (PJ)
                                 </button>
-                             </div>
+                            </div>
                         </div>
 
                         <div className={`${formData.personType === 'PJ' ? 'md:col-span-1' : 'md:col-span-2'} flex flex-col gap-2`}>

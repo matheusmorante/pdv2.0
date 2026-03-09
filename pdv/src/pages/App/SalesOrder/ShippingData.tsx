@@ -1,12 +1,13 @@
 import React from "react";
 import Shipping from "../../types/Shipping.type";
 import CustomerData from "../../types/customerData.type";
-import { getShippingRouteUrl } from "../../utils/maps";
+import { getShippingRouteUrl, getAddressByCep } from "../../utils/maps";
 import { ValidationErrors } from "../../utils/validations";
 import { getSettings } from "../../utils/settingsService";
 import FreteDistancia from "./ShippingComponents/FreteDistancia";
 import Agendamento from "./ShippingComponents/Agendamento";
 import MapRoute from "./ShippingComponents/MapRoute";
+import InputMask from "react-input-mask";
 
 interface Props {
     shipping: Shipping;
@@ -18,7 +19,11 @@ interface Props {
 }
 
 const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistance, onAutoCalculateDistance, errors }: Props) => {
-    const route = getShippingRouteUrl(customerData.fullAddress);
+    const activeAddress = shipping.useCustomerAddress === false && shipping.deliveryAddress
+        ? shipping.deliveryAddress
+        : customerData.fullAddress;
+
+    const route = getShippingRouteUrl(activeAddress);
     const settings = getSettings();
 
     const onChangeShippingValue = (newValue: number) => {
@@ -60,29 +65,169 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
         });
     };
 
+    const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+        const cepValue = e.target.value.replace(/\D/g, "");
+        if (cepValue.length === 8) {
+            try {
+                const data = await getAddressByCep(cepValue);
+                if (data && !(data as any).error) {
+                    setShipping(prev => ({
+                        ...prev,
+                        deliveryAddress: {
+                            ...prev.deliveryAddress!,
+                            street: data.street || "",
+                            neighborhood: data.neighborhood || "",
+                            city: data.city || "",
+                        }
+                    }));
+                }
+            } catch (error) {
+                console.error("Erro ao buscar CEP", error);
+            }
+        }
+    };
+
+    const updateDeliveryAddress = (field: keyof NonNullable<Shipping['deliveryAddress']>, value: string) => {
+        setShipping(prev => ({
+            ...prev,
+            deliveryAddress: {
+                ...prev.deliveryAddress!,
+                [field]: value
+            }
+        }));
+    };
+
     return (
         <div className="flex flex-col gap-8 w-full">
             <div className="flex flex-col gap-10 w-full lg:gap-12">
                 {shipping.deliveryMethod !== 'pickup' && (
-                    <FreteDistancia
-                        value={shipping.value}
-                        distance={shipping.distance}
-                        routeUrl={route}
-                        onChangeValue={onChangeShippingValue}
-                        onChangeDistance={onChangeDistance}
-                        onAutoCalculateDistance={onAutoCalculateDistance}
-                        autoCalculateValue={shipping.autoCalculateValue}
-                        onToggleAutoCalculate={() => setShipping(prev => {
-                            const newValue = !prev.autoCalculateValue;
-                            let newShippingValue = prev.value;
-                            if (newValue && prev.distance !== undefined && settings.freightPerKm > 0) {
-                                newShippingValue = prev.distance * settings.freightPerKm;
-                            }
-                            return { ...prev, autoCalculateValue: newValue, value: newShippingValue };
-                        })}
-                        isCalculatingDistance={isCalculatingDistance}
-                        errors={errors}
-                    />
+                    <div className="flex flex-col gap-10">
+                        {/* Custom Delivery Address Toggle */}
+                        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6">
+                            <label className="flex items-center gap-3 cursor-pointer group w-fit">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={shipping.useCustomerAddress !== false}
+                                        onChange={(e) => setShipping(prev => ({ ...prev, useCustomerAddress: e.target.checked }))}
+                                    />
+                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                                </div>
+                                <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                    Entregar no endereço cadastrado do cliente
+                                </span>
+                            </label>
+
+                            {shipping.useCustomerAddress === false && (
+                                <div className="mt-6 flex flex-col gap-4 animate-slide-up">
+                                    <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Endereço de Entrega Alternativo</h4>
+
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        <div className="flex-[1]">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">CEP</label>
+                                            <InputMask
+                                                mask="99999-999"
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                placeholder="00000-000"
+                                                value={shipping.deliveryAddress?.cep || ""}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateDeliveryAddress('cep', e.target.value)}
+                                                onBlur={handleCepBlur}
+                                            />
+                                        </div>
+                                        <div className="flex-[3]">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Rua/Avenida <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                className={`w-full bg-white dark:bg-slate-950 border px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 transition-all ${errors['deliveryAddress_street'] ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/20'}`}
+                                                placeholder="Nome da rua"
+                                                value={shipping.deliveryAddress?.street || ""}
+                                                onChange={e => updateDeliveryAddress('street', e.target.value)}
+                                            />
+                                            {errors['deliveryAddress_street'] && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['deliveryAddress_street']}</p>}
+                                        </div>
+                                        <div className="flex-[1]">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Número <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                className={`w-full bg-white dark:bg-slate-950 border px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 transition-all ${errors['deliveryAddress_number'] ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/20'}`}
+                                                placeholder="Ex: 123"
+                                                value={shipping.deliveryAddress?.number || ""}
+                                                onChange={e => updateDeliveryAddress('number', e.target.value)}
+                                            />
+                                            {errors['deliveryAddress_number'] && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['deliveryAddress_number']}</p>}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        <div className="flex-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Complemento</label>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                                placeholder="Apto, Bloco, etc"
+                                                value={shipping.deliveryAddress?.complement || ""}
+                                                onChange={e => updateDeliveryAddress('complement', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Bairro <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                className={`w-full bg-white dark:bg-slate-950 border px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 transition-all ${errors['deliveryAddress_neighborhood'] ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/20'}`}
+                                                placeholder="Seu bairro"
+                                                value={shipping.deliveryAddress?.neighborhood || ""}
+                                                onChange={e => updateDeliveryAddress('neighborhood', e.target.value)}
+                                            />
+                                            {errors['deliveryAddress_neighborhood'] && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['deliveryAddress_neighborhood']}</p>}
+                                        </div>
+                                        <div className="flex-[1.5]">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Cidade <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                className={`w-full bg-white dark:bg-slate-950 border px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 transition-all ${errors['deliveryAddress_city'] ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/20'}`}
+                                                placeholder="Nome da cidade"
+                                                value={shipping.deliveryAddress?.city || ""}
+                                                onChange={e => updateDeliveryAddress('city', e.target.value)}
+                                            />
+                                            {errors['deliveryAddress_city'] && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['deliveryAddress_city']}</p>}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Ponto de Referência / Observação de Entrega</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-amber-100 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-amber-300 dark:placeholder:text-amber-700/50"
+                                            placeholder="Ex: Casa verde em frente a padaria..."
+                                            value={shipping.deliveryAddress?.observation || ""}
+                                            onChange={e => updateDeliveryAddress('observation', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <FreteDistancia
+                            value={shipping.value}
+                            distance={shipping.distance}
+                            routeUrl={route}
+                            onChangeValue={onChangeShippingValue}
+                            onChangeDistance={onChangeDistance}
+                            onAutoCalculateDistance={onAutoCalculateDistance}
+                            autoCalculateValue={shipping.autoCalculateValue}
+                            onToggleAutoCalculate={() => setShipping(prev => {
+                                const newValue = !prev.autoCalculateValue;
+                                let newShippingValue = prev.value;
+                                if (newValue && prev.distance !== undefined && settings.freightPerKm > 0) {
+                                    newShippingValue = prev.distance * settings.freightPerKm;
+                                }
+                                return { ...prev, autoCalculateValue: newValue, value: newShippingValue };
+                            })}
+                            isCalculatingDistance={isCalculatingDistance}
+                            errors={errors}
+                        />
+                    </div>
                 )}
                 <Agendamento
                     scheduling={shipping.scheduling}
