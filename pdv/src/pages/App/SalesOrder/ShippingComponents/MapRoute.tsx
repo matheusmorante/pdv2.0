@@ -7,9 +7,10 @@ interface MapRouteProps {
     destinationCoords: [number, number]; // [lng, lat]
     routeGeoJSON?: any;
     className?: string;
+    onIdle?: () => void;
 }
 
-const MapRoute = ({ destinationCoords, routeGeoJSON, className = "" }: MapRouteProps) => {
+const MapRoute = ({ destinationCoords, routeGeoJSON, className = "", onIdle }: MapRouteProps) => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
     const storeMarkerRef = useRef<maplibregl.Marker | null>(null);
@@ -44,7 +45,7 @@ const MapRoute = ({ destinationCoords, routeGeoJSON, className = "" }: MapRouteP
                 <circle cx="16" cy="16" r="6" fill="white"/>
             </svg>`;
             storeEl.style.cursor = 'pointer';
-            
+
             storeMarkerRef.current = new maplibregl.Marker({ element: storeEl, anchor: 'bottom' })
                 .setLngLat(currentOrigin)
                 .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML('<strong>Loja</strong>'))
@@ -102,6 +103,14 @@ const MapRoute = ({ destinationCoords, routeGeoJSON, className = "" }: MapRouteP
                 bounds.extend(currentOrigin);
                 bounds.extend(destinationCoords);
                 map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+            }
+
+            // Signal when map is idle (finished rendering)
+            if (onIdle) {
+                map.once('idle', () => {
+                    // Small delay to ensure everything is really painted
+                    setTimeout(onIdle, 500);
+                });
             }
         });
 

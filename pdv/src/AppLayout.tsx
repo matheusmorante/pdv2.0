@@ -7,7 +7,7 @@ import DesktopNav from "./components/layout/DesktopNav";
 import MobileNav from "./components/layout/MobileNav";
 import AIChatAssistant from "./components/shared/AIChatAssistant";
 
-type MenuKey = 'stock' | 'salesOrder' | 'registrations' | null;
+type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
 
 export default function AppLayout() {
   const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
@@ -56,7 +56,7 @@ export default function AppLayout() {
             {theme === 'light' ? (
               <i className="bi bi-moon-stars-fill text-lg xl:text-xl"></i>
             ) : (
-                <i className="bi bi-sun-fill text-lg xl:text-xl"></i>
+              <i className="bi bi-sun-fill text-lg xl:text-xl"></i>
             )}
           </button>
 

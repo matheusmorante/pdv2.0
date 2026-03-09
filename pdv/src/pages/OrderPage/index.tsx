@@ -2,7 +2,7 @@ import CustomerData from "./CustomerData";
 import ItemsTable from "./ItemsTable";
 import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
-import PrintRouteMap from "./PrintRouteMap";
+import MapRoute from "../App/SalesOrder/ShippingComponents/MapRoute";
 import { useEffect, useRef } from "react";
 import { stringifyFullAddress } from "../utils/formatters";
 
@@ -52,12 +52,14 @@ const OrderPage = () => {
             <ItemsTable items={order.items} summary={order.itemsSummary} />
 
             {/* Route Map — only for delivery orders with route data */}
-            {isDeliveryOrder && (
-                <PrintRouteMap
-                    shipping={order.shipping}
-                    customerAddress={stringifyFullAddress(order.customerData?.fullAddress)}
-                    onReady={handleMapReady}
-                />
+            {isDeliveryOrder && order.shipping?.destinationCoords && (
+                <div className="w-full h-80 my-4 border border-slate-200 rounded-3xl overflow-hidden">
+                    <MapRoute
+                        destinationCoords={order.shipping.destinationCoords}
+                        routeGeoJSON={order.shipping.routeGeoJSON}
+                        onIdle={handleMapReady}
+                    />
+                </div>
             )}
 
             <div className="flex flex-row justify-around gap-6">

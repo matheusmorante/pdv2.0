@@ -62,5 +62,30 @@ export const aiService = {
     async generateDescription(productData: { productName: string; category: string; unitPrice: number; promptTemplate: string }) {
         if (!productData.productName) throw new Error("Nome do produto é obrigatório");
         return await callAIBackend("generate-description", productData);
+    },
+
+    async generateNCM(productName: string, material: string): Promise<{ ncm: string, desc: string }> {
+        const prompt = `Você é um classificador fiscal (especialista tributário do Brasil). 
+        Sua tarefa é encontrar o NCM mais provável para o seguinte produto:
+        Produto: ${productName}
+        Material / Composição: ${material || "Não informado"}
+        
+        RETORNE APENAS um objeto JSON no formato exato: {"ncm": "8 digitos apenas numeros", "desc": "uma descricao curta de ate 50 caracteres que explica que tipo de produto eh"}
+        NÃO inclua markdown como \`\`\`json ou texto adicional. Se não souber exatamente, dê a melhor aproximação.`;
+
+        try {
+            const result = await this.chat(prompt, "Sempre retorne apenas JSON. Sem explicações ou saudações.");
+            let ans = result.answer.trim();
+            // Fallback limpar o json caso venha blocos de markdown
+            if (ans.startsWith('```json')) {
+                ans = ans.replace(/^```json/, '').replace(/```$/, '').trim();
+            } else if (ans.startsWith('```')) {
+                ans = ans.replace(/^```/, '').replace(/```$/, '').trim();
+            }
+            return JSON.parse(ans);
+        } catch (error) {
+            console.error("Erro extraindo o NCM", error);
+            throw new Error("Não foi possível gerar um NCM automaticamente. Verifique se a IA respondeu num formato válido.");
+        }
     }
 };

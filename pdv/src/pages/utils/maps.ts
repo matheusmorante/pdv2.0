@@ -63,7 +63,7 @@ export const geocodeAddress = async (address: CustomerData['fullAddress'] | stri
     } else {
         addressString = `${address.street}, ${address.number ? address.number + ', ' : ''}${address.city} - PR`;
     }
-    
+
     const encodedAddress = encodeURIComponent(addressString);
 
     try {
@@ -187,4 +187,22 @@ export const autoCalculateRouteDistance = async (address: CustomerData['fullAddr
         console.error("Erro ao calcular distância por rotas:", error);
         return null;
     }
+}
+
+// ─── Search Address Suggestions (Autocomplete) ──────────────────────────────
+
+export const searchAddressSuggestions = async (query: string): Promise<any[]> => {
+    if (!query || query.length < 3) return [];
+    try {
+        // We limit to PR (Paraná) since the app seems focused on that region, 
+        // but we can make it more general. Adding "Parana" to query if not present?
+        // Let's keep it general but limited to Brazil.
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=br`);
+        if (res.ok) {
+            return await res.json();
+        }
+    } catch (e) {
+        console.warn("Erro ao buscar sugestões de endereço (Nominatim)", e);
+    }
+    return [];
 }

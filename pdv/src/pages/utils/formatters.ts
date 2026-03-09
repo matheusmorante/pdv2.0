@@ -2,6 +2,7 @@ import CustomerData from "../types/customerData.type"
 import { Item } from "../types/items.type";
 import { Payment } from "../types/payments.type";
 import Order from "../types/order.type";
+import Person from "../types/person.type";
 import { calcItemTotalValue, calcPaymentTotalValue } from "./calculations";
 
 export const stringifyFullAddress = (
@@ -112,14 +113,14 @@ export const capitalizeCustomerData = (data: CustomerData): CustomerData => {
 
     return {
         ...data,
-        fullName: toTitleCase(data.fullName),
+        fullName: toTitleCase(data.fullName || ""),
         fullAddress: data.fullAddress ? {
             ...data.fullAddress,
-            street: toTitleCase(data.fullAddress.street),
-            complement: toTitleCase(data.fullAddress.complement),
-            neighborhood: toTitleCase(data.fullAddress.neighborhood),
-            city: toTitleCase(data.fullAddress.city),
-            observation: toTitleCase(data.fullAddress.observation),
+            street: toTitleCase(data.fullAddress.street || ""),
+            complement: toTitleCase(data.fullAddress.complement || ""),
+            neighborhood: toTitleCase(data.fullAddress.neighborhood || ""),
+            city: toTitleCase(data.fullAddress.city || ""),
+            observation: toTitleCase(data.fullAddress.observation || ""),
         } : data.fullAddress
     };
 };
@@ -132,7 +133,25 @@ export const capitalizeOrder = (order: Order): Order => {
         customerData: capitalizeCustomerData(order.customerData),
         items: order.items?.map(item => ({
             ...item,
-            description: toTitleCase(item.description)
+            description: item.description?.toUpperCase() || ""
         }))
+    };
+};
+
+export const capitalizePerson = (person: Person): Person => {
+    if (!person) return person;
+
+    return {
+        ...person,
+        fullName: toTitleCase(person.fullName || ""),
+        tradeName: person.tradeName ? toTitleCase(person.tradeName) : person.tradeName,
+        fullAddress: person.fullAddress ? {
+            ...person.fullAddress,
+            street: toTitleCase(person.fullAddress.street || ""),
+            complement: toTitleCase(person.fullAddress.complement || ""),
+            neighborhood: toTitleCase(person.fullAddress.neighborhood || ""),
+            city: toTitleCase(person.fullAddress.city || ""),
+            observation: toTitleCase(person.fullAddress.observation || ""),
+        } : person.fullAddress
     };
 };

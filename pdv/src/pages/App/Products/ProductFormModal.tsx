@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { compressImage } from "../../utils/imageUtils";
 import { uploadFile } from "../../utils/storageService";
 import { aiService } from "../../utils/aiService";
+import { supabase } from "../../utils/supabaseConfig";
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -20,9 +21,15 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
     const [loading, setLoading] = useState(false);
     const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
     const [suppliers, setSuppliers] = useState<Person[]>([]);
+    const [availableCategories, setAvailableCategories] = useState<{ id: string, name: string }[]>([]);
 
     useEffect(() => {
         const unsubscribe = subscribeToPeople('suppliers', (data: Person[]) => setSuppliers(data.filter((s: Person) => !s.deleted)));
+        const loadCats = async () => {
+            const { data } = await supabase.from('categories').select('id, name').order('name');
+            if (data) setAvailableCategories(data);
+        };
+        loadCats();
         return () => unsubscribe();
     }, []);
 
@@ -42,6 +49,7 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         unit: "UN",
         active: true,
         code: "",
+        categoryIds: [],
         hasVariations: false,
         variations: [],
         images: [],
@@ -216,10 +224,41 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
         }
     };
 
+    const handleGenerateNCM = async () => {
+        if (!formData.description) {
+            toast.warning("Preencha a 'Descrição Comercial' na aba Cadastro Geral primeiro para eu entender do que se trata o produto.");
+            setActiveTab('geral');
+            return;
+        }
+
+        const loadingToast = toast.loading("🤖 A IA está buscando o código NCM... Aguarde.");
+        try {
+            const data = await aiService.generateNCM(formData.description, formData.fiscal?.material || "");
+            setFormData(prev => ({
+                ...prev,
+                fiscal: {
+                    ...(prev.fiscal || {}),
+                    ncm: data.ncm,
+                    ncmDescription: data.desc
+                }
+            }));
+            toast.update(loadingToast, { render: "NCM localizado com IA! ✨", type: "success", isLoading: false, autoClose: 3000 });
+        } catch (error: any) {
+            console.error("Erro ao gerar NCM:", error);
+            toast.update(loadingToast, { render: `Erro: ${error.message}`, type: "error", isLoading: false, autoClose: 5000 });
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.description) {
             toast.error("A descrição é obrigatória.");
+            return;
+        }
+
+        if (formData.itemType === 'product' && !formData.condition) {
+            toast.error("A condição do móvel (Novo, Usado ou Salvado) é obrigatória para produtos.");
+            setActiveTab('geral');
             return;
         }
 
@@ -348,17 +387,55 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Categoria</label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold appearance-none dark:text-slate-100"
-                                    >
-                                        <option value="Produtos">📦 Produtos</option>
-                                        <option value="Serviços">🛠️ Serviços</option>
-                                        <option value="Insumos">🧪 Insumos</option>
-                                    </select>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Categorias associadas</label>
+                                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar border border-slate-100 dark:border-slate-800 rounded-xl p-2 bg-slate-50 dark:bg-slate-950">
+                                        {availableCategories.map(cat => (
+                                            <button
+                                                key={cat.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormData(prev => {
+                                                        const ids = prev.categoryIds || [];
+                                                        if (ids.includes(cat.id)) {
+                                                            return { ...prev, categoryIds: ids.filter(i => i !== cat.id) };
+                                                        } else {
+                                                            return { ...prev, categoryIds: [...ids, cat.id] };
+                                                        }
+                                                    });
+                                                }}
+                                                className={`px-3 py-1 text-xs font-bold rounded-full border transition-all ${formData.categoryIds?.includes(cat.id) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-blue-300 dark:text-slate-300'}`}
+                                            >
+                                                {cat.name}
+                                            </button>
+                                        ))}
+                                        {availableCategories.length === 0 && <span className="text-xs text-slate-400 p-2">Nenhuma categoria pai/filho cadastrada.</span>}
+                                    </div>
                                 </div>
+
+                                {/* Condição do Móvel */}
+                                {formData.itemType === 'product' && (
+                                    <div className="flex flex-col gap-2 md:col-span-2 mt-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                                            Condição do Produto <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="flex gap-4">
+                                            {[
+                                                { value: 'novo', label: 'Novo', icon: 'bi-box-seam' },
+                                                { value: 'usado', label: 'Usado', icon: 'bi-recycle' },
+                                                { value: 'salvado', label: 'Salvado (Avariado)', icon: 'bi-exclamation-triangle' }
+                                            ].map(opt => (
+                                                <button
+                                                    key={opt.value}
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, condition: opt.value as any }))}
+                                                    className={`flex items-center gap-2 px-4 py-3 rounded-2xl border font-bold text-sm transition-all ${formData.condition === opt.value ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/30' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                                                >
+                                                    <i className={`bi ${opt.icon}`}></i> {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-6 md:col-span-2">
@@ -696,15 +773,40 @@ const ProductFormModal = ({ isOpen, onClose, product }: ProductFormModalProps) =
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">NCM (8 Dígitos)</label>
+                                <div className="flex flex-col gap-2 relative">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Material / Composição</label>
                                     <input
                                         type="text"
-                                        value={formData.fiscal?.ncm}
+                                        value={formData.fiscal?.material || ""}
+                                        onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, material: e.target.value } })}
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm dark:text-slate-200"
+                                        placeholder="Ex: Madeira MDF e Vidro"
+                                    />
+                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 italic">O material ajuda a IA a buscar o NCM exato.</p>
+                                </div>
+                                <div className="flex flex-col gap-2 relative">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">NCM (8 Dígitos)</label>
+                                        <button
+                                            onClick={handleGenerateNCM}
+                                            type="button"
+                                            className="text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:underline"
+                                        >
+                                            <i className="bi bi-magic mr-1"></i>Buscar c/ IA
+                                        </button>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.fiscal?.ncm || ""}
                                         onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, ncm: e.target.value } })}
                                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm dark:text-slate-200"
                                         placeholder="0000.00.00"
                                     />
+                                    {formData.fiscal?.ncmDescription && (
+                                        <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest leading-tight">
+                                            <i className="bi bi-info-circle mr-1"></i>{formData.fiscal.ncmDescription}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">CEST</label>

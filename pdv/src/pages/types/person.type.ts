@@ -12,8 +12,10 @@ export type Person = {
     noPhone?: boolean;
     fullAddress?: FullAddress;
     type: 'customer' | 'supplier' | 'employee';
+    marketingOrigin?: 'organic' | 'paid' | ''; // Origem de marketing (organic = loja física, paid = tráfego pago)
     active: boolean;
     leadTime?: number;
+    position?: string; // Cargo do funcionário
     deleted?: boolean;
     deletedAt?: string;
     createdAt?: string;

@@ -26,6 +26,7 @@ const mapToDB = (collectionName: string, person: Partial<Person>) => {
         phone: p.phone,
         address: addressValue,
         observation: p.observation,
+        position: p.position,
         active: p.active,
         deleted: p.deleted,
         deleted_at: person.deletedAt ? new Date().toISOString() : null, // Simplification
@@ -57,40 +58,64 @@ const mapFromDB = (data: any): Person => {
         active: data.active,
         deleted: data.deleted,
         deletedAt: data.deleted_at,
+        position: data.position,
         createdAt: data.created_at,
         updatedAt: data.updated_at
     };
     return p as Person;
 };
 
-export const subscribeToPeople = (collectionName: string, callback: (people: Person[]) => void) => {
-    // Initial fetch
-    supabase.from(TABLE_NAME)
-        .select('*')
-        .eq('person_type', collectionName)
-        .order('full_name', { ascending: true })
-        .then(({ data, error }: { data: any, error: any }) => {
-            if (data && !error) {
-                callback(data.map(mapFromDB));
-            } else if (error) {
-                console.error(`Erro ao buscar ${collectionName} iniciais:`, error);
-                callback([]);
-            }
-        });
+const mapProfileToPerson = (prof: any): Person => {
+    return {
+        id: prof.id,
+        fullName: prof.full_name || '',
+        email: prof.email || '',
+        position: prof.position || '',
+        active: true,
+        fullAddress: { street: '' },
+        deleted: false
+    } as any;
+};
 
-    const channel = supabase.channel(`${collectionName}_changes`)
-        .on('postgres_changes',
-            { event: '*', schema: 'public', table: TABLE_NAME, filter: `person_type=eq.${collectionName}` },
-            () => {
-                supabase.from(TABLE_NAME)
-                    .select('*')
-                    .eq('person_type', collectionName)
-                    .order('full_name', { ascending: true })
-                    .then(({ data }: { data: any }) => {
-                        if (data) callback(data.map(mapFromDB));
-                    });
+export const subscribeToPeople = (collectionName: string, callback: (people: Person[]) => void) => {
+    const fetchAll = async () => {
+        let peopleQuery = supabase.from(TABLE_NAME).select('*');
+        if (collectionName === 'employees') {
+            peopleQuery = peopleQuery.or(`person_type.eq.employees,position.not.is.null`);
+        } else {
+            peopleQuery = peopleQuery.eq('person_type', collectionName);
+        }
+
+        const { data: peopleData } = await peopleQuery.order('full_name', { ascending: true });
+        let employees: Person[] = (peopleData || []).map(mapFromDB);
+
+        if (collectionName === 'employees') {
+            // Also fetch from profiles
+            const { data: profilesData } = await supabase.from('profiles').select('*').not('position', 'is', null).neq('position', '');
+            if (profilesData) {
+                const profileEmployees = profilesData.map(mapProfileToPerson);
+                // Merge without duplicates (by email if possible, or ID)
+                const existingEmails = new Set(employees.map(e => e.email?.toLowerCase()).filter(Boolean));
+                profileEmployees.forEach(pe => {
+                    if (!pe.email || !existingEmails.has(pe.email.toLowerCase())) {
+                        employees.push(pe);
+                    }
+                });
             }
-        )
+        }
+
+        // Sort final list
+        employees.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+        callback(employees);
+    };
+
+    fetchAll();
+
+    const channel = supabase.channel(`${collectionName}_mixed_changes`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => fetchAll())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+            if (collectionName === 'employees') fetchAll();
+        })
         .subscribe();
 
     return () => {

@@ -67,6 +67,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
     const [isSaving, setIsSaving] = useState(false);
     const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
     const [errors, setErrors] = useState<ValidationErrors>({});
+    const lastCalculatedAddressRef = useRef<string>("");
 
     // Auto-save control
     const autoSaveTimerRef = useRef<any>(null);
@@ -165,6 +166,10 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         setCurrentOrderId(order.id);
         setStatus(order.status || 'draft');
         setErrors({});
+        // Initialize calculation ref to prevent instant recalculation if address exists
+        if (order.customerData?.fullAddress) {
+            lastCalculatedAddressRef.current = JSON.stringify(order.customerData.fullAddress);
+        }
     }, [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setMarketingOrigin]);
 
     const handleAutoCalculateDistance = useCallback(async (address: CustomerData['fullAddress']) => {
@@ -203,8 +208,12 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
     useEffect(() => {
         const addr = customerData.fullAddress;
         if (addr.street && addr.city && (addr.number || addr.cep)) {
+            const addrStr = JSON.stringify(addr);
+            if (addrStr === lastCalculatedAddressRef.current) return;
+
             const timer = setTimeout(() => {
                 handleAutoCalculateDistance(addr);
+                lastCalculatedAddressRef.current = addrStr;
             }, 1000); // Debounce to avoid excessive API calls
             return () => clearTimeout(timer);
         }

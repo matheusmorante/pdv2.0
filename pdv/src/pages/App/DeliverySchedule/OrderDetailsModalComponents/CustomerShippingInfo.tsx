@@ -8,14 +8,29 @@ export const CustomerSection = ({ fullName, phone, noPhone }: { fullName?: strin
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-5 flex items-center gap-2">
             <i className="bi bi-person-badge-fill" /> Cliente
         </h3>
-        <div className="bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 transition-colors duration-300">
-            <p className="text-lg font-black text-slate-800 dark:text-slate-100 lowercase first-letter:uppercase mb-1">
-                {fullName || "Consumidor Não Identificado"}
-            </p>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <i className="bi bi-telephone-fill text-blue-400" />
-                {noPhone ? "Sem Telefone" : (phone || "Telefone não informado")}
-            </p>
+        <div className="bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 transition-colors duration-300 flex items-center justify-between">
+            <div>
+                <p className="text-lg font-black text-slate-800 dark:text-slate-100 lowercase first-letter:uppercase mb-1">
+                    {fullName || "Consumidor Não Identificado"}
+                </p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <i className="bi bi-telephone-fill text-blue-400" />
+                    {noPhone ? "Sem Telefone" : (phone || "Telefone não informado")}
+                </p>
+            </div>
+            {phone && !noPhone && (
+                <button type="button"
+                    onClick={() => {
+                        const cleanPhone = phone.replace(/\D/g, '');
+                        const finalPhone = cleanPhone.length >= 10 && cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+                        window.open(`https://wa.me/${finalPhone}`, '_blank');
+                    }}
+                    title="Chamar no WhatsApp"
+                    className="shrink-0 w-12 h-12 flex items-center justify-center bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl transition-all shadow-sm shadow-[#25D366]/30 active:scale-95"
+                >
+                    <i className="bi bi-whatsapp text-xl"></i>
+                </button>
+            )}
         </div>
     </section>
 );
@@ -80,15 +95,7 @@ export const ShippingSection = ({ fullAddress, destinationCoords, routeGeoJSON }
                     </a>
                 )}
             </div>
-            {destinationCoords && (
-                <div className="border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden p-2 bg-slate-50/50 dark:bg-slate-800/20 h-full">
-                    <MapRoute
-                        destinationCoords={destinationCoords}
-                        routeGeoJSON={routeGeoJSON}
-                        className="h-full min-h-[160px] w-full rounded-2xl"
-                    />
-                </div>
-            )}
+
         </div>
     </section>
 );

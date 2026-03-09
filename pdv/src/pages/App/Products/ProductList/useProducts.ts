@@ -7,7 +7,7 @@ export const useProducts = (filters?: any) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(50);
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
     useEffect(() => {
@@ -39,12 +39,12 @@ export const useProducts = (filters?: any) => {
 
                 if (!filters) return true;
 
-                const searchMatch = !filters.search || 
+                const searchMatch = !filters.search ||
                     product.description.toLowerCase().includes(filters.search.toLowerCase()) ||
                     product.code?.toLowerCase().includes(filters.search.toLowerCase());
 
-                const categoryMatch = !filters.category || 
-                    product.category === filters.category || 
+                const categoryMatch = !filters.category ||
+                    product.category === filters.category ||
                     (filters.category === "Serviços" && product.itemType === "service") ||
                     (filters.category === "Produtos" && product.itemType === "product");
 
@@ -55,7 +55,7 @@ export const useProducts = (filters?: any) => {
             .sort((a, b) => {
                 let comparison = 0;
                 const sortBy = filters?.sortBy || 'description';
-                
+
                 if (sortBy === "description") {
                     comparison = (a.description || "").localeCompare(b.description || "");
                 } else if (sortBy === "unitPrice") {
@@ -65,7 +65,7 @@ export const useProducts = (filters?: any) => {
                 } else if (sortBy === "code") {
                     comparison = (a.code || "").localeCompare(b.code || "");
                 }
-                
+
                 const sortOrder = filters?.sortOrder || 'asc';
                 return sortOrder === "asc" ? comparison : -comparison;
             });
@@ -141,7 +141,7 @@ export const useProducts = (filters?: any) => {
     };
 
     const toggleSelection = (id: string) => {
-        setSelectedProducts(prev => 
+        setSelectedProducts(prev =>
             prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
         );
     };
@@ -149,7 +149,7 @@ export const useProducts = (filters?: any) => {
     const selectAll = () => {
         const allIdsOnPage = paginatedProducts.map(p => p.id!).filter(Boolean);
         const allSelected = allIdsOnPage.every(id => selectedProducts.includes(id));
-        
+
         if (allSelected) {
             setSelectedProducts(prev => prev.filter(id => !allIdsOnPage.includes(id)));
         } else {

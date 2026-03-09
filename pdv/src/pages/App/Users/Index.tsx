@@ -8,6 +8,7 @@ interface Profile {
     email: string;
     role: UserRole;
     full_name: string | null;
+    position: string | null;
 }
 
 const UsersManagement = () => {
@@ -46,10 +47,39 @@ const UsersManagement = () => {
 
             if (error) throw error;
 
-            setProfiles((prev: any) => prev.map((p: any) => p.id === userId ? { ...p, role: newRole } : p));
+            // Optional: Also update position if it matches a standard role
+            const roleMap: Record<string, string> = {
+                'seller': 'Vendedor',
+                'manager': 'Gerente',
+                'administrator': 'Gerente',
+                'deliverer': 'Entregador'
+            };
+
+            const positionToSet = roleMap[newRole];
+            if (positionToSet) {
+                await supabase.from('profiles').update({ position: positionToSet }).eq('id', userId);
+            }
+
+            setProfiles((prev: any) => prev.map((p: any) => p.id === userId ? { ...p, role: newRole, position: positionToSet || p.position } : p));
             toast.success('Perfil atualizado com sucesso!');
         } catch (error: any) {
             toast.error('Erro ao atualizar perfil.');
+        }
+    };
+
+    const handlePositionChange = async (userId: string, newPosition: string) => {
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ position: newPosition })
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            setProfiles((prev: any) => prev.map((p: any) => p.id === userId ? { ...p, position: newPosition } : p));
+            toast.success('Cargo atualizado com sucesso!');
+        } catch (error: any) {
+            toast.error('Erro ao atualizar cargo.');
         }
     };
 
@@ -79,6 +109,7 @@ const UsersManagement = () => {
                             <tr className="bg-slate-50 dark:bg-slate-800/50">
                                 <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Usuário</th>
                                 <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">E-mail</th>
+                                <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Cargo Principal</th>
                                 <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Perfil Atual</th>
                                 <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
                             </tr>
@@ -103,6 +134,21 @@ const UsersManagement = () => {
                                         </div>
                                     </td>
                                     <td className="px-8 py-5 text-sm text-slate-500 font-bold">{profile.email}</td>
+                                    <td className="px-8 py-5">
+                                        <select
+                                            value={profile.position || ""}
+                                            onChange={(e: any) => handlePositionChange(profile.id, e.target.value)}
+                                            className="bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-3 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none"
+                                        >
+                                            <option value="">Nenhum</option>
+                                            <option value="Vendedor">Vendedor</option>
+                                            <option value="Gerente">Gerente</option>
+                                            <option value="Entregador">Entregador</option>
+                                            {profile.position && !['Vendedor', 'Gerente', 'Entregador'].includes(profile.position) && (
+                                                <option value={profile.position}>{profile.position}</option>
+                                            )}
+                                        </select>
+                                    </td>
                                     <td className="px-8 py-5">
                                         <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border 
                                             ${profile.role === 'administrator' ? 'bg-blue-50 text-blue-600 border-blue-100' :

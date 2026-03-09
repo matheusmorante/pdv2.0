@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-type MenuKey = 'stock' | 'salesOrder' | 'registrations' | null;
+type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
 
 interface MobileNavProps {
     isOpen: boolean;
@@ -48,10 +48,22 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                         Dashboard
                     </Link>
 
-                    <Link to="/registrations/products" onClick={onClose} className={mobileLinkClass}>
-                        <i className="bi bi-box-seam text-lg"></i>
-                        Produtos e Serviços
-                    </Link>
+                    {/* Produtos */}
+                    <div className="flex flex-col">
+                        <button onClick={() => toggle('products')} className={menuBtnClass(activeMenu === 'products')}>
+                            <div className="flex items-center gap-3">
+                                <i className="bi bi-box-seam text-lg"></i>
+                                Produtos
+                            </div>
+                            <i className={`bi bi-chevron-down transition-transform ${activeMenu === 'products' ? 'rotate-180' : ''}`}></i>
+                        </button>
+                        {activeMenu === 'products' && (
+                            <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
+                                <Link to="/registrations/products" onClick={onClose} className={mobileSubLinkClass}>Tudo</Link>
+                                <Link to="/registrations/product-categories" onClick={onClose} className={mobileSubLinkClass}>Categorias (Pai/Filho)</Link>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Pessoas */}
                     <div className="flex flex-col">

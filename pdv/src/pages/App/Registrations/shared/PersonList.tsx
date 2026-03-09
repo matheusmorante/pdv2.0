@@ -13,11 +13,11 @@ interface PersonListProps {
     storageKey: string;
 };
 
-const PersonList = ({ 
-    onEdit, 
-    filters, 
-    visibilitySettings, 
-    onToggleColumn, 
+const PersonList = ({
+    onEdit,
+    filters,
+    visibilitySettings,
+    onToggleColumn,
     onSort,
     collectionName,
     storageKey
@@ -27,8 +27,10 @@ const PersonList = ({
         loading,
         totalItems,
         currentPage,
+        itemsPerPage,
         totalPages,
         setCurrentPage,
+        setItemsPerPage,
         handleDelete,
         handleRestore,
         handlePermanentDelete,
@@ -41,6 +43,22 @@ const PersonList = ({
         handleBulkPermanentDelete,
         toggleActive
     } = usePeople(collectionName, filters);
+
+    const getPageButtons = () => {
+        const buttons: number[] = [];
+        const maxVisible = 5;
+        let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let end = Math.min(totalPages, start + maxVisible - 1);
+
+        if (end - start + 1 < maxVisible) {
+            start = Math.max(1, end - maxVisible + 1);
+        }
+
+        for (let i = start; i <= end; i++) {
+            buttons.push(i);
+        }
+        return buttons;
+    };
 
     if (loading) {
         return (
@@ -91,10 +109,21 @@ const PersonList = ({
                 />
 
                 {totalPages > 1 && (
-                    <div className="mt-8 flex items-center justify-between border-t border-slate-50 dark:border-slate-800 pt-6">
-                        <span className="text-xs font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
-                            Mostrando {people.length} de {totalItems} registros
-                        </span>
+                    <div className="mt-8 flex items-center justify-between flex-wrap gap-4 border-t border-slate-50 dark:border-slate-800 pt-6">
+                        <div className="flex items-center gap-4">
+                            <span className="text-xs font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
+                                Mostrando {people.length} de {totalItems} registros
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-600 dark:text-slate-400 focus:outline-none"
+                                >
+                                    {[10, 25, 50, 100].map(size => <option key={size} value={size}>{size} por pág.</option>)}
+                                </select>
+                            </div>
+                        </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -104,7 +133,7 @@ const PersonList = ({
                                 <i className="bi bi-chevron-left"></i>
                             </button>
                             <div className="flex items-center gap-1">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                {getPageButtons().map((page) => (
                                     <button
                                         key={page}
                                         onClick={() => setCurrentPage(page)}

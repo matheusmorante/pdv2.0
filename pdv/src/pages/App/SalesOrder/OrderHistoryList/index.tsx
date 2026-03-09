@@ -243,7 +243,7 @@ const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn,
                                 onChange={(e: any) => setItemsPerPage((globalThis as any).Number(e.target.value))}
                                 className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-lg px-3 py-1 text-xs font-black text-slate-700 dark:text-slate-300 focus:outline-none transition-all cursor-pointer"
                             >
-                                {(([10, 25, 50] as any)).map((size: any) => (
+                                {(([10, 25, 50, 100] as any)).map((size: any) => (
                                     <option key={size} value={size} className="dark:bg-slate-900">{size}</option>
                                 ))}
                             </select>

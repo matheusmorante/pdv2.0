@@ -7,7 +7,7 @@ export const usePeople = (collectionName: string, filters?: any) => {
     const [people, setPeople] = useState<Person[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(50);
     const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
 
     useEffect(() => {
@@ -37,7 +37,7 @@ export const usePeople = (collectionName: string, filters?: any) => {
 
                 if (!filters) return true;
 
-                const searchMatch = !filters.search || 
+                const searchMatch = !filters.search ||
                     person.fullName.toLowerCase().includes(filters.search.toLowerCase()) ||
                     person.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
                     person.cpfCnpj?.includes(filters.search);
@@ -49,13 +49,13 @@ export const usePeople = (collectionName: string, filters?: any) => {
             .sort((a, b) => {
                 let comparison = 0;
                 const sortBy = filters?.sortBy || 'fullName';
-                
+
                 if (sortBy === "fullName") {
                     comparison = (a.fullName || "").localeCompare(b.fullName || "");
                 } else if (sortBy === "createdAt") {
                     comparison = (a.createdAt || "").localeCompare(b.createdAt || "");
                 }
-                
+
                 const sortOrder = filters?.sortOrder || 'asc';
                 return sortOrder === "asc" ? comparison : -comparison;
             });
@@ -131,7 +131,7 @@ export const usePeople = (collectionName: string, filters?: any) => {
     };
 
     const toggleSelection = (id: string) => {
-        setSelectedPeople(prev => 
+        setSelectedPeople(prev =>
             prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
         );
     };
@@ -139,7 +139,7 @@ export const usePeople = (collectionName: string, filters?: any) => {
     const selectAll = () => {
         const allIdsOnPage = paginatedPeople.map(p => p.id!).filter(Boolean);
         const allSelected = allIdsOnPage.length > 0 && allIdsOnPage.every(id => selectedPeople.includes(id));
-        
+
         if (allSelected) {
             setSelectedPeople(prev => prev.filter(id => !allIdsOnPage.includes(id)));
         } else {

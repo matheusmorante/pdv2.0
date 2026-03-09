@@ -59,12 +59,12 @@ export default function Settings(): any {
             const next = { ...prev };
             const parts = path.split('.');
             let current: any = next;
-            
+
             for (let i = 0; i < parts.length - 1; i++) {
                 current[parts[i]] = { ...current[parts[i]] };
                 current = current[parts[i]];
             }
-            
+
             current[parts[parts.length - 1]] = value;
             return next;
         });
@@ -80,9 +80,9 @@ export default function Settings(): any {
         const normalizedSearch = search.toLowerCase();
         const category = categories.find(c => c.id === id);
         if (!category) return false;
-        
-        return category.label.toLowerCase().includes(normalizedSearch) || 
-               category.keywords.some(k => k.toLowerCase().includes(normalizedSearch));
+
+        return category.label.toLowerCase().includes(normalizedSearch) ||
+            category.keywords.some(k => k.toLowerCase().includes(normalizedSearch));
     };
 
     return (
@@ -95,11 +95,11 @@ export default function Settings(): any {
                     <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Preferências</h1>
                     <p className="text-slate-500 dark:text-slate-500 mt-2 text-base font-medium">Personalize cada detalhe da sua experiência no PDV.</p>
                 </div>
-                
+
                 <div className="relative group w-full md:w-96">
                     <i className="bi bi-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 transition-colors group-focus-within:text-blue-500" />
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Pesquisar por nome ou funcionalidade..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -150,7 +150,7 @@ export default function Settings(): any {
                                     <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider">Telefone</h4>
                                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">Telefone oficial de atendimento da empresa.</p>
                                 </div>
-                                <div className="w-full md:w-80">
+                                <div className="w-full md:w-80 flex gap-2">
                                     <PatternFormat
                                         format="(##) #####-####"
                                         mask="_"
@@ -158,6 +158,18 @@ export default function Settings(): any {
                                         onValueChange={(values) => handleChange('companyPhone', values.value || "")}
                                         className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 dark:text-slate-200 w-full transition-all font-medium"
                                     />
+                                    <button type="button"
+                                        onClick={() => {
+                                            if (!settings.companyPhone) return;
+                                            const cleanPhone = settings.companyPhone.replace(/\D/g, '');
+                                            const finalPhone = cleanPhone.length >= 10 && cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+                                            window.open(`https://wa.me/${finalPhone}`, '_blank');
+                                        }}
+                                        title="Verificar WhatsApp"
+                                        className="shrink-0 w-12 flex items-center justify-center bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl transition-all shadow-sm shadow-[#25D366]/30 active:scale-95"
+                                    >
+                                        <i className="bi bi-whatsapp text-lg"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>

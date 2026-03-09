@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-type MenuKey = 'stock' | 'salesOrder' | 'registrations' | null;
+type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
 
 interface DesktopNavProps {
     activeMenu: MenuKey;
@@ -29,10 +29,24 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 Dashboard
             </Link>
 
-            <Link to="/registrations/products" className={navLinkClass}>
-                <i className="bi bi-box-seam"></i>
-                Produtos e Serviços
-            </Link>
+            {/* Produtos */}
+            <div
+                className="relative h-full flex items-center"
+                onMouseEnter={() => setActiveMenu('products')}
+                onMouseLeave={() => setActiveMenu(null)}
+            >
+                <button onClick={() => toggle('products')} className={menuBtnClass(activeMenu === 'products')}>
+                    <i className="bi bi-box-seam"></i>
+                    Produtos
+                    <i className={chevronClass(activeMenu === 'products')}></i>
+                </button>
+                {activeMenu === 'products' && (
+                    <div className={dropdownClass}>
+                        <Link to="/registrations/products" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Tudo</Link>
+                        <Link to="/registrations/product-categories" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Categorias (Pai/Filho)</Link>
+                    </div>
+                )}
+            </div>
 
             {/* Pessoas */}
             <div

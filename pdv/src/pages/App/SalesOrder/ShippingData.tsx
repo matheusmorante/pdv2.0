@@ -1,7 +1,7 @@
 import React from "react";
 import Shipping from "../../types/Shipping.type";
 import CustomerData from "../../types/customerData.type";
-import { getShippingRouteUrl, getAddressByCep } from "../../utils/maps";
+import { getShippingRouteUrl, getAddressByCep, searchAddressSuggestions } from "../../utils/maps";
 import { ValidationErrors } from "../../utils/validations";
 import { getSettings } from "../../utils/settingsService";
 import FreteDistancia from "./ShippingComponents/FreteDistancia";
@@ -19,6 +19,10 @@ interface Props {
 }
 
 const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistance, onAutoCalculateDistance, errors }: Props) => {
+    const [streetSuggestions, setStreetSuggestions] = React.useState<any[]>([]);
+    const [isStreetSuggestionsOpen, setIsStreetSuggestionsOpen] = React.useState(false);
+    const streetWrapperRef = React.useRef<HTMLDivElement>(null);
+
     const activeAddress = shipping.useCustomerAddress === false && shipping.deliveryAddress
         ? shipping.deliveryAddress
         : customerData.fullAddress;
@@ -63,6 +67,33 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
                 scheduling: newScheduling as Shipping["scheduling"],
             };
         });
+    };
+
+    const handleStreetChange = async (val: string) => {
+        updateDeliveryAddress('street', val);
+        if (val.length >= 3) {
+            const suggestions = await searchAddressSuggestions(val);
+            setStreetSuggestions(suggestions);
+            setIsStreetSuggestionsOpen(true);
+        } else {
+            setStreetSuggestions([]);
+            setIsStreetSuggestionsOpen(false);
+        }
+    };
+
+    const handleSelectAddressSuggestion = (suggestion: any) => {
+        const addr = suggestion.address;
+        setShipping(prev => ({
+            ...prev,
+            deliveryAddress: {
+                ...prev.deliveryAddress!,
+                street: addr.road || addr.pedestrian || addr.suburb || suggestion.display_name.split(',')[0],
+                neighborhood: addr.neighbourhood || addr.suburb || "",
+                city: addr.city || addr.town || addr.village || "",
+                cep: addr.postcode ? addr.postcode.replace(/\D/g, '') : prev.deliveryAddress?.cep || ""
+            }
+        }));
+        setIsStreetSuggestionsOpen(false);
     };
 
     const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -135,15 +166,28 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
                                                 onBlur={handleCepBlur}
                                             />
                                         </div>
-                                        <div className="flex-[3]">
+                                        <div className="flex-[3] relative" ref={streetWrapperRef}>
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Rua/Avenida <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
                                                 className={`w-full bg-white dark:bg-slate-950 border px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 transition-all ${errors['deliveryAddress_street'] ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:ring-blue-500/20'}`}
                                                 placeholder="Nome da rua"
                                                 value={shipping.deliveryAddress?.street || ""}
-                                                onChange={e => updateDeliveryAddress('street', e.target.value)}
+                                                onChange={e => handleStreetChange(e.target.value)}
+                                                onFocus={() => { if (streetSuggestions.length > 0) setIsStreetSuggestionsOpen(true); }}
                                             />
+                                            {isStreetSuggestionsOpen && streetSuggestions.length > 0 && (
+                                                <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl z-[60] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                                    {streetSuggestions.map((s, i) => (
+                                                        <button key={i} type="button"
+                                                            onClick={() => handleSelectAddressSuggestion(s)}
+                                                            className="w-full text-left p-3 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors last:border-0"
+                                                        >
+                                                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{s.display_name}</p>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
                                             {errors['deliveryAddress_street'] && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['deliveryAddress_street']}</p>}
                                         </div>
                                         <div className="flex-[1]">

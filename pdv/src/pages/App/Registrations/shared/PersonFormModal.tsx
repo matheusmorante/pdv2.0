@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Person from "../../../types/person.type";
 import { savePerson } from "../../../utils/personService";
 import { toast } from "react-toastify";
+import { capitalizePerson, toTitleCase } from "../../../utils/formatters";
 
 interface PersonFormModalProps {
     isOpen: boolean;
@@ -28,7 +29,9 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
             city: "",
             complement: "",
             observation: ""
-        }
+        },
+        marketingOrigin: "",
+        position: ""
     });
 
     const [loading, setLoading] = useState(false);
@@ -55,7 +58,9 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                     city: "",
                     complement: "",
                     observation: ""
-                }
+                },
+                marketingOrigin: "",
+                position: ""
             });
         }
     }, [person, isOpen]);
@@ -77,9 +82,15 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
             return;
         }
 
+        if (collectionName === 'customers' && !formData.marketingOrigin) {
+            toast.error("Por favor, informe se o cliente é de tráfego pago.");
+            return;
+        }
+
         setLoading(true);
         try {
-            const savedPerson = await savePerson(collectionName, formData as Person);
+            const dataToSave = capitalizePerson(formData as Person);
+            const savedPerson = await savePerson(collectionName, dataToSave);
             toast.success(person ? "Atualizado com sucesso!" : "Criado com sucesso!");
             if (onSuccess) onSuccess(savedPerson);
             onClose();
@@ -134,6 +145,50 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                             </div>
                         </div>
 
+                        {/* Marketing Origin (Paid Traffic) */}
+                        {collectionName === 'customers' && (
+                            <div className="md:col-span-2 flex items-center gap-6 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Cliente por tráfego pago? <span className="text-red-500">*</span></label>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, marketingOrigin: 'paid' })}
+                                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.marketingOrigin === 'paid' ? 'bg-orange-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-slate-400 border border-slate-100 dark:border-slate-800'}`}
+                                    >
+                                        Sim (Tráfego Pago)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, marketingOrigin: 'organic' })}
+                                        className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.marketingOrigin === 'organic' ? 'bg-blue-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-slate-400 border border-slate-100 dark:border-slate-800'}`}
+                                    >
+                                        Não (Loja Física)
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {(collectionName === 'customers' || collectionName === 'employees') && (
+                            <div className="md:col-span-2 flex flex-col gap-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                                    Cargo Principal {collectionName === 'customers' && <span className="text-[8px] text-blue-500 font-normal lowercase">(preencha apenas se for funcionário)</span>}
+                                </label>
+                                <select
+                                    value={formData.position || ""}
+                                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100 appearance-none"
+                                >
+                                    <option value="">Selecione o cargo...</option>
+                                    <option value="Vendedor">Vendedor</option>
+                                    <option value="Gerente">Gerente</option>
+                                    <option value="Entregador">Entregador</option>
+                                    {formData.position && !['Vendedor', 'Gerente', 'Entregador'].includes(formData.position) && (
+                                        <option value={formData.position}>{formData.position}</option>
+                                    )}
+                                </select>
+                            </div>
+                        )}
+
                         <div className={`${formData.personType === 'PJ' ? 'md:col-span-1' : 'md:col-span-2'} flex flex-col gap-2`}>
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                                 {formData.personType === 'PJ' ? 'Razão Social' : 'Nome Completo'}
@@ -176,13 +231,27 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Telefone</label>
-                            <input
-                                type="text"
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
-                                placeholder="(00) 00000-0000"
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
+                                    placeholder="(00) 00000-0000"
+                                />
+                                <button type="button"
+                                    onClick={() => {
+                                        if (!formData.phone) return;
+                                        const cleanPhone = formData.phone.replace(/\D/g, '');
+                                        const finalPhone = cleanPhone.length >= 10 && cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+                                        window.open(`https://wa.me/${finalPhone}`, '_blank');
+                                    }}
+                                    title="Verificar WhatsApp"
+                                    className="shrink-0 w-12 flex items-center justify-center bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl transition-all shadow-sm shadow-[#25D366]/30 active:scale-95"
+                                >
+                                    <i className="bi bi-whatsapp text-lg"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div className="md:col-span-2 flex flex-col gap-2">

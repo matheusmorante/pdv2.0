@@ -5,7 +5,7 @@ import { subscribeToPeople } from "../../utils/personService";
 import { ValidationErrors } from "../../utils/validations";
 import CustomerSearchModal from "./CustomerSearchModal";
 import PersonFormModal from "../Registrations/shared/PersonFormModal";
-import { getAddressByCep } from "../../utils/maps";
+import { getAddressByCep, searchAddressSuggestions } from "../../utils/maps";
 
 interface Props {
     customerData: CustomerData;
@@ -24,7 +24,10 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+    const [streetSuggestions, setStreetSuggestions] = useState<any[]>([]);
+    const [isStreetSuggestionsOpen, setIsStreetSuggestionsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const streetWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const unsubscribe = subscribeToPeople('customers', (data) => {
@@ -41,6 +44,9 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
         const handler = (e: MouseEvent) => {
             if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
                 setIsDropdownOpen(false);
+            }
+            if (streetWrapperRef.current && !streetWrapperRef.current.contains(e.target as Node)) {
+                setIsStreetSuggestionsOpen(false);
             }
         };
         document.addEventListener("mousedown", handler);
@@ -74,6 +80,33 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
             ...prev,
             fullAddress: { ...prev.fullAddress, [field]: value }
         }));
+    };
+
+    const handleStreetChange = async (val: string) => {
+        updateAddress('street', val);
+        if (val.length >= 3) {
+            const suggestions = await searchAddressSuggestions(val);
+            setStreetSuggestions(suggestions);
+            setIsStreetSuggestionsOpen(true);
+        } else {
+            setStreetSuggestions([]);
+            setIsStreetSuggestionsOpen(false);
+        }
+    };
+
+    const handleSelectAddressSuggestion = (suggestion: any) => {
+        const addr = suggestion.address;
+        setCustomerData(prev => ({
+            ...prev,
+            fullAddress: {
+                ...prev.fullAddress,
+                street: addr.road || addr.pedestrian || addr.suburb || suggestion.display_name.split(',')[0],
+                neighborhood: addr.neighbourhood || addr.suburb || "",
+                city: addr.city || addr.town || addr.village || "",
+                cep: addr.postcode ? addr.postcode.replace(/\D/g, '') : prev.fullAddress.cep
+            }
+        }));
+        setIsStreetSuggestionsOpen(false);
     };
 
     const handleCepBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -228,11 +261,25 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">
                                 Telefone / Celular <span className="text-red-500">*</span>
                             </label>
-                            <input type="tel" className={field(isPhoneError)}
-                                placeholder="(00) 00000-0000"
-                                value={customerData.phone}
-                                onChange={e => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
-                            />
+                            <div className="flex gap-2">
+                                <input type="tel" className={field(isPhoneError)}
+                                    placeholder="(00) 00000-0000"
+                                    value={customerData.phone}
+                                    onChange={e => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
+                                />
+                                <button type="button"
+                                    onClick={() => {
+                                        if (!customerData.phone) return;
+                                        const cleanPhone = customerData.phone.replace(/\D/g, '');
+                                        const finalPhone = cleanPhone.length >= 10 && cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+                                        window.open(`https://wa.me/${finalPhone}`, '_blank');
+                                    }}
+                                    title="Verificar WhatsApp"
+                                    className="shrink-0 w-12 flex items-center justify-center bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl transition-all shadow-md active:scale-95"
+                                >
+                                    <i className="bi bi-whatsapp text-lg"></i>
+                                </button>
+                            </div>
                             {errors['customer_phone'] && (
                                 <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors['customer_phone']}</p>
                             )}
@@ -255,12 +302,25 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                                     onBlur={handleCepBlur}
                                 />
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1 relative" ref={streetWrapperRef}>
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Rua / Avenida</label>
                                 <input type="text" className={field()} placeholder="Nome da rua"
                                     value={customerData.fullAddress?.street || ''}
-                                    onChange={e => updateAddress('street', e.target.value)}
+                                    onChange={e => handleStreetChange(e.target.value)}
+                                    onFocus={() => { if (streetSuggestions.length > 0) setIsStreetSuggestionsOpen(true); }}
                                 />
+                                {isStreetSuggestionsOpen && streetSuggestions.length > 0 && (
+                                    <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl z-[60] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                        {streetSuggestions.map((s, i) => (
+                                            <button key={i} type="button"
+                                                onClick={() => handleSelectAddressSuggestion(s)}
+                                                className="w-full text-left p-3 border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors last:border-0"
+                                            >
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{s.display_name}</p>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <div className="md:w-28">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Número</label>

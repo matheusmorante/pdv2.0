@@ -47,16 +47,24 @@ const ProductRow = ({
                     <td key="description" className="px-6 py-4 text-left">
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{product.description}</span>
-                            {product.category && (
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${product.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
-                                        {product.itemType === 'service' ? 'Serviço' : 'Produto'}
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${product.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
+                                    {product.itemType === 'service' ? 'Serviço' : 'Produto'}
+                                </span>
+                                {product.itemType === 'product' && product.condition && (
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${product.condition === 'salvado' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                                            product.condition === 'usado' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
+                                                'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                                        }`}>
+                                        {product.condition === 'salvado' ? 'Salvado' : product.condition === 'usado' ? 'Usado' : 'Novo'}
                                     </span>
+                                )}
+                                {product.category && (
                                     <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
                                         {product.category}
                                     </span>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     </td>
                 );
@@ -76,24 +84,24 @@ const ProductRow = ({
                             <span className={`text-sm font-black ${isLowStock ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
                                 {product.itemType === 'service' ? '-' : (product.stock ?? 0)}
                             </span>
-                             <span className="text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-widest">
+                            <span className="text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-widest">
                                 {product.unit}
                             </span>
                         </div>
                     </td>
                 );
             case 'unit':
-                 return (
+                return (
                     <td key="unit" className="px-6 py-4 text-center">
-                         <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
                             {product.unit}
                         </span>
                     </td>
                 );
             case 'category':
-                 return (
+                return (
                     <td key="category" className="px-6 py-4 text-left">
-                         <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
                             {product.category || "-"}
                         </span>
                     </td>
@@ -124,8 +132,8 @@ const ProductRow = ({
                                 <>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onToggleActive(product.id!, product.active); }}
-                                        className={`p-2 rounded-xl transition-all shadow-sm border ${product.active 
-                                            ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30' 
+                                        className={`p-2 rounded-xl transition-all shadow-sm border ${product.active
+                                            ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30'
                                             : 'text-slate-400 hover:text-slate-500 bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}
                                         title={product.active ? "Desativar Produto" : "Ativar Produto"}
                                     >

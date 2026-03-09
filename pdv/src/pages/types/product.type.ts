@@ -12,6 +12,9 @@ export type Variation = {
 
 export type FiscalInfo = {
     ncm?: string;
+    ncmDescription?: string; // Auto-generated category or description of the NCM
+    material?: string; // Material or composition to aid NCM search
+    condition?: 'novo' | 'usado' | 'salvado' | ''; // Store condition inside fiscal jsonb for DB flexibility
     cest?: string;
     origem?: string;
     cst?: string; // or CSOSN
@@ -25,7 +28,10 @@ export type Product = {
     id?: string;
     code?: string;
     description: string;
+    brand?: string;
     category?: string;
+    categoryIds?: string[]; // IDs das categorias/subcategorias associadas
+    condition?: 'novo' | 'usado' | 'salvado' | ''; // Condição do Móvel
     unitPrice: number;
     costPrice?: number; // Preço de custo base
     freightType?: 'fixed' | 'percentage';
@@ -41,18 +47,18 @@ export type Product = {
     createdAt?: string;
     updatedAt?: string;
     supplierId?: string;
-    
+
     // Ecommerce
     images?: string[];
     ecommerceDescription?: string;
-    
+
     // Variations
     hasVariations?: boolean;
     variations?: Variation[];
-    
+
     // Item Type
     itemType: 'product' | 'service';
-    
+
     // Fiscal
     fiscal?: FiscalInfo;
 };

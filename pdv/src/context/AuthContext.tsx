@@ -10,6 +10,11 @@ export interface Profile {
     role: UserRole;
     full_name?: string;
     avatar_url?: string;
+    position?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
 }
 
 interface AuthContextType {

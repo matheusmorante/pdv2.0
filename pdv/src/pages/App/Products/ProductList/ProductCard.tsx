@@ -28,7 +28,7 @@ const ProductCard = ({
     const isLowStock = (product.stock || 0) <= (product.minStock || 0);
 
     return (
-        <div 
+        <div
             className={`bg-white dark:bg-slate-900 border ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-100 dark:border-slate-800'} rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all`}
             onClick={() => onEdit(product)}
         >
@@ -47,19 +47,31 @@ const ProductCard = ({
                         {product.code || "S/C"}
                     </span>
                 </div>
-                
-                <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${product.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
-                    {product.itemType === 'service' ? 'Serviço' : 'Produto'}
-                </span>
+
+                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                    <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${product.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
+                        {product.itemType === 'service' ? 'Serviço' : 'Produto'}
+                    </span>
+                    {product.itemType === 'product' && product.condition && (
+                        <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${product.condition === 'salvado' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                                product.condition === 'usado' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
+                                    'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                            }`}>
+                            {product.condition}
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="mb-3">
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-2">
                     {product.description}
                 </h3>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-0.5">
-                    {product.category || "Sem Categoria"}
-                </p>
+                {product.category && (
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-0.5">
+                        {product.category}
+                    </p>
+                )}
             </div>
 
             <div className="flex justify-between items-end border-t border-slate-50 dark:border-slate-800/50 pt-2.5">
@@ -111,8 +123,8 @@ const ProductCard = ({
                     <>
                         <button
                             onClick={() => onToggleActive(product.id!, product.active)}
-                            className={`flex flex-col items-center justify-center gap-1 py-2 rounded-lg border transition-all ${product.active 
-                                ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400' 
+                            className={`flex flex-col items-center justify-center gap-1 py-2 rounded-lg border transition-all ${product.active
+                                ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400'
                                 : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-400'}`}
                         >
                             <i className={`bi ${product.active ? 'bi-toggle-on' : 'bi-toggle-off'} text-base`} />

@@ -10,6 +10,7 @@ import WarrantyTermPage from './pages/WarrantyTermPage';
 import DeliverySchedule from './pages/App/DeliverySchedule';
 import OrderPage from './pages/OrderPage';
 import Products from './pages/App/Products/Index';
+import Categories from './pages/App/Products/Categories/Index';
 import Settings from './pages/App/Settings';
 import Customers from './pages/App/Customers/Index';
 import Suppliers from './pages/App/Suppliers/Index';
@@ -82,6 +83,7 @@ function Router() {
 
             {/* Registrations */}
             <Route path='/registrations/products' element={<Products />} />
+            <Route path='/registrations/product-categories' element={<Categories />} />
             <Route path='/stock' element={<Stock />} />
             <Route path='/registrations/services' element={<Services />} />
             <Route path='/registrations/variations' element={<Variations />} />

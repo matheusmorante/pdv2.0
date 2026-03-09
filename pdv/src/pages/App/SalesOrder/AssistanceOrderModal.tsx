@@ -66,7 +66,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
         return () => unsubscribe();
     }, []);
 
-    const currentLinkedOrder = useMemo(() => 
+    const currentLinkedOrder = useMemo(() =>
         saleOrders.find(o => o.id === linkedOrderId),
         [saleOrders, linkedOrderId]
     );
@@ -91,7 +91,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
             toast.warning(`Quantidade máxima disponível: ${maxQty}`);
             return;
         }
-        setSelectedAssistanceItems(prev => prev.map(i => 
+        setSelectedAssistanceItems(prev => prev.map(i =>
             i.description === description ? { ...i, quantity: qty } : i
         ));
     };
@@ -215,13 +215,27 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                                 Telefone / WhatsApp
                             </label>
-                            <input
-                                type="tel"
-                                value={customerPhone}
-                                onChange={(e) => setCustomerPhone(e.target.value)}
-                                placeholder="(00) 00000-0000"
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="tel"
+                                    value={customerPhone}
+                                    onChange={(e) => setCustomerPhone(e.target.value)}
+                                    placeholder="(00) 00000-0000"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
+                                />
+                                <button type="button"
+                                    onClick={() => {
+                                        if (!customerPhone) return;
+                                        const cleanPhone = customerPhone.replace(/\D/g, '');
+                                        const finalPhone = cleanPhone.length >= 10 && cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+                                        window.open(`https://wa.me/${finalPhone}`, '_blank');
+                                    }}
+                                    title="Verificar WhatsApp"
+                                    className="shrink-0 w-12 flex items-center justify-center bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl transition-all shadow-sm shadow-[#25D366]/30 active:scale-95"
+                                >
+                                    <i className="bi bi-whatsapp text-lg"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -276,7 +290,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                             #{currentLinkedOrder?.id} — {currentLinkedOrder?.customerData.fullName}
                                         </h4>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                                Data da Venda: {formatToBRDate(currentLinkedOrder?.date)}
+                                            Data da Venda: {formatToBRDate(currentLinkedOrder?.date)}
                                         </p>
                                     </div>
                                 )}
@@ -297,7 +311,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                                 const selectedItem = selectedAssistanceItems.find(i => i.description === item.description);
 
                                                 return (
-                                                    <div 
+                                                    <div
                                                         key={`${item.description}-${idx}`}
                                                         className={`p-3 rounded-2xl border-2 transition-all flex items-center justify-between gap-4 ${isSelected ? 'border-indigo-400 bg-white dark:bg-slate-900 shadow-md' : 'border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-900/40 cursor-pointer'}`}
                                                         onClick={() => handleToggleItem(item.description, item.quantity)}

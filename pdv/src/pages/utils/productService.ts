@@ -7,7 +7,9 @@ const mapToDB = (product: Partial<Product>) => {
     return {
         code: product.code,
         description: product.description,
+        brand: product.brand,
         category: product.category,
+        condition: product.condition || '',
         unit_price: product.unitPrice,
         cost_price: product.costPrice,
         freight_type: product.freightType,
@@ -36,7 +38,9 @@ const mapFromDB = (data: any): Product => {
         id: String(data.id),
         code: data.code,
         description: data.description,
+        brand: data.brand,
         category: data.category,
+        condition: data.condition || '',
         unitPrice: Number(data.unit_price),
         costPrice: Number(data.cost_price),
         freightType: data.freight_type || 'fixed',
@@ -56,6 +60,7 @@ const mapFromDB = (data: any): Product => {
         variations: data.variations,
         itemType: data.item_type || 'product',
         fiscal: data.fiscal,
+        categoryIds: data.product_categories?.map((pc: any) => pc.category_id) || [],
         createdAt: data.created_at,
         updatedAt: data.updated_at
     };
@@ -64,7 +69,7 @@ const mapFromDB = (data: any): Product => {
 export const subscribeToProducts = (callback: (products: Product[]) => void) => {
     // Initial fetch
     supabase.from(TABLE_NAME)
-        .select('*')
+        .select('*, product_categories(category_id)')
         .order('description', { ascending: true })
         .then(({ data, error }: { data: any, error: any }) => {
             if (data && !error) {
@@ -79,7 +84,7 @@ export const subscribeToProducts = (callback: (products: Product[]) => void) => 
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => {
             // Re-fetch all on any change to keep sorting simple
             supabase.from(TABLE_NAME)
-                .select('*')
+                .select('*, product_categories(category_id)')
                 .order('description', { ascending: true })
                 .then(({ data }: { data: any }) => {
                     if (data) callback(data.map(mapFromDB));
@@ -101,11 +106,18 @@ export const saveProduct = async (product: Product): Promise<void> => {
     try {
         const dbProduct = mapToDB(product);
         // Supabase serial ID will handle the auto-increment
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from(TABLE_NAME)
-            .insert([dbProduct]);
+            .insert([dbProduct])
+            .select();
 
         if (error) throw error;
+
+        if (data && data[0] && product.categoryIds && product.categoryIds.length > 0) {
+            const newId = data[0].id;
+            const links = product.categoryIds.map(cid => ({ product_id: newId, category_id: cid }));
+            await supabase.from('product_categories').insert(links);
+        }
     } catch (error) {
         console.error("Erro ao salvar o produto: ", error);
         throw error;
@@ -121,6 +133,14 @@ export const updateProduct = async (id: string, productToUpdate: Partial<Product
             .eq('id', id);
 
         if (error) throw error;
+
+        if (productToUpdate.categoryIds !== undefined) {
+            await supabase.from('product_categories').delete().eq('product_id', id);
+            if (productToUpdate.categoryIds.length > 0) {
+                const links = productToUpdate.categoryIds.map(cid => ({ product_id: id, category_id: cid }));
+                await supabase.from('product_categories').insert(links);
+            }
+        }
     } catch (error) {
         console.error("Erro ao atualizar o produto: ", error);
         throw error;

@@ -34,10 +34,10 @@ export const subscribeToOrders = (callback: (orders: Order[]) => void) => {
                 console.log('[OrdersSync] Data received, count:', data.length);
                 const orders = data.map((row: any) => {
                     try {
-                        const rawData = { id: String(row.id), ...row.order_data } as Order;
+                        const rawData = { ...(row.order_data || {}), id: String(row.id) } as Order;
                         return capitalizeOrder(rawData);
                     } catch (_e) {
-                        return { id: String(row.id), ...row.order_data } as Order;
+                        return { ...(row.order_data || {}), id: String(row.id) } as Order;
                     }
                 });
                 callback(orders);
@@ -114,7 +114,7 @@ export const updateOrder = async (
 
         if (currentOrder) {
             // Temos o pedido completo em memória — skip do SELECT no banco
-            const { id: _id, ...rest } = { ...currentOrder, ...orderToUpdate } as any;
+            const { id: _id, ...rest } = { ...(currentOrder || {}), ...orderToUpdate, id: undefined } as any;
             merged = rest;
         } else {
             // Fallback: busca o pedido completo no banco antes de mesclar
@@ -130,7 +130,7 @@ export const updateOrder = async (
                 const { id: _id, ...rest } = orderToUpdate as any;
                 merged = rest;
             } else {
-                const { id: _id, ...rest } = { ...(current?.order_data || {}), ...orderToUpdate } as any;
+                const { id: _id, ...rest } = { ...(current?.order_data || {}), ...orderToUpdate, id: undefined } as any;
                 merged = rest;
             }
         }
