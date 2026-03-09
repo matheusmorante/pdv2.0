@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 type MenuKey = 'stock' | 'salesOrder' | 'registrations' | null;
 
@@ -18,6 +19,7 @@ const chevronClass = (isActive: boolean) =>
     `bi bi-chevron-down transition-transform text-[10px] ${isActive ? 'rotate-180' : ''}`;
 
 const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
+    const { isAdmin } = useAuth();
     const toggle = (key: MenuKey) => setActiveMenu(activeMenu === key ? null : key);
 
     return (
@@ -95,6 +97,13 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 <i className="bi bi-bar-chart-fill"></i>
                 Relatórios
             </Link>
+
+            {isAdmin && (
+                <Link to="/users" className={navLinkClass}>
+                    <i className="bi bi-shield-lock-fill"></i>
+                    Acessos
+                </Link>
+            )}
         </nav>
     );
 };

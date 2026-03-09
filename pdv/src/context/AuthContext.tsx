@@ -1,63 +1,116 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { supabase } from '../pages/utils/supabaseConfig';
+import { User } from '@supabase/supabase-js';
+
+export type UserRole = 'administrator' | 'deliverer' | 'seller' | 'accountant' | 'manager';
+
+export interface Profile {
+    id: string;
+    email: string;
+    role: UserRole;
+    full_name?: string;
+    avatar_url?: string;
+}
 
 interface AuthContextType {
+    user: User | null;
+    profile: Profile | null;
     isAuthenticated: boolean;
-    login: (pass: string) => boolean;
-    logout: () => void;
     loading: boolean;
+    isAdmin: boolean;
+    isManager: boolean;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        // Check if user is already logged in and if session is valid
-        const auth = localStorage.getItem('pdv_auth');
-        const expiry = localStorage.getItem('pdv_auth_expiry');
-        
-        if (auth === 'true' && expiry) {
-            const now = new Date().getTime();
-            if (now < parseInt(expiry)) {
-                setIsAuthenticated(true);
-            } else {
-                logout();
-            }
+    const fetchProfile = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+            setProfile(data as Profile);
+        } catch (err) {
+            console.error('[Auth] Error fetching profile:', err);
+            setProfile(null);
         }
-        setLoading(false);
+    };
+
+    useEffect(() => {
+        let active = true;
+
+        // Hard failsafe: if onAuthStateChange never fires, unblock after 5s
+        const failsafe = setTimeout(() => {
+            if (active) {
+                console.warn('[Auth] 5s failsafe - onAuthStateChange never fired, setting loading=false');
+                setLoading(false);
+            }
+        }, 5000);
+
+        // onAuthStateChange fires immediately with the current session (INITIAL_SESSION or SIGNED_IN/OUT)
+        // This is the ONLY source of truth we need - no need to call getSession() separately
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (!active) return;
+            console.log('[Auth] State Change:', event);
+
+            clearTimeout(failsafe);
+
+            if (session?.user) {
+                setUser(session.user);
+                // Fetch profile without blocking the loading state
+                fetchProfile(session.user.id).finally(() => {
+                    if (active) setLoading(false);
+                });
+            } else {
+                setUser(null);
+                setProfile(null);
+                setLoading(false);
+            }
+        });
+
+        return () => {
+            active = false;
+            clearTimeout(failsafe);
+            subscription.unsubscribe();
+        };
     }, []);
 
-    const login = (pass: string): boolean => {
-        // Standard creds requested: password 'morante123'
-        if (pass === 'morante123') {
-            const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
-            const expiry = new Date().getTime() + twoDaysInMs;
-            
-            setIsAuthenticated(true);
-            localStorage.setItem('pdv_auth', 'true');
-            localStorage.setItem('pdv_auth_expiry', expiry.toString());
-            return true;
-        }
-        return false;
+    const logout = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        setProfile(null);
     };
 
-    const logout = () => {
-        setIsAuthenticated(false);
-        localStorage.removeItem('pdv_auth');
-        localStorage.removeItem('pdv_auth_expiry');
-    };
+    const value = useMemo(() => ({
+        user,
+        profile,
+        isAuthenticated: !!user,
+        loading,
+        isAdmin: profile?.role === 'administrator',
+        isManager: profile?.role === 'manager' || profile?.role === 'administrator',
+        logout
+    }), [user, profile, loading]);
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout, loading }}>
+        <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
 };
 
-export const useAuth = () => {
+export function useAuth() {
     const context = useContext(AuthContext);
-    if (!context) throw new Error('useAuth must be used within an AuthProvider');
+    if (context === undefined) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
     return context;
-};
+}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 type MenuKey = 'stock' | 'salesOrder' | 'registrations' | null;
 
@@ -16,6 +17,7 @@ const menuBtnClass = (isActive: boolean) =>
     `flex items-center justify-between px-4 py-3 rounded-xl transition-all font-bold ${isActive ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`;
 
 const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProps) => {
+    const { isAdmin } = useAuth();
     if (!isOpen) return null;
 
     const toggle = (key: MenuKey) => setActiveMenu(activeMenu === key ? null : key);
@@ -108,14 +110,23 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                         <i className="bi bi-bar-chart-fill text-lg"></i>
                         Relatórios
                     </Link>
+
+                    {isAdmin && (
+                        <Link to="/users" onClick={onClose} className={mobileLinkClass}>
+                            <i className="bi bi-shield-lock-fill text-lg"></i>
+                            Gestão de Acessos
+                        </Link>
+                    )}
                 </nav>
 
                 {/* Footer */}
-                <div className="mt-auto border-t border-slate-100 dark:border-slate-800 pt-4 flex items-center justify-between px-4">
-                    <Link to="/settings" onClick={onClose} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all font-bold text-sm">
-                        <i className="bi bi-gear-fill"></i> Configurações
-                    </Link>
-                </div>
+                {isAdmin && (
+                    <div className="mt-auto border-t border-slate-100 dark:border-slate-800 pt-4 flex items-center justify-between px-4">
+                        <Link to="/settings" onClick={onClose} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all font-bold text-sm">
+                            <i className="bi bi-gear-fill"></i> Configurações
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );

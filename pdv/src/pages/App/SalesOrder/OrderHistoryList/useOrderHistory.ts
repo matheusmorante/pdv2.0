@@ -12,12 +12,40 @@ export const useOrderHistory = (filters?: any) => {
     const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
     useEffect(() => {
+        let active = true; // Will be set to false on cleanup
+
+        console.log('[Orders] Hook Start');
+
+        // Failsafe: force loading false after 8 seconds if data never arrives
+        const failsafe = setTimeout(() => {
+            if (active) {
+                console.warn('[Orders] Failsafe timer fired - no data received');
+                setLoading(false);
+            }
+        }, 8000);
+
         const unsubscribe = subscribeToOrders((data) => {
-            setOrders(data);
+            // Only update state if this effect instance is still active
+            if (!active) return;
+
+            if (Array.isArray(data)) {
+                console.log('[Orders] Data received, count:', data.length);
+                setOrders(data);
+            } else {
+                console.error('[Orders] Data is not an array:', data);
+                setOrders([]);
+            }
+
             setLoading(false);
+            clearTimeout(failsafe);
         });
 
-        return () => unsubscribe();
+        return () => {
+            console.log('[Orders] Hook Cleanup');
+            active = false;
+            clearTimeout(failsafe);
+            unsubscribe();
+        };
     }, []);
 
     // Reset pagination and selection when filters change
@@ -177,10 +205,14 @@ export const useOrderHistory = (filters?: any) => {
     const clearSelection = () => setSelectedOrders([]);
 
     const handleStatusUpdate = async (id: string, newStatus: Order['status']) => {
+        // Optimistic update: reflect change immediately in local state
+        setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
         try {
             await updateOrder(id, { status: newStatus });
             toast.success("Status do pedido atualizado!");
         } catch (error) {
+            // Rollback optimistic update on failure
+            setOrders(prev => prev.map(o => o.id === id ? { ...o } : o));
             console.error("Erro ao atualizar status:", error);
             toast.error("Erro ao atualizar status do pedido.");
         }

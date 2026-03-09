@@ -3,6 +3,7 @@ import CustomerData from "../../types/customerData.type";
 import Person from "../../types/person.type";
 import { subscribeToPeople } from "../../utils/personService";
 import { ValidationErrors } from "../../utils/validations";
+import CustomerSearchModal from "./CustomerSearchModal";
 
 interface Props {
     customerData: CustomerData;
@@ -14,6 +15,7 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
     const [customers, setCustomers] = useState<Person[]>([]);
     const [searchTerm, setSearchTerm] = useState(customerData.fullName || '');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -87,39 +89,52 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2 ml-1">
                     Selecionar Cliente
                 </label>
-                <div className="relative">
-                    <input
-                        type="text"
-                        className={`w-full bg-slate-50 dark:bg-slate-900 border px-4 py-3 rounded-2xl transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${isError
+                <div className="relative flex gap-2">
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            className={`w-full bg-slate-50 dark:bg-slate-900 border px-4 py-3 rounded-2xl transition-all text-sm outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-slate-300 ${isError
                                 ? 'border-red-500 focus:border-red-600 ring-4 ring-red-500/10'
                                 : 'border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'
-                            }`}
-                        placeholder="Busque pelo Nome ou Telefone..."
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        onFocus={() => setIsDropdownOpen(true)}
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        {searchTerm && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setCustomerData({
-                                        fullName: '',
-                                        phone: '',
-                                        noPhone: false,
-                                        fullAddress: { cep: '', street: '', number: '', complement: '', neighborhood: '', city: '', observation: '' }
-                                    });
-                                    setIsDropdownOpen(true);
-                                }}
-                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                            >
-                                <i className="bi bi-x-circle-fill"></i>
-                            </button>
-                        )}
-                        <i className={`bi bi-chevron-down text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}></i>
+                                }`}
+                            placeholder="Busque pelo Nome ou Telefone..."
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            onFocus={() => setIsDropdownOpen(true)}
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setCustomerData({
+                                            fullName: '',
+                                            phone: '',
+                                            noPhone: false,
+                                            fullAddress: { cep: '', street: '', number: '', complement: '', neighborhood: '', city: '', observation: '' }
+                                        });
+                                        setIsDropdownOpen(true);
+                                    }}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                >
+                                    <i className="bi bi-x-circle-fill"></i>
+                                </button>
+                            )}
+                            <i className={`bi bi-chevron-down text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}></i>
+                        </div>
                     </div>
+
+                    {/* Advanced search button */}
+                    <button
+                        type="button"
+                        onClick={() => { setIsDropdownOpen(false); setIsSearchModalOpen(true); }}
+                        title="Busca avançada de clientes"
+                        className="shrink-0 flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-lg shadow-blue-200 dark:shadow-none active:scale-95 font-black text-xs uppercase tracking-widest"
+                    >
+                        <i className="bi bi-people-fill" />
+                        <span className="hidden sm:inline">Buscar</span>
+                    </button>
                 </div>
 
                 {isError && (
@@ -192,6 +207,17 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                         <div className="text-sm italic text-slate-400">Cliente sem endereço cadastrado.</div>
                     )}
                 </div>
+            )}
+
+            {/* Advanced Customer Search Modal */}
+            {isSearchModalOpen && (
+                <CustomerSearchModal
+                    onSelect={(selected) => {
+                        setCustomerData(selected);
+                        setSearchTerm(selected.fullName);
+                    }}
+                    onClose={() => setIsSearchModalOpen(false)}
+                />
             )}
         </div>
     );

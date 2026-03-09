@@ -43,6 +43,13 @@ const OrderHistoryRow = ({
     const settings = getSettings();
     const isIncomplete = isOrderIncomplete(order);
 
+    // Auto-dismiss the "Sim/Não" confirmation after 5 seconds with no action
+    React.useEffect(() => {
+        if (!showFulfillmentConfirm) return;
+        const timer = setTimeout(() => setShowFulfillmentConfirm(false), 5000);
+        return () => clearTimeout(timer);
+    }, [showFulfillmentConfirm]);
+
     const statuses = settings.orderStatuses || [
         { id: 'draft', label: 'Rascunho', color: 'slate', isCore: true },
         { id: 'scheduled', label: 'Agendado', color: 'amber', isCore: true },
@@ -138,6 +145,7 @@ const OrderHistoryRow = ({
                                         </button>
                                     ) : (
                                         <div className="flex items-center gap-1.5 animate-slide-up">
+                                                <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold">Confirmar?</span>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -375,7 +383,7 @@ const OrderHistoryRow = ({
 
     return (
         <tr
-            onClick={() => onViewDetails(order)}
+            onClick={() => { setShowFulfillmentConfirm(false); onViewDetails(order); }}
             className={`transition-colors group cursor-pointer border-b border-white dark:border-slate-800/50 ${showMenu || showPicker ? 'relative z-[60]' : ''} ${finalRowBg} ${isSelected ? cls.rowActive : ''}`}
         >
             {/* Row Checkbox */}

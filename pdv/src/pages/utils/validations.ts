@@ -111,9 +111,22 @@ export const validateBase = (order: Order) => {
     return Object.keys(errors).length === 0;
 }
 
+export const validateAssistanceOrder = (order: Order): ValidationErrors => {
+    const errors: ValidationErrors = {};
+    if (!order.customerData?.fullName) errors['customer_fullName'] = "Nome do cliente é obrigatório.";
+    if (!order.assistanceDescription) errors['assistanceDescription'] = "Descrição do serviço é obrigatória.";
+    return errors;
+};
+
 export const isOrderIncomplete = (order: Order) => {
+    if (!order) return true;
+    // Assistance orders have different required fields
+    if (order.orderType === 'assistance') {
+        return Object.keys(validateAssistanceOrder(order)).length > 0;
+    }
+    // All other order types use the full validation
     return !validateBase(order);
-}
+};
 
 export const validateReviews = (order: Order): ValidationErrors => {
     const errors: ValidationErrors = {};

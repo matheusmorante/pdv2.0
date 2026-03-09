@@ -13,7 +13,7 @@ export default function AppLayout() {
   const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { logout } = useAuth();
+  const { user, profile, logout, isAdmin } = useAuth();
 
   return (
     <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-screen font-['Inter',_sans-serif] transition-colors duration-300">
@@ -60,17 +60,59 @@ export default function AppLayout() {
             )}
           </button>
 
-          <Link to="/settings" className="hidden sm:block p-2 xl:p-3 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-all">
-            <i className="bi bi-gear-fill text-lg xl:text-xl"></i>
-          </Link>
-          <button
-            onClick={logout}
-            className="hidden sm:flex p-2 xl:p-3 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition-all rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/10"
-            title="Sair do Sistema"
-          >
-            <i className="bi bi-box-arrow-right text-lg xl:text-xl"></i>
-          </button>
-          <div className="w-8 h-8 xl:w-10 xl:h-10 bg-slate-100 dark:bg-slate-800 rounded-full border-2 border-slate-200 dark:border-slate-700"></div>
+          {/* Dropdown de Perfil */}
+          <div className="relative group">
+            <button className="flex items-center gap-3 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+              <div className="w-8 h-8 xl:w-10 xl:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-blue-600 dark:text-blue-400 font-black text-sm uppercase">
+                    {((profile?.full_name || user?.email || 'U') as any)[0]}
+                  </span>
+                )}
+              </div>
+              <div className="hidden xl:block text-left">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Bem-vindo</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
+                  {((profile?.full_name || 'Usuário') as any).split(' ')[0]}
+                </p>
+              </div>
+              <i className="bi bi-chevron-down text-[10px] text-slate-400 group-hover:rotate-180 transition-transform hidden xl:block"></i>
+            </button>
+
+            {/* Menu Dropdown - Com ponte de hover invisível */}
+            <div className="absolute top-full right-0 w-56 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all z-[60] pt-2">
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-2 backdrop-blur-xl">
+                <div className="p-4 border-b border-slate-50 dark:border-slate-800 mb-2">
+                  <p className="text-xs font-black text-slate-800 dark:text-slate-100 truncate">{profile?.full_name || 'Usuário'}</p>
+                  <p className="text-[10px] font-bold text-slate-400 truncate">{user?.email}</p>
+                </div>
+
+                <Link to="/profile" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                  <i className="bi bi-person-circle text-lg"></i>
+                  Meu Perfil
+                </Link>
+
+                {isAdmin && (
+                  <Link to="/settings" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                    <i className="bi bi-gear-fill text-lg"></i>
+                    Configurações
+                  </Link>
+                )}
+
+                <div className="h-px bg-slate-50 dark:bg-slate-800 my-2 mx-2"></div>
+
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center gap-3 p-3 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/10 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest"
+                >
+                  <i className="bi bi-box-arrow-right text-lg"></i>
+                  Sair do Sistema
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
