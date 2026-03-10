@@ -13,7 +13,7 @@ export interface AppSettings {
     // Automação e Status
     showManualFulfillmentPrompt: boolean;
     autoSaveOnlyWhenDirty: boolean;
-    
+
     // Rótulos Customizados
     statusLabels?: {
         draft: string;
@@ -32,9 +32,9 @@ export interface AppSettings {
         pickup: OrderTypeColor;
         assistance: OrderTypeColor;
     };
-    deliveryHandlingOptions: string[]; 
+    deliveryHandlingOptions: string[];
     pickupHandlingOptions: string[];
-    
+
     // Logística e Valores
     freightPerKm: number;
     openRouteServiceApiKey: string;
@@ -43,16 +43,16 @@ export interface AppSettings {
     companyAddress: string;
     companyCnpj: string;
     companyPhone: string;
-    
+
     // Formatação de Dados
     autoCapitalizeCustomerData: boolean;
-    
+
     // Comunicação e Links
     googleReviewUrl: string;
-    
+
     // Aparência e Comportamento
     defaultTheme: 'light' | 'dark';
-    
+
     // Scroll Automático
     autoScroll: {
         orderTable: boolean;
@@ -63,10 +63,17 @@ export interface AppSettings {
     };
     aiPrompts: {
         productDescription: string;
-        generalChat: string; 
+        ecommerceTemplate: string;
+        whatsappTemplate: string;
+        generalChat: string;
         taskDetection: string;
         aiName: string;
         aiAvatar: string;
+    };
+    // Descrições Base por Canal (informações da loja que aparecem antes da descrição do produto)
+    channelBaseDescriptions: {
+        whatsapp: string;   // Ex: nome da loja, horário, localização, link
+        ecommerce: string;  // Ex: texto institucional, políticas, diferenciais
     };
     orderAutomation: {
         autoPrintReceipt: boolean;
@@ -151,6 +158,85 @@ Instruções Adicionais:
 - Crie apenas UM ou DOIS parágrafos.
 - Seja direto, instigante e profissional.
 - JAMAIS responda com outra coisa que não seja a descrição final do produto. Comece direto no texto.`,
+        ecommerceTemplate: `IA, siga o padrão de descrição da Móveis Morante (Estilo Magalu).
+Use HTML estruturado (h1, p, ul, li, table).
+
+[NOME DO PRODUTO EM CAIXA ALTA] + [LINHA] – [COR]
+
+Apresentação:
+(Texto de 2 a 3 parágrafos persuasivos focando em solução e benefício).
+
+Destaques do Produto:
+(Use <ul> e <li> com emojis estratégicos)
+🚀 [Característica 1]: [Explicação do benefício].
+💎 [Característica 2]: [Explicação do benefício].
+🛡️ [Característica 3]: [Explicação do benefício].
+
+Especificações Técnicas:
+(Crie uma <table> HTML com estas linhas)
+- Largura: [X] cm
+- Altura: [X] cm
+- Profundidade: [X] cm
+- Material: [Tipo]
+- Marca/Linha: [Linha]
+- Cores: [Cores]
+
+⚠️ Atenção: [Aviso sobre montagem ou o que não acompanha].
+
+Por que escolher a [Linha]?
+(Parágrafo de fechamento reforçando durabilidade e melhor custo-benefício).`,
+        whatsappTemplate: `IA, siga o padrão de descrição da Móveis Morante (Estilo Magalu).
+USE APENAS TEXTO SIMPLES E EMOJIS. NÃO USE HTML.
+
+[NOME DO PRODUTO EM CAIXA ALTA] + [LINHA] – [COR]
+
+Apresentação:
+(Texto persuasivo focado em benefício).
+
+Destaques:
+🚀 [Característica 1]: [Explicação].
+💎 [Característica 2]: [Explicação].
+🛡️ [Característica 3]: [Explicação].
+
+Especificações Técnicas:
+Largura: [X] cm | Altura: [X] cm | Profundidade: [X] cm
+Material: [Tipo]
+Cor: [Cor]
+
+⚠️ Atenção: [Aviso importante].
+
+___________________________________
+
+RECHEIO_BASE_DA_LOJA_AQUI
+
+___________________________________
+
+🚚📦 Entrega rápida (1 a 5 dias úteis) para Curitiba e Região, consulte conosco a disponibilidade e o valor do frete
+
+💳 Fazemos no CREDIÁRIO em até 36x c/ juros, sob análise de crédito pela financeira em poucos minutos sem sair de casa!
+
+💳 Pagamento parcelado nas bandeiras VISA, MASTER, MASTERCARD, MAESTRO, HIPERCARD, ELO, em até 10x sem juros no cartão de crédito
+ 🚨⚠️ Aceitamos Senff, e BrasilCard e outras bandeiras, com juros.
+
+✅ À vista tem desconto no pix, débito ou dinheiro!
+
+✅ Sem custo de frete para endereços com menos de 5km de distância
+
+✅ Montagem por nossa conta - para a retirada ou entrega.
+
+✅ Atendimento Via WhatsApp
+https://wa.me/5541997493547
+
+🛒 VEJA MAIS DOS NOSSOS PRODUTOS CLICANDO NO LINK ABAIXO:
+https://matheusmorante002.wixsite.com/moveismorante
+
+___________________________________
+
+Móveis Morante 
+▶ CNPJ: 44.512 248/0001-07
+🕒 Aberto: Seg a Sex ( 9h às 18h ) e Sab ( 9h às 17h )
+🗺📍Rua Cascavel, 306, Guaraituba, Colombo - PR
+____________________________________`,
         generalChat: `Você é Lisandro, um assistente virtual de ALTA PERFORMANCE exclusivo para os vendedores da Móveis Morante.
 Seu objetivo é ser o braço direito do VENDEDOR, agilizando processos internos e organizando dados.
 
@@ -194,6 +280,17 @@ RESPOSTA NO FORMATO JSON:
 `,
         aiName: 'Lisandro',
         aiAvatar: ''
+    },
+    channelBaseDescriptions: {
+        whatsapp: `🏠 *Móveis Morante*
+📍 R. Cascavel, 306 - Guaraituba, Colombo - PR
+⌚ Seg a Sex: 8h às 18h | Sáb: 8h às 13h
+📞 (41) 99749-3547
+
+――――――――――――`,
+        ecommerce: `A **Móveis Morante** é referência em móveis planejados e decoração de interiores há mais de 10 anos. Trabalhamos com móveis novos, usados e salvados, sempre com qualidade e atendimento personalizado.
+
+---`
     },
     orderAutomation: {
         autoPrintReceipt: true,
@@ -246,8 +343,8 @@ export const subscribeToSettings = (callback: (settings: AppSettings) => void) =
         });
 
     const channel = supabase.channel('settings_changes')
-        .on('postgres_changes', 
-            { event: '*', schema: 'public', table: SUPABASE_SETTINGS_TABLE, filter: `id=eq.${SETTINGS_ID}` }, 
+        .on('postgres_changes',
+            { event: '*', schema: 'public', table: SUPABASE_SETTINGS_TABLE, filter: `id=eq.${SETTINGS_ID}` },
             (payload: any) => {
                 if (payload.new) {
                     const settings = (payload.new as any).data as AppSettings;
@@ -272,7 +369,7 @@ export const saveSettings = async (settings: AppSettings) => {
         const { error } = await supabase
             .from(SUPABASE_SETTINGS_TABLE)
             .upsert({ id: SETTINGS_ID, data: settings });
-        
+
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao persistir configurações no Supabase:", error);

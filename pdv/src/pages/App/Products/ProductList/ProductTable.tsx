@@ -38,6 +38,7 @@ const COLUMNS_DEF: ColumnDef[] = [
     { key: 'code', label: 'Código' },
     { key: 'description', label: 'Descrição' },
     { key: 'category', label: 'Categoria' },
+    { key: 'createdAt', label: 'Data Criação' },
     { key: 'costPrice', label: 'Preço Custo', align: 'text-right' },
     { key: 'unitPrice', label: 'Preço Venda', align: 'text-right' },
     { key: 'stock', label: 'Estoque', align: 'text-center' },
@@ -178,7 +179,7 @@ const ProductTable = ({
                                 </th>
                                 {orderedColumns.map((col) => {
                                     const isVisible = visibilitySettings[col.key];
-                                    const sortableKeys = ['code', 'description', 'unitPrice', 'stock'];
+                                    const sortableKeys = ['code', 'description', 'unitPrice', 'stock', 'createdAt', 'category'];
                                     const isSortable = sortableKeys.includes(col.key);
                                     const isSorted = filters?.sortBy === col.key;
                                     const sortOrder = filters?.sortOrder || 'asc';

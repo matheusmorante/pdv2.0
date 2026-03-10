@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Person from "../../../types/person.type";
-import { savePerson } from "../../../utils/personService";
+import { savePerson, isPersonRegisteredAs } from "../../../utils/personService";
 import { toast } from "react-toastify";
 import { capitalizePerson, toTitleCase } from "../../../utils/formatters";
 import SmartInput from "../../../../components/SmartInput";
+import InputMask from "react-input-mask";
 
 interface PersonFormModalProps {
     isOpen: boolean;
@@ -83,14 +84,34 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
             return;
         }
 
+        if (!formData.phone || formData.phone.trim() === '') {
+            toast.error("O telefone é obrigatório.");
+            return;
+        }
+
         if (collectionName === 'customers' && !formData.marketingOrigin) {
             toast.error("Por favor, informe se o cliente é de tráfego pago.");
             return;
         }
 
+        if (collectionName === 'employees' && !person) {
+            const isRegistered = await isPersonRegisteredAs('customers', {
+                cpfCnpj: formData.cpfCnpj,
+                email: formData.email,
+                phone: formData.phone
+            });
+            if (isRegistered) {
+                toast.error("Clientes registrados não podem ser cadastrados como funcionários.");
+                return;
+            }
+        }
+
         setLoading(true);
         try {
             const dataToSave = capitalizePerson(formData as Person);
+            if (dataToSave.position?.trim() === "") {
+                dataToSave.position = null as any;
+            }
             const savedPerson = await savePerson(collectionName, dataToSave);
             toast.success(person ? "Atualizado com sucesso!" : "Criado com sucesso!");
             if (onSuccess) onSuccess(savedPerson);
@@ -214,22 +235,24 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                                 {formData.personType === 'PJ' ? 'CNPJ' : 'CPF'}
                             </label>
-                            <input
+                            <InputMask
+                                mask={formData.personType === 'PJ' ? "99.999.999/9999-99" : "999.999.999-99"}
                                 type="text"
                                 value={formData.cpfCnpj}
-                                onChange={(e) => setFormData({ ...formData, cpfCnpj: e.target.value })}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, cpfCnpj: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
                                 placeholder={formData.personType === 'PJ' ? '00.000.000/0000-00' : '000.000.000-00'}
                             />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Telefone</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Telefone <span className="text-red-500">*</span></label>
                             <div className="flex gap-2">
-                                <input
+                                <InputMask
+                                    mask="(99) 99999-9999"
                                     type="text"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value })}
                                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
                                     placeholder="(00) 00000-0000"
                                 />

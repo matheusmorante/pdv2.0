@@ -40,9 +40,9 @@ const Login = () => {
                 <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl shadow-blue-500/5 p-8 sm:p-12 border border-slate-100 dark:border-slate-800 backdrop-blur-sm transition-all duration-500">
                     <div className="flex flex-col items-center mb-10 group">
                         <div className="w-16 h-16 bg-blue-600 rounded-2xl shadow-xl shadow-blue-300 dark:shadow-blue-900/30 flex items-center justify-center mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                            <span className="text-white font-black text-3xl italic leading-none">P</span>
+                            <span className="text-white font-black text-3xl italic leading-none">E</span>
                         </div>
-                        <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">PDV ERP</h1>
+                        <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">ERP Móveis Morante</h1>
                         <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-[0.25em] mt-3">Gestão de Móveis e Serviços</p>
                     </div>
 

@@ -42,9 +42,9 @@ export default function AppLayout() {
 
           <Link to="/" className="flex items-center gap-2 xl:gap-3">
             <div className="w-8 h-8 xl:w-10 xl:h-10 bg-blue-600 rounded-lg xl:rounded-xl shadow-lg shadow-blue-200 dark:shadow-blue-900/20 flex items-center justify-center">
-              <span className="text-white font-black text-lg xl:text-xl italic leading-none">P</span>
+              <span className="text-white font-black text-lg xl:text-xl italic leading-none">E</span>
             </div>
-            <h3 className="text-lg xl:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight hidden sm:block">PDV ERP</h3>
+            <h3 className="text-lg xl:text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight hidden sm:block">ERP Móveis Morante</h3>
           </Link>
 
           <DesktopNav activeMenu={activeMenu} setActiveMenu={setActiveMenu} />

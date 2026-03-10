@@ -108,13 +108,25 @@ export const validateOrder = (order: Order): ValidationErrors => {
         shippingValue
     );
 
-    return {
+    const errors: ValidationErrors = {
         ...validateItems(items),
         ...validateSeller(order.seller),
         ...validateShipping(order.shipping, order.customerData),
         ...validatePayments(payments, amountRemaining),
         ...validateCustomerData(order.customerData)
     };
+
+    // New: Validate Order Date
+    if (!order.date || order.date.trim() === '') {
+        errors['order_date'] = "A data do pedido é obrigatória.";
+    }
+
+    // New: Logic for required items on non-draft orders
+    if (order.status !== 'draft' && items.length === 0) {
+        errors['items_summary'] = "O pedido deve conter pelo menos um item para ser finalizado.";
+    }
+
+    return errors;
 }
 
 // Keeping legacy validateBase for compatibility if needed, but updated to use new logic

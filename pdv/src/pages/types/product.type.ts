@@ -17,6 +17,14 @@ export type Variation = {
     ipiPercent?: number;
     finalPurchasePrice?: number;
     minStock?: number;
+    comboItems?: {
+        productId: string;
+        variationId?: string;
+        quantity: number;
+        description: string;
+        unitPrice: number;
+        stock: number;
+    }[];
 };
 
 export type FiscalInfo = {
@@ -57,9 +65,26 @@ export type Product = {
     updatedAt?: string;
     supplierId?: string;
 
-    // Ecommerce
+    // Dimensions & Material
+    material?: string;
+    width?: number;
+    height?: number;
+    depth?: number;
+    line?: string;
+    mainDifferential?: string;
+    colors?: string;
+    notIncluded?: string;
+    extraDimensions?: {
+        label: string;
+        value: string;
+    }[];
+
+    // Ecommerce & Marketplace
     images?: string[];
     ecommerceDescription?: string;
+    whatsappDescription?: string;
+    ecommerceTemplate?: string;
+    whatsappTemplate?: string;
 
     // Variations
     hasVariations?: boolean;
@@ -78,6 +103,18 @@ export type Product = {
 
     // Per-product notification configuration
     notificationConfig?: ProductNotificationConfig;
+
+    // Combo / Jogo
+    isCombo?: boolean;
+    comboItems?: {
+        productId: string;
+        variationId?: string;
+        quantity: number;
+        // Denormalized data for UI
+        description: string;
+        unitPrice: number;
+        stock: number;
+    }[];
 };
 
 export type ProductNotificationConfig = {
@@ -94,6 +131,7 @@ export type ProductVisibilitySettings = {
     costPrice: boolean;
     unitPrice: boolean;
     stock: boolean;
+    createdAt: boolean;
     actions: boolean;
 };
 

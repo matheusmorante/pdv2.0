@@ -77,7 +77,7 @@ const OrderDetailsModal = ({ order, onClose }: Props) => {
 
                 <div className="px-10 py-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20 flex justify-center transition-colors duration-300">
                     <p className="text-[9px] font-black uppercase text-slate-300 dark:text-slate-500 tracking-[0.3em]">
-                        Sistema PDV Inteligente • Logística v2.0
+                        ERP Móveis Morante • Logística v2.0
                     </p>
                 </div>
             </div>

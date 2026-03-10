@@ -32,9 +32,9 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-2">
                     <Link to="/" onClick={onClose} className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-blue-600 rounded-lg shadow-lg flex items-center justify-center">
-                            <span className="text-white font-black text-lg italic leading-none">P</span>
+                            <span className="text-white font-black text-lg italic leading-none">E</span>
                         </div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight">PDV ERP</h3>
+                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight">ERP Móveis Morante</h3>
                     </Link>
                     <button onClick={onClose} className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
                         <i className="bi bi-x-lg text-xl"></i>
@@ -113,6 +113,7 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                             <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
                                 <Link to="/sales-order" onClick={onClose} className={mobileSubLinkClass}>Lista de Pedidos</Link>
                                 <Link to="/delivery-schedule" onClick={onClose} className={mobileSubLinkClass}>Cronograma Logístico</Link>
+                                <Link to="/sales-order/route-map" onClick={onClose} className={mobileSubLinkClass}>Mapa de Rotas</Link>
                             </div>
                         )}
                     </div>

@@ -28,11 +28,16 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.supplierId !== undefined) data.supplier_id = product.supplierId;
     if (product.images !== undefined) data.images = product.images;
     if (product.ecommerceDescription !== undefined) data.ecommerce_description = product.ecommerceDescription;
+    if (product.whatsappDescription !== undefined) data.whatsapp_description = product.whatsappDescription;
+    if (product.whatsappTemplate !== undefined) data.whatsapp_template = product.whatsappTemplate;
+    if (product.ecommerceTemplate !== undefined) data.ecommerce_template = product.ecommerceTemplate;
     if (product.hasVariations !== undefined) data.has_variations = product.hasVariations;
     if (product.variations !== undefined) data.variations = product.variations;
     if (product.itemType !== undefined) data.item_type = product.itemType;
     if (product.fiscal !== undefined) data.fiscal = product.fiscal;
     if (product.notificationConfig !== undefined) data.notification_config = product.notificationConfig;
+    if (product.isCombo !== undefined) data.is_combo = product.isCombo;
+    if (product.comboItems !== undefined) data.combo_items = product.comboItems;
 
     return data;
 };
@@ -60,11 +65,16 @@ const mapFromDB = (data: any): Product => {
         supplierId: data.supplier_id,
         images: data.images,
         ecommerceDescription: data.ecommerce_description,
+        whatsappDescription: data.whatsapp_description,
+        whatsappTemplate: data.whatsapp_template,
+        ecommerceTemplate: data.ecommerce_template,
         hasVariations: data.has_variations,
         variations: data.variations,
         itemType: data.item_type || 'product',
         fiscal: data.fiscal,
         notificationConfig: data.notification_config,
+        isCombo: data.is_combo || false,
+        comboItems: data.combo_items || [],
         categoryIds: data.product_categories?.map((pc: any) => pc.category_id) || [],
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -123,8 +133,10 @@ export const saveProduct = async (product: Product): Promise<void> => {
             const links = product.categoryIds.map(cid => ({ product_id: newId, category_id: cid }));
             await supabase.from('product_categories').insert(links);
         }
-    } catch (error) {
-        console.error("Erro ao salvar o produto: ", error);
+    } catch (error: any) {
+        console.error("Erro ao salvar o produto:", error.message || error);
+        if (error.details) console.error("Detalhes do erro:", error.details);
+        if (error.hint) console.error("Dica:", error.hint);
         throw error;
     }
 };
@@ -176,8 +188,10 @@ export const updateProduct = async (id: string, productToUpdate: Partial<Product
                 await supabase.from('product_categories').insert(links);
             }
         }
-    } catch (error) {
-        console.error("Erro ao atualizar o produto: ", error);
+    } catch (error: any) {
+        console.error("Erro ao atualizar o produto:", error.message || error);
+        if (error.details) console.error("Detalhes do erro:", error.details);
+        if (error.hint) console.error("Dica:", error.hint);
         throw error;
     }
 };
@@ -233,7 +247,7 @@ export const saveVariation = async (productId: string, variation: any): Promise<
 
         const variations = parent.variations || [];
         const index = variations.findIndex((v: any) => v.id === variation.id);
-        
+
         if (index === -1) throw new Error("Variação não encontrada.");
 
         // Price History Logic for Variation
