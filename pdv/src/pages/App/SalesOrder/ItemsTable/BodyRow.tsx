@@ -10,7 +10,7 @@ import { ValidationErrors } from '../../../utils/validations';
 
 import { getSettings } from '../../../utils/settingsService';
 import ProductSearchModal from '../ProductSearchModal';
-import Product from '../../../types/product.type';
+import Product, { Variation } from '../../../types/product.type';
 
 interface Props {
     item: Item,
@@ -29,10 +29,21 @@ const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, delivery
     const settings = getSettings();
     const currentType = item.deliveryMethod || deliveryMethod;
 
-    const handleSelectProduct = (product: Product) => {
-        onChange(idx, 'description', product.description);
-        onChange(idx, 'unitPrice', product.unitPrice || 0);
-        // If it has variations, we might want to handle it, but for now simple sync
+    const handleSelectProduct = (product: Product, variation?: Variation) => {
+        onChange(idx, 'productId', product.id!);
+
+        let finalDescription = product.description;
+        if (variation) {
+            finalDescription += ` (${variation.name})`;
+            onChange(idx, 'variationId' as any, variation.id); // Assuming Item type will have variationId
+        }
+
+        onChange(idx, 'description', finalDescription);
+        onChange(idx, 'unitPrice', (variation ? variation.unitPrice : product.unitPrice) || 0);
+
+        if (product.condition) {
+            onChange(idx, 'condition', product.condition);
+        }
     };
 
     return (
@@ -49,6 +60,23 @@ const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, delivery
                                 onChange(idx, 'description', e.target.value)
                             }
                         />
+                        <div className="mt-1.5 flex items-center gap-2 pl-1">
+                            {item.condition && (
+                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all ${item.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30' :
+                                    item.condition === 'usado' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-900/30' :
+                                        'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30'
+                                    }`}>
+                                    {item.condition}
+                                </span>
+                            )}
+                            <i className="bi bi-box-seam text-[10px] text-slate-400" />
+                            <input
+                                className="bg-transparent border-0 border-b border-transparent hover:border-slate-200 focus:border-blue-400 outline-none text-[10px] font-black uppercase tracking-widest text-slate-400 focus:text-blue-500 transition-all w-full"
+                                placeholder="Manuseio (ex: Com montagem, Na caixa...)"
+                                value={item.handlingType || ''}
+                                onChange={(e) => onChange(idx, 'handlingType', e.target.value)}
+                            />
+                        </div>
                         {error && (
                             <div className="absolute left-4 -top-8 hidden group-hover/desc:flex items-center px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-lg z-50 whitespace-nowrap">
                                 {error}
@@ -91,17 +119,7 @@ const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, delivery
                     <option value="pickup" className="dark:bg-slate-900">{settings.orderTypeLabels.pickup}</option>
                 </select>
             </td>
-            <td className="px-4 py-2">
-                <select
-                    className="w-full min-w-[120px] bg-transparent border border-slate-100 dark:border-slate-800 focus:border-blue-500 px-2 py-1.5 rounded-xl outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
-                    value={item.handlingType}
-                    onChange={(e) => onChange(idx, 'handlingType', e.target.value)}
-                >
-                    {(currentType === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions).map(opt => (
-                        <option key={opt} value={opt} className="dark:bg-slate-900">{opt}</option>
-                    ))}
-                </select>
-            </td>
+
             <td className="px-4 py-2">
                 <UnitInput
                     value={item.quantity}

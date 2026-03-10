@@ -3,6 +3,7 @@ import Person from "../../../types/person.type";
 import { savePerson } from "../../../utils/personService";
 import { toast } from "react-toastify";
 import { capitalizePerson, toTitleCase } from "../../../utils/formatters";
+import SmartInput from "../../../../components/SmartInput";
 
 interface PersonFormModalProps {
     isOpen: boolean;
@@ -169,37 +170,30 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                         )}
 
                         {(collectionName === 'customers' || collectionName === 'employees') && (
-                            <div className="md:col-span-2 flex flex-col gap-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                                    Cargo Principal {collectionName === 'customers' && <span className="text-[8px] text-blue-500 font-normal lowercase">(preencha apenas se for funcionário)</span>}
-                                </label>
-                                <select
+                            <div className="md:col-span-2">
+                                <SmartInput
+                                    label={`Cargo Principal ${collectionName === 'customers' ? '(preencha apenas se for funcionário)' : ''}`}
                                     value={formData.position || ""}
-                                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100 appearance-none"
-                                >
-                                    <option value="">Selecione o cargo...</option>
-                                    <option value="Vendedor">Vendedor</option>
-                                    <option value="Gerente">Gerente</option>
-                                    <option value="Entregador">Entregador</option>
-                                    {formData.position && !['Vendedor', 'Gerente', 'Entregador'].includes(formData.position) && (
-                                        <option value={formData.position}>{formData.position}</option>
-                                    )}
-                                </select>
+                                    onValueChange={(val) => setFormData({ ...formData, position: val })}
+                                    patterns={['Vendedor', 'Gerente', 'Entregador', 'Montador', 'Auxiliar']}
+                                    tableName="people"
+                                    columnName="position"
+                                    placeholder="Ex: Vendedor, Gerente..."
+                                    icon="bi-person-badge"
+                                />
                             </div>
                         )}
 
-                        <div className={`${formData.personType === 'PJ' ? 'md:col-span-1' : 'md:col-span-2'} flex flex-col gap-2`}>
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                                {formData.personType === 'PJ' ? 'Razão Social' : 'Nome Completo'}
-                            </label>
-                            <input
-                                type="text"
+                        <div className={`${formData.personType === 'PJ' ? 'md:col-span-1' : 'md:col-span-2'}`}>
+                            <SmartInput
+                                label={formData.personType === 'PJ' ? 'Razão Social' : 'Nome Completo'}
                                 required
                                 value={formData.fullName}
-                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
+                                onValueChange={(val) => setFormData({ ...formData, fullName: val })}
+                                tableName="people"
+                                columnName="fullName"
                                 placeholder={formData.personType === 'PJ' ? 'Razão Social da Empresa' : 'Nome do Cliente'}
+                                icon="bi-person"
                             />
                         </div>
 

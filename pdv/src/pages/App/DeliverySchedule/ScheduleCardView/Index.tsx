@@ -85,12 +85,7 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                             {typeLabel}
                         </span>
 
-                        {order.shipping?.orderType && (
-                            <span className="text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                                <i className="bi bi-box-seam-fill mr-1.5" />
-                                {order.shipping.orderType}
-                            </span>
-                        )}
+
                     </div>
 
                     {/* Card Content: Customer & Details */}
@@ -133,10 +128,17 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                                             {item.quantity} Un
                                         </span>
                                         {/* Description */}
-                                        <span className="flex-1 text-xs font-bold text-slate-700 dark:text-slate-200 leading-snug">
-                                            {item.description}
-                                            {(item as any).supplierName && ` - ${(item as any).supplierName}`}
-                                        </span>
+                                        <div className="flex-1 flex flex-col">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-snug">
+                                                {item.description}
+                                                {(item as any).supplierName && ` - ${(item as any).supplierName}`}
+                                            </span>
+                                            {item.handlingType && (
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400 mt-0.5">
+                                                    {item.handlingType}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

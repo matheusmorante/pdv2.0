@@ -42,8 +42,8 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 </button>
                 {activeMenu === 'products' && (
                     <div className={dropdownClass}>
-                        <Link to="/registrations/products" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Tudo</Link>
-                        <Link to="/registrations/product-categories" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Categorias (Pai/Filho)</Link>
+                        <Link to="/registrations/products" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Lista</Link>
+                        <Link to="/registrations/product-categories" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Categorias e Ambientes</Link>
                     </div>
                 )}
             </div>
@@ -82,7 +82,7 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 {activeMenu === 'stock' && (
                     <div className={dropdownClass}>
                         <Link to="/stock" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Controle de Saldo</Link>
-                        <Link to="/stock/launch" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Lançamentos</Link>
+                        <Link to="/stock/purchases" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Pedidos de Compra</Link>
                     </div>
                 )}
             </div>

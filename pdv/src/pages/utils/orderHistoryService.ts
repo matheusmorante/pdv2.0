@@ -1,6 +1,8 @@
 import Order from "../types/order.type";
 import { supabase } from "./supabaseConfig";
 import { capitalizeOrder } from "./formatters";
+import { saveInventoryMove } from "./inventoryService";
+import { updateProduct } from "./productService";
 
 const TABLE_NAME = "orders";
 
@@ -93,6 +95,29 @@ export const saveOrder = async (order: Order): Promise<string> => {
 
         if (error) throw error;
         const rowId = (data as any)?.[0]?.id;
+
+        // Inventory management
+        if (order.orderType === 'sale' && order.items) {
+            for (const item of order.items) {
+                if (item.productId) {
+                    // Fetch latest stock to be sure
+                    const { data: p } = await supabase.from('products').select('stock').eq('id', item.productId).single();
+                    const currentStock = p?.stock || 0;
+                    
+                    await saveInventoryMove({
+                        productId: item.productId,
+                        variationId: item.variationId,
+                        productDescription: item.description,
+                        type: 'withdrawal',
+                        quantity: item.quantity,
+                        date: new Date().toISOString(),
+                        label: 'Venda',
+                        observation: `Pedido #${rowId}`
+                    }, currentStock);
+                }
+            }
+        }
+
         return String(rowId);
     } catch (error) {
         console.error("Erro ao salvar o pedido: ", error);

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import PersonFilters from "./PersonFilters";
 import PersonList from "./PersonList";
 import PersonFormModal from "./PersonFormModal";
+import BlingImportModal from "../../Products/BlingImportModal";
+import PersonPurchaseHistoryModal from "./PersonPurchaseHistoryModal";
 import Person, { PersonVisibilitySettings } from "../../../types/person.type";
 
 export type PersonSortBy = "fullName" | "createdAt";
@@ -57,11 +59,14 @@ const PersonPage = ({
     collectionName,
     storageKey,
 }: PersonPageProps) => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isTrashOpen, setIsTrashOpen] = useState(false);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<Person | null>(null);
     const [showSettings, setShowSettings] = useState(false);
+    const [isBlingModalOpen, setIsBlingModalOpen] = useState(false);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [historyPerson, setHistoryPerson] = useState<Person | null>(null);
     const [filters, setFilters] = useState<PersonFiltersData>(DEFAULT_FILTERS);
     const [visibilitySettings, setVisibilitySettings] =
         useState<PersonVisibilitySettings>(DEFAULT_VISIBILITY);
@@ -144,13 +149,16 @@ const PersonPage = ({
                             {subtitle}
                         </p>
                     </div>
-                    <button
-                        onClick={openAdd}
-                        className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
-                    >
-                        <i className={`${newIcon} text-lg xl:text-xl`} />
-                        {newLabel}
-                    </button>
+                    <div className="flex gap-4">
+
+                        <button
+                            onClick={openAdd}
+                            className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
+                        >
+                            <i className={`${newIcon} text-lg xl:text-xl`} />
+                            {newLabel}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Toolbar */}
@@ -244,6 +252,10 @@ const PersonPage = ({
                             onSort={handleSort}
                             collectionName={collectionName}
                             storageKey={storageKey}
+                            onViewPurchaseHistory={(p) => {
+                                setHistoryPerson(p);
+                                setIsHistoryModalOpen(true);
+                            }}
                         />
                     </div>
                 </div>
@@ -283,6 +295,10 @@ const PersonPage = ({
                                 onSort={handleSort}
                                 collectionName={collectionName}
                                 storageKey={storageKey}
+                                onViewPurchaseHistory={(p) => {
+                                    setHistoryPerson(p);
+                                    setIsHistoryModalOpen(true);
+                                }}
                             />
                         </div>
                     </div>
@@ -297,6 +313,27 @@ const PersonPage = ({
                 collectionName={collectionName}
                 title={title}
             />
+
+            <BlingImportModal
+                isOpen={isBlingModalOpen}
+                onClose={() => setIsBlingModalOpen(false)}
+                onSuccess={() => {
+                    // Refresh current page if needed
+                    window.location.reload();
+                }}
+                type={collectionName === 'suppliers' ? 'suppliers' : 'products'}
+            />
+
+            {historyPerson && (
+                <PersonPurchaseHistoryModal
+                    isOpen={isHistoryModalOpen}
+                    onClose={() => {
+                        setIsHistoryModalOpen(false);
+                        setHistoryPerson(null);
+                    }}
+                    person={historyPerson}
+                />
+            )}
         </div>
     );
 };

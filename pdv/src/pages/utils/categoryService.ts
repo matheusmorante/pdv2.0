@@ -91,3 +91,25 @@ export const deleteCategory = async (id: string) => {
     const { error } = await supabase.from('categories').delete().eq('id', id);
     if (error) throw error;
 };
+
+export const getCategoryBreadcrumb = (categoryIds: string[], tree: { groups: any[], categories: any[], relations: any[] }) => {
+    if (!tree || !categoryIds || categoryIds.length === 0) return "-";
+
+    const paths = categoryIds.map(cid => {
+        const cat = tree.categories.find(c => c.id === cid);
+        if (!cat) return null;
+
+        const parentGroups = tree.relations
+            .filter(r => r.categoryId === cid)
+            .map(r => tree.groups.find(g => g.id === r.groupId)?.name)
+            .filter(Boolean)
+            .sort(); // Alphabetical sort for consistency
+
+        if (parentGroups.length > 0) {
+            return `${parentGroups.join(', ')} > ${cat.name}`;
+        }
+        return cat.name;
+    }).filter(Boolean);
+
+    return paths.join(' | ') || "-";
+};

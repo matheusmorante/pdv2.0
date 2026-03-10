@@ -44,7 +44,9 @@ export type OrderAction =
     'PRINT_WARRANTY_TERM' |
     'SEND_SHIPPING_ORDER' |
     'SEND_CUSTOMER_ORDER' |
-    'SEND_CUSTOMER_REVIEWS'
+    'SEND_CUSTOMER_REVIEWS' |
+    'STOCK_WITHDRAWAL' |
+    'STOCK_REVERSAL'
 
 /** @deprecated Use OrderAction instead */
 export type PdvAction = OrderAction;
@@ -55,7 +57,9 @@ export type IsButtonsClicked = {
     printWarrantyTerm: boolean,
     sendShippingOrder: boolean,
     sendCustomerOrder: boolean,
-    sendCustomerReviews: boolean
+    sendCustomerReviews: boolean,
+    stockWithdrawal: boolean,
+    stockReversal: boolean
 }
 
 export type VisibilitySettings = {
@@ -66,7 +70,7 @@ export type VisibilitySettings = {
     totalValue: boolean;
     status: boolean;
     orderType: boolean;
-    manuseio: boolean;
+
     actions: boolean;
 };
 

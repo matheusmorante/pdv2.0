@@ -25,6 +25,7 @@ interface PersonTableProps {
     onBulkRestore: () => void;
     onBulkPermanentDelete: () => void;
     storageKey: string;
+    onViewPurchaseHistory?: (person: Person) => void;
 }
 
 interface ColumnDef {
@@ -47,7 +48,8 @@ const PersonTable = ({
     people, onEdit, onDelete, onRestore, onPermanentDelete, onToggleActive,
     visibilitySettings, onToggleColumn, showTrash, filters, onSort,
     selectedPeople, onToggleSelection, onSelectAll, onClearSelection,
-    onBulkTrash, onBulkRestore, onBulkPermanentDelete, storageKey
+    onBulkTrash, onBulkRestore, onBulkPermanentDelete, storageKey,
+    onViewPurchaseHistory
 }: PersonTableProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const settings = getSettings();
@@ -245,6 +247,7 @@ const PersonTable = ({
                                     orderedColumnKeys={orderedColumns.map(c => c.key as string)}
                                     isSelected={selectedPeople.includes(person.id!)}
                                     onToggleSelection={() => onToggleSelection(person.id!)}
+                                    onViewPurchaseHistory={onViewPurchaseHistory}
                                 />
                             ))}
                         </tbody>
@@ -272,6 +275,7 @@ const PersonTable = ({
                             showTrash={showTrash}
                             isSelected={selectedPeople.includes(person.id!)}
                             onToggleSelection={() => onToggleSelection(person.id!)}
+                            onViewPurchaseHistory={onViewPurchaseHistory}
                         />
                     ))
                 )}

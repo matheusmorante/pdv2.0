@@ -18,7 +18,24 @@ export const ItemsTable = ({ items }: { items: any[] }) => (
                     {items?.map((item: any, idx: number) => (
                         <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                             <td className="px-6 py-4 text-xs font-black text-slate-800 dark:text-slate-200">{item.quantity}x</td>
-                            <td className="px-6 py-4 text-xs font-bold text-slate-600 dark:text-slate-400 truncate max-w-[150px]">{item.description}</td>
+                            <td className="px-6 py-4 flex flex-col gap-1 items-start">
+                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{item.description}</span>
+                                <div className="flex flex-wrap gap-2 items-center">
+                                    {item.condition && (
+                                        <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all ${item.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30' :
+                                            item.condition === 'usado' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-900/30' :
+                                                'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30'
+                                            }`}>
+                                            {item.condition}
+                                        </span>
+                                    )}
+                                    {item.handlingType && (
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 dark:text-blue-400">
+                                            {item.handlingType}
+                                        </span>
+                                    )}
+                                </div>
+                            </td>
                             <td className="px-6 py-4 text-xs font-black text-slate-800 dark:text-slate-200 text-right">
                                 {(item.unitPrice * item.quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                             </td>

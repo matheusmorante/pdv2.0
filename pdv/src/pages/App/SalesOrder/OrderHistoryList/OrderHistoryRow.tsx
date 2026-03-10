@@ -5,6 +5,8 @@ import { formatCurrency, formatToBRDate } from "../../../utils/formatters";
 import { buttons } from "../OrderActions/orderActionsConfig";
 import { isOrderIncomplete } from "../../../utils/validations";
 import { getOrderTypeClasses, resolveOrderColor } from "../../../utils/orderTypeColorUtils";
+import { useAuth } from "../../../../context/AuthContext";
+import { canPerform } from "../../../utils/permissionService";
 
 interface OrderHistoryRowProps {
     order: Order;
@@ -40,6 +42,7 @@ const OrderHistoryRow = ({
     const [showPicker, setShowPicker] = React.useState(false);
     const [showMenu, setShowMenu] = React.useState(false);
     const [showFulfillmentConfirm, setShowFulfillmentConfirm] = React.useState(false);
+    const { profile } = useAuth();
     const settings = getSettings();
     const isIncomplete = isOrderIncomplete(order);
 
@@ -269,19 +272,7 @@ const OrderHistoryRow = ({
                         </span>
                     </td>
                 );
-            case 'manuseio':
-                return (
-                    <td key="manuseio" className="px-6 py-4 text-left">
-                        {order.shipping?.orderType ? (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                                <i className="bi bi-box-seam-fill" />
-                                {order.shipping.orderType}
-                            </span>
-                        ) : (
-                            <span className="text-slate-300 dark:text-slate-700 font-bold">-</span>
-                        )}
-                    </td>
-                );
+
             case 'actions':
                 return (
                     <td key="actions" className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
@@ -337,34 +328,48 @@ const OrderHistoryRow = ({
                                                 {/* Dropdown Menu - Continuous hover area */}
                                                 <div className={`absolute top-full right-0 pt-2 w-48 flex-col z-[100] ${showMenu ? 'flex' : 'hidden md:group-hover/menu:flex'}`}>
                                                     <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 flex flex-col gap-1 animate-slide-up">
-                                                        {buttons.map((btn) => (
+                                                        {buttons.filter(btn => {
+                                                            if (btn.key === 'stockWithdrawal' || btn.key === 'stockReversal') {
+                                                                return canPerform('manualStockMovement', profile?.role);
+                                                            }
+                                                            return true;
+                                                        }).map((btn) => {
+                                                            const isPrintReceipt = btn.key === 'printReceipt';
+                                                            const disablePrintReceipt = isPrintReceipt && (!order.customerData?.fullName || order.customerData.fullName === "Nenhum" || order.customerData.fullName === "Ao Consumidor");
+
+                                                            return (
                                                             <button
                                                                 key={btn.key}
+                                                                    disabled={disablePrintReceipt}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
+                                                                    if (disablePrintReceipt) return;
                                                                     onAction(btn.key, order);
                                                                     setShowMenu(false);
                                                                 }}
-                                                                className={`flex items-center gap-3 w-full p-2.5 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-slate-800 group/item ${btn.color}`}
-                                                                title={btn.tooltip}
+                                                                    className={`flex items-center gap-3 w-full p-2.5 rounded-xl transition-all ${disablePrintReceipt ? 'opacity-50 cursor-not-allowed text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-900/50' : `hover:bg-slate-50 dark:hover:bg-slate-800 group/item ${btn.color}`}`}
+                                                                    title={disablePrintReceipt ? 'Não é possível imprimir recibo sem cliente associado' : btn.tooltip}
                                                             >
                                                                 <i className={`bi ${btn.icon} text-lg`} />
                                                                 <span className="text-[10px] font-black uppercase tracking-widest">{btn.label}</span>
                                                             </button>
-                                                        ))}
+                                                            )
+                                                        })}
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div className="h-4 w-[1px] bg-slate-100 dark:bg-slate-800 mx-1" />
 
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); onDelete(order.id!); }}
-                                                className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all shadow-sm bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800"
-                                                title="Mover para Lixeira"
-                                            >
-                                                <i className="bi bi-trash-fill text-sm" />
-                                            </button>
+                                            {canPerform('deleteOrders', profile?.role) && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); onDelete(order.id!); }}
+                                                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all shadow-sm bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800"
+                                                    title="Mover para Lixeira"
+                                                >
+                                                    <i className="bi bi-trash-fill text-sm" />
+                                                </button>
+                                            )}
                                         </div>
                                 </>
                             )}

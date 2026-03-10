@@ -11,6 +11,7 @@ interface PersonListProps {
     onSort?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
     collectionName: string;
     storageKey: string;
+    onViewPurchaseHistory?: (person: Person) => void;
 };
 
 const PersonList = ({
@@ -20,7 +21,8 @@ const PersonList = ({
     onToggleColumn,
     onSort,
     collectionName,
-    storageKey
+    storageKey,
+    onViewPurchaseHistory
 }: PersonListProps) => {
     const {
         people,
@@ -106,6 +108,7 @@ const PersonList = ({
                     onBulkRestore={handleBulkRestore}
                     onBulkPermanentDelete={handleBulkPermanentDelete}
                     storageKey={storageKey}
+                    onViewPurchaseHistory={onViewPurchaseHistory}
                 />
 
                 {totalPages > 1 && (

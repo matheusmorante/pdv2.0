@@ -59,8 +59,8 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                         </button>
                         {activeMenu === 'products' && (
                             <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
-                                <Link to="/registrations/products" onClick={onClose} className={mobileSubLinkClass}>Tudo</Link>
-                                <Link to="/registrations/product-categories" onClick={onClose} className={mobileSubLinkClass}>Categorias (Pai/Filho)</Link>
+                                <Link to="/registrations/products" onClick={onClose} className={mobileSubLinkClass}>Lista</Link>
+                                <Link to="/registrations/product-categories" onClick={onClose} className={mobileSubLinkClass}>Categorias e Ambientes</Link>
                             </div>
                         )}
                     </div>
@@ -94,8 +94,8 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                         </button>
                         {activeMenu === 'stock' && (
                             <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
-                                <Link to="/stock/launch" onClick={onClose} className={mobileSubLinkClass}>Lançamentos</Link>
-                                <Link to="/stock/reports" onClick={onClose} className={mobileSubLinkClass}>Relatórios</Link>
+                                <Link to="/stock" onClick={onClose} className={mobileSubLinkClass}>Controle de Saldo</Link>
+                                <Link to="/stock/purchases" onClick={onClose} className={mobileSubLinkClass}>Pedidos de Compra</Link>
                             </div>
                         )}
                     </div>

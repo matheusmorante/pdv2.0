@@ -37,7 +37,6 @@ const ItemsTable = ({ items, setItems, summary, deliveryMethod, errors }: Props)
                     <tr>
                         <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 min-w-[200px]">Descrição</th>
                         <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[100px]">Mod.</th>
-                        <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[180px]">Manuseio</th>
                         <th className="px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[80px]">Qtd.</th>
                         <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[110px]">Preço Un.</th>
                         <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 w-[120px]">Desconto</th>

@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
-import Product from "../../types/product.type";
+import Product, { Variation } from "../../types/product.type";
 import { subscribeToProducts } from "../../utils/productService";
 import { formatCurrency } from "../../utils/formatters";
 import ProductFormModal from "../Products/ProductFormModal";
 
 interface Props {
-    onSelect: (product: Product) => void;
+    onSelect: (product: Product, variation?: Variation) => void;
     onClose: () => void;
+    priceType?: 'unit' | 'cost';
 }
 
-const ProductSearchModal = ({ onSelect, onClose }: Props) => {
+const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) => {
     const [search, setSearch] = useState("");
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -119,58 +120,124 @@ const ProductSearchModal = ({ onSelect, onClose }: Props) => {
                                     <th className="px-6 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Item</th>
                                     <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Código</th>
                                     <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Categoria</th>
-                                    <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 text-right">Preço</th>
+                                            <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 text-right">{priceType === 'cost' ? 'Custo' : 'Preço'}</th>
                                     <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 text-center">Estoque</th>
                                     <th className="px-4 py-3" />
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                                 {filtered.map((p) => (
-                                    <tr
-                                        key={p.id}
-                                        onClick={() => { onSelect(p); onClose(); }}
-                                        className="hover:bg-blue-50/60 dark:hover:bg-blue-900/10 cursor-pointer transition-colors group"
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                                    {p.description}
+                                    <React.Fragment key={p.id}>
+                                        <tr
+                                            onClick={() => {
+                                                if (p.hasVariations && p.variations && p.variations.length > 0) {
+                                                    // Se tem variações, não seleciona o pai diretamente (ou seleciona? depende da regra)
+                                                    // Vou deixar selecionar o pai se quiser, mas as variações estarão abaixo.
+                                                    onSelect(p);
+                                                } else {
+                                                    onSelect(p);
+                                                }
+                                                onClose();
+                                            }}
+                                            className="hover:bg-blue-50/60 dark:hover:bg-blue-900/10 cursor-pointer transition-colors group"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                                        {p.description}
+                                                    </span>
+                                                    <div className="flex gap-1.5 items-center mt-1">
+                                                        <span className={`text-[8px] w-fit px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${p.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20'}`}>
+                                                            {p.itemType === 'service' ? 'Serviço' : 'Produto'}
+                                                        </span>
+                                                        {p.itemType === 'product' && p.condition && (
+                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest border ${p.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400' :
+                                                                p.condition === 'usado' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400' :
+                                                                    'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400'
+                                                                }`}>
+                                                                {p.condition}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <span className="text-xs font-mono text-slate-400">
+                                                    {p.code || "---"}
                                                 </span>
-                                                <span className={`text-[8px] w-fit px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest mt-1 ${p.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20'}`}>
-                                                    {p.itemType === 'service' ? 'Serviço' : 'Produto'}
+                                            </td>
+                                            <td className="px-4 py-4">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                    {p.category || "Sem Categoria"}
                                                 </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-4">
-                                            <span className="text-xs font-mono text-slate-400">
-                                                {p.code || "---"}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                {p.category || "Sem Categoria"}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4 text-right primary-td">
-                                            <span className="text-sm font-black text-blue-600 dark:text-blue-400">
-                                                {formatCurrency(p.unitPrice || 0)}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4 text-center">
-                                            <span className={`text-xs font-bold ${p.stock && p.stock <= (p.minStock || 0) ? 'text-red-500' : 'text-slate-500'}`}>
-                                                {p.itemType === 'service' ? '∞' : (p.stock || 0)}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4 text-right">
-                                            <button
-                                                type="button"
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-700"
+                                            </td>
+                                            <td className="px-4 py-4 text-right primary-td">
+                                                <span className="text-sm font-black text-blue-600 dark:text-blue-400">
+                                                    {!p.hasVariations && formatCurrency((priceType === 'cost' ? p.costPrice : p.unitPrice) || 0)}
+                                                    {p.hasVariations && "---"}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <span className={`text-xs font-bold ${p.stock && p.stock <= (p.minStock || 0) ? 'text-red-500' : 'text-slate-500'}`}>
+                                                    {p.itemType === 'service' ? '∞' : (p.stock || 0)}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-right">
+                                                {!p.hasVariations && (
+                                                    <button
+                                                        type="button"
+                                                        className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-700"
+                                                    >
+                                                        Selecionar
+                                                        <i className="bi bi-plus" />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                        {p.hasVariations && p.variations?.map(v => (
+                                            <tr
+                                                key={v.id}
+                                                onClick={() => { onSelect(p, v); onClose(); }}
+                                                className="bg-slate-50/30 dark:bg-slate-800/20 hover:bg-blue-50/40 dark:hover:bg-blue-900/20 cursor-pointer transition-colors group"
                                             >
-                                                Selecionar
-                                                <i className="bi bi-plus" />
-                                            </button>
-                                        </td>
-                                    </tr>
+                                                <td className="px-6 py-3 pl-12 border-l-2 border-blue-200 dark:border-blue-900">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                                                            {v.name}
+                                                        </span>
+                                                        <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest">Variação</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className="text-[10px] font-mono text-slate-400">
+                                                        {v.sku || "---"}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className="text-[9px] text-slate-300 italic">Mesma Categoria</span>
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <span className={`text-xs font-black ${priceType === 'cost' ? 'text-orange-600/80' : 'text-blue-600/80'}`}>
+                                                        {formatCurrency((priceType === 'cost' ? v.costPrice : v.unitPrice) || 0)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className={`text-[10px] font-bold ${v.stock <= (v.minStock || 0) ? 'text-red-400' : 'text-slate-400'}`}>
+                                                        {v.stock}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <button
+                                                        type="button"
+                                                        className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 px-3 py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white"
+                                                    >
+                                                        Selecionar
+                                                        <i className="bi bi-plus" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>

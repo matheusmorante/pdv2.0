@@ -113,7 +113,7 @@ const Categories = () => {
         <div className="p-4 md:p-8 flex flex-col gap-8 max-w-7xl mx-auto w-full">
             <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <i className="bi bi-diagram-3-fill text-blue-600"></i>
-                Gestão de Categorias (Pai e Filho)
+                Gestão de Categorias e Ambientes
             </h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

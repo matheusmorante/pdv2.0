@@ -103,7 +103,7 @@ const AIPromptsSection = ({ settings, onChange }: AIPromptsSectionProps) => {
                              Template: Gerador de Descrições
                              <span className="text-[8px] bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-full">Marketing</span>
                         </h4>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">Instruções usadas para criar textos automáticos de produtos. Use {'{{productName}}'}, {'{{category}}'} e {'{{unitPrice}}'} como variáveis.</p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">Instruções usadas para criar textos automáticos de produtos. Use {'{{productName}}'} e {'{{unitPrice}}'} como variáveis.</p>
                     </div>
                     <textarea
                         rows={6}

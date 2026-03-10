@@ -32,6 +32,7 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.variations !== undefined) data.variations = product.variations;
     if (product.itemType !== undefined) data.item_type = product.itemType;
     if (product.fiscal !== undefined) data.fiscal = product.fiscal;
+    if (product.notificationConfig !== undefined) data.notification_config = product.notificationConfig;
 
     return data;
 };
@@ -63,6 +64,7 @@ const mapFromDB = (data: any): Product => {
         variations: data.variations,
         itemType: data.item_type || 'product',
         fiscal: data.fiscal,
+        notificationConfig: data.notification_config,
         categoryIds: data.product_categories?.map((pc: any) => pc.category_id) || [],
         createdAt: data.created_at,
         updatedAt: data.updated_at
@@ -214,6 +216,59 @@ export const permanentDeleteProduct = async (id: string): Promise<void> => {
         if (error) throw error;
     } catch (error) {
         console.error("Erro ao deletar permanentemente o produto: ", error);
+        throw error;
+    }
+};
+
+export const saveVariation = async (productId: string, variation: any): Promise<void> => {
+    try {
+        const { data: parent, error: fetchError } = await supabase
+            .from(TABLE_NAME)
+            .select('*')
+            .eq('id', productId)
+            .single();
+
+        if (fetchError) throw fetchError;
+        if (!parent) throw new Error("Produto pai não encontrado.");
+
+        const variations = parent.variations || [];
+        const index = variations.findIndex((v: any) => v.id === variation.id);
+        
+        if (index === -1) throw new Error("Variação não encontrada.");
+
+        // Price History Logic for Variation
+        const oldVar = variations[index];
+        const oldUnitPrice = Number(oldVar.unitPrice);
+        const newUnitPrice = Number(variation.unitPrice);
+        const oldCostPrice = Number(oldVar.costPrice);
+        const newCostPrice = Number(variation.costPrice);
+
+        if (oldUnitPrice !== newUnitPrice || oldCostPrice !== newCostPrice) {
+            let changeType = 'both';
+            if (oldUnitPrice !== newUnitPrice && oldCostPrice === newCostPrice) changeType = 'unit_price';
+            else if (oldUnitPrice === newUnitPrice && oldCostPrice !== newCostPrice) changeType = 'cost_price';
+
+            await supabase.from('product_price_history').insert([{
+                product_id: productId,
+                variation_id: variation.id,
+                old_unit_price: oldUnitPrice,
+                new_unit_price: newUnitPrice,
+                old_cost_price: oldCostPrice,
+                new_cost_price: newCostPrice,
+                change_type: changeType
+            }]);
+        }
+
+        variations[index] = variation;
+
+        const { error: updateError } = await supabase
+            .from(TABLE_NAME)
+            .update({ variations, updated_at: new Date().toISOString() })
+            .eq('id', productId);
+
+        if (updateError) throw updateError;
+    } catch (error) {
+        console.error("Erro ao salvar variação: ", error);
         throw error;
     }
 };

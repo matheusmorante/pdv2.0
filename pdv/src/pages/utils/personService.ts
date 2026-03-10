@@ -17,7 +17,7 @@ const mapToDB = (collectionName: string, person: Partial<Person>) => {
     }
 
     return {
-        person_type: collectionName,
+        person_type: p.type || collectionName,
         full_name: p.fullName,
         nickname: p.nickname || p.tradeName,
         cpf_cnpj: p.cpfCnpj,
@@ -59,6 +59,7 @@ const mapFromDB = (data: any): Person => {
         deleted: data.deleted,
         deletedAt: data.deleted_at,
         position: data.position,
+        type: data.person_type,
         createdAt: data.created_at,
         updatedAt: data.updated_at
     };
@@ -82,7 +83,12 @@ export const subscribeToPeople = (collectionName: string, callback: (people: Per
         let peopleQuery = supabase.from(TABLE_NAME).select('*');
         if (collectionName === 'employees') {
             peopleQuery = peopleQuery.or(`person_type.eq.employees,position.not.is.null`);
+        } else if (collectionName === 'customers') {
+            // "fornecedores podem ser clientes" -> show both
+            peopleQuery = peopleQuery.or(`person_type.eq.customers,person_type.eq.suppliers`);
         } else {
+            // "clientes nao podem ser fornecedores" (collectionName === 'suppliers')
+            // This ensures only those specifically marked as suppliers appear
             peopleQuery = peopleQuery.eq('person_type', collectionName);
         }
 

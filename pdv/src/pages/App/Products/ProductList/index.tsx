@@ -11,9 +11,10 @@ interface ProductListProps {
     visibilitySettings: ProductVisibilitySettings;
     onToggleColumn: (column: keyof ProductVisibilitySettings) => void;
     onSort?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
+    categoryTree?: any;
 };
 
-const ProductList = ({ onEdit, onShowHistory, filters, visibilitySettings, onToggleColumn, onSort }: ProductListProps) => {
+const ProductList = ({ onEdit, onShowHistory, filters, visibilitySettings, onToggleColumn, onSort, categoryTree }: ProductListProps) => {
     const {
         products,
         loading,
@@ -98,25 +99,26 @@ const ProductList = ({ onEdit, onShowHistory, filters, visibilitySettings, onTog
                     onBulkTrash={handleBulkTrash}
                     onBulkRestore={handleBulkRestore}
                     onBulkPermanentDelete={handleBulkPermanentDelete}
+                    categoryTree={categoryTree}
                 />
 
                 {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="mt-8 flex items-center justify-between flex-wrap gap-4 border-t border-slate-50 dark:border-slate-800 pt-6">
-                        <div className="flex items-center gap-4">
-                            <span className="text-xs font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
-                                Mostrando {products.length} de {totalItems} produtos
-                            </span>
-                            <div className="flex items-center gap-2">
-                                <select
-                                    value={itemsPerPage}
-                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-600 dark:text-slate-400 focus:outline-none"
-                                >
-                                    {[10, 25, 50, 100].map(size => <option key={size} value={size}>{size} por pág.</option>)}
-                                </select>
-                            </div>
+                <div className="mt-8 flex items-center justify-between flex-wrap gap-4 border-t border-slate-50 dark:border-slate-800 pt-6">
+                    <div className="flex items-center gap-4">
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
+                            Mostrando {products.length} de {totalItems} produtos
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-600 dark:text-slate-400 focus:outline-none"
+                            >
+                                {[10, 25, 50, 100, 300, 500].map(size => <option key={size} value={size}>{size} por pág.</option>)}
+                            </select>
                         </div>
+                    </div>
+                    {totalPages > 1 && (
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -144,8 +146,8 @@ const ProductList = ({ onEdit, onShowHistory, filters, visibilitySettings, onTog
                                 <i className="bi bi-chevron-right"></i>
                             </button>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

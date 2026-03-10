@@ -1,15 +1,22 @@
 import { useEffect, useRef } from 'react';
 import { getSettings } from '../../pages/utils/settingsService';
+import { getUserSettings } from '../../pages/utils/userSettingsService';
+import { useAuth } from '../../context/AuthContext';
 
 const GlobalAutoScroll = () => {
     const animationFrameId = useRef<number | null>(null);
     const mousePos = useRef({ x: 0, y: 0 });
     const activeContainer = useRef<HTMLElement | null>(null);
+    const { user } = useAuth();
 
     useEffect(() => {
-        const settings = getSettings();
-        const { speed: maxSpeed = 20, threshold = 100 } = settings.autoScroll;
-        const enabled = true; // Globally enabled by hover feature
+        const appSettings = getSettings();
+        const userSettings = getUserSettings(user?.id);
+
+        // Use user settings instead of app settings
+        const speed = userSettings.autoScroll?.speed || appSettings.autoScroll?.speed || 20;
+        const threshold = appSettings.autoScroll?.threshold || 100;
+        const enabled = userSettings.autoScroll?.enabled ?? true;
 
         if (!enabled) return;
 
@@ -63,20 +70,20 @@ const GlobalAutoScroll = () => {
             if (canScrollX) {
                 if (x < rect.left + threshold) {
                     const ratio = Math.max(0, (rect.left + threshold - x) / threshold);
-                    scrollX = -maxSpeed * Math.pow(ratio, 1.5);
+                    scrollX = -speed * Math.pow(ratio, 1.5);
                 } else if (x > rect.right - threshold) {
                     const ratio = Math.max(0, (x - (rect.right - threshold)) / threshold);
-                    scrollX = maxSpeed * Math.pow(ratio, 1.5);
+                    scrollX = speed * Math.pow(ratio, 1.5);
                 }
             }
 
             if (canScrollY) {
                 if (y < rect.top + threshold) {
                     const ratio = Math.max(0, (rect.top + threshold - y) / threshold);
-                    scrollY = -maxSpeed * Math.pow(ratio, 1.5);
+                    scrollY = -speed * Math.pow(ratio, 1.5);
                 } else if (y > rect.bottom - threshold) {
                     const ratio = Math.max(0, (y - (rect.bottom - threshold)) / threshold);
-                    scrollY = maxSpeed * Math.pow(ratio, 1.5);
+                    scrollY = speed * Math.pow(ratio, 1.5);
                 }
             }
 
