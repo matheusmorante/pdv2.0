@@ -359,13 +359,13 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         setMarketingOrigin,
         loadOrderForEditing,
         handleAutoCalculateDistance,
-        handleSaveOrder,
+        handleSaveOrder: handleCompleteOrder,
         handleCompleteOrder,
         clearForm,
         setErrors,
         validateOrder,
         setOrderDate,
-    }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setMarketingOrigin, loadOrderForEditing, handleAutoCalculateDistance, handleSaveOrder, handleCompleteOrder, clearForm]);
+    }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setMarketingOrigin, loadOrderForEditing, handleAutoCalculateDistance, handleCompleteOrder, clearForm]);
 
     return { state, actions };
 };

@@ -120,7 +120,7 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
                                     <th className="px-6 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Item</th>
                                     <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Código</th>
                                     <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400">Categoria</th>
-                                    <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 text-right">{priceType === 'cost' ? 'Custo' : 'Preço'}</th>
+                                            <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 text-right">{priceType === 'cost' ? 'Custo' : 'Preço'}</th>
                                     <th className="px-4 py-3 text-[9px] font-black uppercase tracking-widest text-slate-400 text-center">Estoque</th>
                                     <th className="px-4 py-3" />
                                 </tr>
@@ -147,11 +147,6 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
                                                         {p.description}
                                                     </span>
                                                     <div className="flex gap-1.5 items-center mt-1">
-                                                        {p.isCombo && (
-                                                            <span className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border border-purple-200 dark:border-purple-900/40">
-                                                                <i className="bi bi-layers-fill"></i> Combo
-                                                            </span>
-                                                        )}
                                                         <span className={`text-[8px] w-fit px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${p.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20'}`}>
                                                             {p.itemType === 'service' ? 'Serviço' : 'Produto'}
                                                         </span>
@@ -184,13 +179,7 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
                                             </td>
                                             <td className="px-4 py-4 text-center">
                                                 <span className={`text-xs font-bold ${p.stock && p.stock <= (p.minStock || 0) ? 'text-red-500' : 'text-slate-500'}`}>
-                                                    {p.itemType === 'service' ? '∞' : (
-                                                        p.isCombo
-                                                            ? (p.comboItems?.length
-                                                                ? Math.min(...p.comboItems.map(i => Math.floor((i.stock || 0) / (i.quantity || 1))))
-                                                                : 0)
-                                                            : (p.stock || 0)
-                                                    )}
+                                                    {p.itemType === 'service' ? '∞' : (p.stock || 0)}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 text-right">

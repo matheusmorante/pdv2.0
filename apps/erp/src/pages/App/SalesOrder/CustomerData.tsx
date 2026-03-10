@@ -6,7 +6,6 @@ import { ValidationErrors } from "../../utils/validations";
 import CustomerSearchModal from "./CustomerSearchModal";
 import PersonFormModal from "../Registrations/shared/PersonFormModal";
 import { getAddressByCep, searchAddressSuggestions } from "../../utils/maps";
-import InputMask from "react-input-mask";
 
 interface Props {
     customerData: CustomerData;
@@ -263,12 +262,10 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                                 Telefone / Celular <span className="text-red-500">*</span>
                             </label>
                             <div className="flex gap-2">
-                                <InputMask
-                                    mask="(99) 99999-9999"
-                                    className={field(isPhoneError)}
+                                <input type="tel" className={field(isPhoneError)}
                                     placeholder="(00) 00000-0000"
                                     value={customerData.phone}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
+                                    onChange={e => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
                                 />
                                 <button type="button"
                                     onClick={() => {

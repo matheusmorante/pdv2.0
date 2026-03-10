@@ -82,12 +82,13 @@ export const subscribeToPeople = (collectionName: string, callback: (people: Per
     const fetchAll = async () => {
         let peopleQuery = supabase.from(TABLE_NAME).select('*');
         if (collectionName === 'employees') {
-            peopleQuery = peopleQuery.or(`person_type.eq.employees,and(position.not.is.null,position.neq."")`);
+            peopleQuery = peopleQuery.or(`person_type.eq.employees,position.not.is.null`);
         } else if (collectionName === 'customers') {
-            // "fornecedores podem ser clientes" + "funcionarios podem ser clientes"
-            peopleQuery = peopleQuery.or(`person_type.eq.customers,person_type.eq.suppliers,person_type.eq.employees`);
+            // "fornecedores podem ser clientes" -> show both
+            peopleQuery = peopleQuery.or(`person_type.eq.customers,person_type.eq.suppliers`);
         } else {
             // "clientes nao podem ser fornecedores" (collectionName === 'suppliers')
+            // This ensures only those specifically marked as suppliers appear
             peopleQuery = peopleQuery.eq('person_type', collectionName);
         }
 
@@ -203,32 +204,4 @@ export const permanentDeletePerson = async (collectionName: string, id: string):
         console.error(`Erro ao deletar permanentemente em ${collectionName}: `, error);
         throw error;
     }
-};
-
-export const isPersonRegisteredAs = async (type: string, identifiers: { cpfCnpj?: string, email?: string, phone?: string }): Promise<boolean> => {
-    const { cpfCnpj, email, phone } = identifiers;
-
-    let query = supabase.from(TABLE_NAME).select('id').eq('person_type', type);
-
-    const conditions = [];
-    if (cpfCnpj && cpfCnpj.trim() !== '' && cpfCnpj !== '___.___.___-__' && cpfCnpj !== '__.___.___/____-__') {
-        conditions.push(`cpf_cnpj.eq.${cpfCnpj}`);
-    }
-    if (email && email.trim() !== '') {
-        conditions.push(`email.eq.${email}`);
-    }
-    if (phone && phone.trim() !== '' && phone !== '(__) _____-____') {
-        conditions.push(`phone.eq.${phone}`);
-    }
-
-    if (conditions.length === 0) return false;
-
-    const { data, error } = await query.or(conditions.join(','));
-
-    if (error) {
-        console.error("Erro ao verificar duplicidade:", error);
-        return false;
-    }
-
-    return (data && data.length > 0) || false;
 };

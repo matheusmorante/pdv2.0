@@ -23,7 +23,6 @@ import Signup from './pages/Signup';
 import UsersManagementPage from './pages/App/Users/Index';
 import ProfilePage from './pages/App/Profile/Index';
 import PurchasesPage from './pages/App/Stock/Purchases/Index';
-import OrderRouteMap from './pages/App/SalesOrder/OrderRouteMap';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading, isPending } = useAuth();
@@ -79,7 +78,6 @@ function Router() {
           <Route path='/' element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path='/sales-order' element={<SalesOrder />} />
-            <Route path='/sales-order/route-map' element={<OrderRouteMap />} />
             <Route path='/warranty-term' element={<WarrantyTermPage />} />
             <Route path='/delivery-schedule' element={<DeliverySchedule />} />
             <Route path='/settings' element={<AdminRoute><Settings /></AdminRoute>} />

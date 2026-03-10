@@ -5,7 +5,7 @@ interface ProductFiltersData {
     search: string;
     category: string;
     activeOnly: boolean | undefined;
-    sortBy: "description" | "unitPrice" | "stock" | "code" | "createdAt" | "category";
+    sortBy: "description" | "unitPrice" | "stock" | "code";
     sortOrder: "asc" | "desc";
     showTrash?: boolean;
 }
@@ -41,8 +41,8 @@ const ProductFilters = ({ filters, setFilters }: ProductFiltersProps) => {
             search: "",
             category: "",
             activeOnly: undefined,
-            sortBy: "createdAt",
-            sortOrder: "desc",
+            sortBy: "description",
+            sortOrder: "asc",
             showTrash: filters.showTrash
         });
     };

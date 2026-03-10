@@ -64,10 +64,6 @@ export const useProducts = (filters?: any) => {
                     comparison = (a.stock || 0) - (b.stock || 0);
                 } else if (sortBy === "code") {
                     comparison = (a.code || "").localeCompare(b.code || "");
-                } else if (sortBy === "createdAt") {
-                    comparison = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-                } else if (sortBy === "category") {
-                    comparison = (a.category || "").localeCompare(b.category || "");
                 }
 
                 const sortOrder = filters?.sortOrder || 'asc';
@@ -83,7 +79,7 @@ export const useProducts = (filters?: any) => {
         filteredProducts.forEach(product => {
             // Parent Row
             flattened.push({ ...product, isParent: product.hasVariations });
-
+            
             // Child Rows
             if (product.hasVariations && product.variations) {
                 product.variations.forEach((v: any) => {
@@ -181,11 +177,11 @@ export const useProducts = (filters?: any) => {
 
     const toggleSelection = (id: string) => {
         const product = paginatedProducts.find(p => p.id === id);
-
+        
         setSelectedProducts(prev => {
             let next = [...prev];
             const isSelected = prev.includes(id);
-
+            
             if (product?.isParent) {
                 // Cascading selection for parent
                 const childIds = paginatedProducts.filter(p => p.parentId === id).map(p => p.id!);

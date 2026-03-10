@@ -67,19 +67,15 @@ const ProductRow = ({
                                         </span>
                                     ) : (
                                         <>
-                                            {product.isCombo && (
-                                                <span className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border border-purple-200 dark:border-purple-900/40 shadow-sm animate-pulse-slow">
-                                                    <i className="bi bi-layers-fill"></i> Combo/Jogo
-                                                </span>
-                                            )}
                                             <span className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/30">
                                                 <i className="bi bi-box-seam"></i> Produto
                                             </span>
                                             {product.condition && (
-                                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${product.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30' :
+                                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
+                                                    product.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30' :
                                                     product.condition === 'usado' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-900/30' :
-                                                        'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30'
-                                                    }`}>
+                                                    'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30'
+                                                }`}>
                                                     {product.condition}
                                                 </span>
                                             )}
@@ -143,14 +139,6 @@ const ProductRow = ({
                                 );
                             })}
                         </div>
-                    </td>
-                );
-            case 'createdAt':
-                return (
-                    <td key="createdAt" className="px-6 py-4 text-left">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-950 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
-                            {product.createdAt ? new Date(product.createdAt).toLocaleDateString('pt-BR') : '-'}
-                        </span>
                     </td>
                 );
             case 'actions':

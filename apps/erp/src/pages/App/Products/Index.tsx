@@ -14,7 +14,7 @@ interface ProductFiltersData {
     search: string;
     category: string;
     activeOnly: boolean | undefined;
-    sortBy: "description" | "unitPrice" | "stock" | "code" | "createdAt" | "category";
+    sortBy: "description" | "unitPrice" | "stock" | "code";
     sortOrder: "asc" | "desc";
     showTrash?: boolean;
 }
@@ -34,8 +34,6 @@ const Products = () => {
     const [isVariationModalOpen, setIsVariationModalOpen] = useState(false);
     const [editingVariation, setEditingVariation] = useState<Variation | null>(null);
     const [variationParentProduct, setVariationParentProduct] = useState<Product | null>(null);
-    const [showNewItemDropdown, setShowNewItemDropdown] = useState(false);
-    const [initialFormData, setInitialFormData] = useState<Partial<Product> | null>(null);
 
     React.useEffect(() => {
         const loadCategoryData = async () => {
@@ -53,8 +51,8 @@ const Products = () => {
         search: "",
         category: "",
         activeOnly: undefined,
-        sortBy: "createdAt",
-        sortOrder: "desc",
+        sortBy: "description",
+        sortOrder: "asc",
     });
 
     const [visibilitySettings, setVisibilitySettings] = useState<ProductVisibilitySettings>({
@@ -64,7 +62,6 @@ const Products = () => {
         unitPrice: true,
         costPrice: true,
         stock: true,
-        createdAt: true,
         actions: true,
     });
 
@@ -111,62 +108,16 @@ const Products = () => {
                         </div>
                     </div>
 
-                    <div className="flex gap-4 relative">
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowNewItemDropdown(!showNewItemDropdown)}
-                                className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
-                                title="Cadastrar novo item"
-                            >
-                                <i className="bi bi-plus-lg text-lg xl:text-xl" />
-                                Novo Item
-                                <i className={`bi bi-chevron-down transition-transform ${showNewItemDropdown ? 'rotate-180' : ''}`}></i>
-                            </button>
+                    <div className="flex gap-4">
 
-                            {showNewItemDropdown && (
-                                <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setShowNewItemDropdown(false)} />
-                                    <div className="absolute top-[calc(100%+8px)] right-0 w-56 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-2 flex flex-col gap-1 z-50 animate-slide-up">
-                                        <button
-                                            onClick={() => {
-                                                setInitialFormData({ itemType: 'product', isCombo: false });
-                                                setEditingProduct(null);
-                                                setIsFormModalOpen(true);
-                                                setShowNewItemDropdown(false);
-                                            }}
-                                            className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-[10px] uppercase tracking-widest text-left"
-                                        >
-                                            <i className="bi bi-box-seam text-lg"></i>
-                                            Produto Simples
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setInitialFormData({ itemType: 'product', isCombo: true });
-                                                setEditingProduct(null);
-                                                setIsFormModalOpen(true);
-                                                setShowNewItemDropdown(false);
-                                            }}
-                                            className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-2xl transition-all font-bold text-[10px] uppercase tracking-widest text-left"
-                                        >
-                                            <i className="bi bi-layers text-lg"></i>
-                                            Combo / Jogo
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setInitialFormData({ itemType: 'service', isCombo: false });
-                                                setEditingProduct(null);
-                                                setIsFormModalOpen(true);
-                                                setShowNewItemDropdown(false);
-                                            }}
-                                            className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-2xl transition-all font-bold text-[10px] uppercase tracking-widest text-left"
-                                        >
-                                            <i className="bi bi-tools text-lg"></i>
-                                            Serviço
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <button
+                            onClick={() => { setEditingProduct(null); setIsFormModalOpen(true); }}
+                            className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
+                            title="Cadastrar novo produto ou serviço"
+                        >
+                            <i className="bi bi-plus-lg text-lg xl:text-xl" />
+                            Novo Item
+                        </button>
                     </div>
                 </div>
 
@@ -232,7 +183,6 @@ const Products = () => {
                                                 { key: 'code', label: 'Código' },
                                                 { key: 'description', label: 'Descrição' },
                                                 { key: 'category', label: 'Categoria' },
-                                                { key: 'createdAt', label: 'Data Criação' },
                                                 { key: 'costPrice', label: 'Preço de Custo' },
                                                 { key: 'unitPrice', label: 'Preço de Venda' },
                                                 { key: 'stock', label: 'Estoque' },
@@ -332,9 +282,8 @@ const Products = () => {
             {/* Form Modal */}
             <ProductFormModal
                 isOpen={isFormModalOpen}
-                onClose={() => { setIsFormModalOpen(false); setEditingProduct(null); setInitialFormData(null); }}
+                onClose={() => { setIsFormModalOpen(false); setEditingProduct(null); }}
                 product={editingProduct}
-                initialData={initialFormData}
             />
 
             <BlingImportModal

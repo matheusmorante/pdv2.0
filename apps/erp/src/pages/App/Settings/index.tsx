@@ -16,7 +16,6 @@ import AppearanceSection from './components/AppearanceSection';
 import AIPromptsSection from './components/AIPromptsSection';
 import OrderAutomationSection from './components/OrderAutomationSection';
 import InventoryNotificationsSection from './components/InventoryNotificationsSection';
-import ChannelDescriptionsSection from './components/ChannelDescriptionsSection';
 import SaveButton from './components/SaveButton';
 
 const categories: any[] = [
@@ -29,7 +28,6 @@ const categories: any[] = [
     { id: 'ia', label: 'Inteligência Artificial', icon: 'bi-robot', group: 'system', keywords: ['ia', 'ai', 'robot', 'prompt', 'descrição', 'chat', 'assistente'] },
     { id: 'automacao', label: 'Automação de Pedidos', icon: 'bi-magic', group: 'system', keywords: ['automação', 'imprimir', 'recibo', 'whatsapp', 'entrega', 'cliente'] },
     { id: 'notificacoes', label: 'Notificações', icon: 'bi-bell-fill', group: 'system', keywords: ['notificação', 'alerta', 'estoque', 'novo', 'usado', 'salvado'] },
-    { id: 'canais', label: 'Descrições por Canal', icon: 'bi-megaphone-fill', group: 'system', keywords: ['whatsapp', 'ecommerce', 'canal', 'marketplace', 'base', 'descrição', 'loja'] },
 ];
 
 /**
@@ -97,7 +95,7 @@ export default function Settings(): any {
                         Configurações do Sistema
                     </div>
                     <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Preferências</h1>
-                    <p className="text-slate-500 dark:text-slate-500 mt-2 text-base font-medium">Personalize cada detalhe da sua experiência no ERP Móveis Morante.</p>
+                    <p className="text-slate-500 dark:text-slate-500 mt-2 text-base font-medium">Personalize cada detalhe da sua experiência no PDV.</p>
                 </div>
 
                 <div className="relative group w-full md:w-96">
@@ -207,10 +205,6 @@ export default function Settings(): any {
 
                     <SettingsSection id="notificacoes" title="Notificações de Inventário" icon="bi-bell-fill" isVisible={isVisible('notificacoes')}>
                         <InventoryNotificationsSection settings={settings} onChange={handleChange} />
-                    </SettingsSection>
-
-                    <SettingsSection id="canais" title="Descrições Base por Canal" icon="bi-megaphone-fill" isVisible={isVisible('canais')}>
-                        <ChannelDescriptionsSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
                 </div>
             </div>
