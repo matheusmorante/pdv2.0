@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="icon" href="/favicon.jpg" type="image/jpeg">
+  <title>ERP Móveis Morante</title>
+  <script>
+    // Global error handler to catch and ignore buggy extensions (like content.js)
+    window.onerror = function (msg, url, line, col, error) {
+      if (url && (url.indexOf('content.js') !== -1 || url.indexOf('extension') !== -1)) {
+        console.warn('Bloqueado erro de extensão externa para evitar travamento:', msg);
+        return true;
+      }
+      return false;
+    };
+    // Patch to protect Array.isArray and other primitives if they get messed up
+    if (!Array.isArray) Array.isArray = function (arg) { return Object.prototype.toString.call(arg) === '[object Array]'; };
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+
+</html>
