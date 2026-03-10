@@ -15,17 +15,19 @@ import AutoScrollSection from './components/AutoScrollSection';
 import AppearanceSection from './components/AppearanceSection';
 import AIPromptsSection from './components/AIPromptsSection';
 import OrderAutomationSection from './components/OrderAutomationSection';
+import InventoryNotificationsSection from './components/InventoryNotificationsSection';
 import SaveButton from './components/SaveButton';
 
-const categories = [
-    { id: 'empresa', label: 'Dados da Empresa', icon: 'bi-building-fill', keywords: ['empresa', 'nome', 'endereço', 'loja', 'origem', 'cnpj', 'contato', 'telefone'] },
-    { id: 'labels', label: 'Rótulos do Sistema', icon: 'bi-tags-fill', keywords: ['rascunho', 'agendado', 'atendido', 'cancelado', 'entrega', 'retirada'] },
-    { id: 'logistica', label: 'Logística e Frete', icon: 'bi-truck', keywords: ['frete', 'km', 'distância', 'valor', 'entrega'] },
-    { id: 'manuseio', label: 'Opções de Manuseio', icon: 'bi-box-seam-fill', keywords: ['manuseio', 'tipos', 'adicionar', 'entrega', 'retirada'] },
-    { id: 'scroll', label: 'Scroll Automático', icon: 'bi-mouse3-fill', keywords: ['scroll', 'rolagem', 'automática', 'velocidade', 'sensibilidade'] },
-    { id: 'aparencia', label: 'Aparência', icon: 'bi-palette', keywords: ['tema', 'escuro', 'claro', 'modo'] },
-    { id: 'ia', label: 'Inteligência Artificial', icon: 'bi-robot', keywords: ['ia', 'ai', 'robot', 'prompt', 'descrição', 'chat', 'assistente'] },
-    { id: 'automacao', label: 'Automação de Pedidos', icon: 'bi-magic', keywords: ['automação', 'imprimir', 'recibo', 'whatsapp', 'entrega', 'cliente'] },
+const categories: any[] = [
+    { id: 'empresa', label: 'Dados da Empresa', icon: 'bi-building-fill', group: 'system', keywords: ['empresa', 'nome', 'endereço', 'loja', 'origem', 'cnpj', 'contato', 'telefone'] },
+    { id: 'labels', label: 'Rótulos do Sistema', icon: 'bi-tags-fill', group: 'system', keywords: ['rascunho', 'agendado', 'atendido', 'cancelado', 'entrega', 'retirada'] },
+    { id: 'logistica', label: 'Logística e Frete', icon: 'bi-truck', group: 'system', keywords: ['frete', 'km', 'distância', 'valor', 'entrega'] },
+
+    { id: 'scroll', label: 'Scroll Automático', icon: 'bi-mouse3-fill', group: 'user', keywords: ['scroll', 'rolagem', 'automática', 'velocidade', 'sensibilidade'] },
+    { id: 'aparencia', label: 'Aparência', icon: 'bi-palette', group: 'user', keywords: ['tema', 'escuro', 'claro', 'modo'] },
+    { id: 'ia', label: 'Inteligência Artificial', icon: 'bi-robot', group: 'system', keywords: ['ia', 'ai', 'robot', 'prompt', 'descrição', 'chat', 'assistente'] },
+    { id: 'automacao', label: 'Automação de Pedidos', icon: 'bi-magic', group: 'system', keywords: ['automação', 'imprimir', 'recibo', 'whatsapp', 'entrega', 'cliente'] },
+    { id: 'notificacoes', label: 'Notificações', icon: 'bi-bell-fill', group: 'system', keywords: ['notificação', 'alerta', 'estoque', 'novo', 'usado', 'salvado'] },
 ];
 
 /**
@@ -82,7 +84,7 @@ export default function Settings(): any {
         if (!category) return false;
 
         return category.label.toLowerCase().includes(normalizedSearch) ||
-            category.keywords.some(k => k.toLowerCase().includes(normalizedSearch));
+            category.keywords.some((k: string) => k.toLowerCase().includes(normalizedSearch));
     };
 
     return (
@@ -109,7 +111,7 @@ export default function Settings(): any {
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                <SettingsSidebar categories={categories} />
+                <SettingsSidebar categories={categories as any} isAdmin={true} />
 
                 <div className="lg:col-span-9 pb-48">
                     <SettingsSection id="empresa" title="Dados da Empresa" icon="bi-building-fill" isVisible={isVisible('empresa')}>
@@ -183,9 +185,7 @@ export default function Settings(): any {
                         <LogisticsSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
 
-                    <SettingsSection id="manuseio" title="Opções de Manuseio" icon="bi-box-seam-fill" isVisible={isVisible('manuseio')}>
-                        <HandlingSection settings={settings} onChange={handleChange} />
-                    </SettingsSection>
+
 
                     <SettingsSection id="scroll" title="Rolagem Automática" icon="bi-mouse3-fill" isVisible={isVisible('scroll')}>
                         <AutoScrollSection settings={settings} onChange={handleChange} />
@@ -201,6 +201,10 @@ export default function Settings(): any {
 
                     <SettingsSection id="automacao" title="Automação de Pedidos" icon="bi-magic" isVisible={isVisible('automacao')}>
                         <OrderAutomationSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="notificacoes" title="Notificações de Inventário" icon="bi-bell-fill" isVisible={isVisible('notificacoes')}>
+                        <InventoryNotificationsSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
                 </div>
             </div>

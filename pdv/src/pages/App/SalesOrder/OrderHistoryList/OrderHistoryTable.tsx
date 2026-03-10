@@ -42,7 +42,7 @@ const COLUMNS_DEF: ColumnDef[] = [
     { key: 'totalValue', label: 'Valor Total', align: 'text-right' },
     { key: 'status', label: 'Status', align: 'text-center' },
     { key: 'orderType', label: 'Tipo de Pedido' },
-    { key: 'manuseio', label: 'Manuseio' },
+
     { key: 'actions', label: 'Ações', align: 'text-center' },
 ];
 

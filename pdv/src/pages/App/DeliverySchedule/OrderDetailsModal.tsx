@@ -1,6 +1,6 @@
 import Order from "../../types/order.type";
 import ModalHeader from "./OrderDetailsModalComponents/ModalHeader";
-import { CustomerSection, ShippingSection, SchedulingSection, OrderTypeLabelsSection, HandlingTypeSection } from "./OrderDetailsModalComponents/CustomerShippingInfo";
+import { CustomerSection, ShippingSection, SchedulingSection, OrderTypeLabelsSection } from "./OrderDetailsModalComponents/CustomerShippingInfo";
 import { ItemsTable, FinancialSummary } from "./OrderDetailsModalComponents/ItemsFinancialInfo";
 import MapRoute from "../SalesOrder/ShippingComponents/MapRoute";
 
@@ -38,9 +38,7 @@ const OrderDetailsModal = ({ order, onClose }: Props) => {
                                 deliveryMethod={order.shipping?.deliveryMethod}
                                 orderType={order.orderType}
                             />
-                            <HandlingTypeSection
-                                handlingType={order.shipping?.orderType}
-                            />
+
                             {!isPickup && (
                                 <ShippingSection
                                     fullAddress={order.customerData?.fullAddress}

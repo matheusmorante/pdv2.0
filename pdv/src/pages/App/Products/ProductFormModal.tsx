@@ -9,6 +9,7 @@ import { compressImage } from "../../utils/imageUtils";
 import { uploadFile } from "../../utils/storageService";
 import { aiService } from "../../utils/aiService";
 import { supabase } from "../../utils/supabaseConfig";
+import SmartInput from "../../../components/SmartInput";
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -66,6 +67,12 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
             pisCst: "",
             cfop: "",
             icmsPercent: 0,
+        },
+        notificationConfig: {
+            enabled: true,
+            notifyZeroStock: true,
+            notifyMinStock: true,
+            notifyCustom: ""
         }
     };
 
@@ -89,16 +96,42 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
         if (!formData.variations) return;
         let needsSync = false;
         const newVars = formData.variations.map(v => {
-            if (v.syncWithParent && (v.unitPrice !== formData.unitPrice || v.costPrice !== formData.costPrice)) {
+            const updated = { ...v };
+            let changed = false;
+
+            if (v.syncUnitPrice && v.unitPrice !== formData.unitPrice) {
+                updated.unitPrice = formData.unitPrice || 0;
+                changed = true;
+            }
+            if (v.syncCostPrice) {
+                if (v.costPrice !== formData.costPrice) {
+                    updated.costPrice = formData.costPrice || 0;
+                    changed = true;
+                }
+                if (v.freightCost !== formData.freightCost) {
+                    updated.freightCost = formData.freightCost || 0;
+                    changed = true;
+                }
+                if (v.freightType !== formData.freightType) {
+                    updated.freightType = formData.freightType || 'fixed';
+                    changed = true;
+                }
+                if (v.ipiPercent !== formData.ipiPercent) {
+                    updated.ipiPercent = formData.ipiPercent || 0;
+                    changed = true;
+                }
+            }
+
+            if (changed) {
                 needsSync = true;
-                return { ...v, unitPrice: formData.unitPrice || 0, costPrice: formData.costPrice || 0 };
+                return updated;
             }
             return v;
         });
         if (needsSync) {
             setFormData(prev => ({ ...prev, variations: newVars }));
         }
-    }, [formData.unitPrice, formData.costPrice, formData.variations]);
+    }, [formData.unitPrice, formData.costPrice, formData.freightCost, formData.freightType, formData.ipiPercent, formData.variations]);
 
     // Calculate final purchase price automatically
     useEffect(() => {
@@ -173,9 +206,15 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
             stock: 0,
             unitPrice: formData.unitPrice || 0,
             costPrice: formData.costPrice || 0,
+            freightCost: formData.freightCost || 0,
+            freightType: formData.freightType || 'fixed',
+            ipiPercent: formData.ipiPercent || 0,
             active: true,
             attributes: [],
-            syncWithParent: true
+            syncWithParent: true,
+            syncUnitPrice: true,
+            syncCostPrice: true,
+            syncDescription: true
         };
         setFormData(prev => ({
             ...prev,
@@ -366,29 +405,38 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                     {/* GERAL TAB */}
                     {activeTab === 'geral' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="md:col-span-2 flex flex-col gap-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Descrição Comercial</label>
-                                <input
-                                    type="text"
+                            <div className="md:col-span-2">
+                                <SmartInput
+                                    label="Descrição Comercial"
                                     required
                                     value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
+                                    onValueChange={(val) => setFormData({ ...formData, description: val })}
+                                    tableName="products"
+                                    columnName="description"
                                     placeholder="Ex: Camiseta Algodão Egípcio Premium"
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-6 md:col-span-2">
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Código (SKU Principal)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.code}
-                                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                                        className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
-                                        placeholder="Auto-gerar se vazio"
-                                    />
-                                </div>
+                                <SmartInput
+                                    label="Código (SKU Principal)"
+                                    value={formData.code}
+                                    onValueChange={(val) => setFormData({ ...formData, code: val })}
+                                    tableName="products"
+                                    columnName="code"
+                                    placeholder="Ex: PROD-001"
+                                    icon="bi-upc-scan"
+                                />
+                                <SmartInput
+                                    label="Unidade de Medida"
+                                    value={formData.unit || "UN"}
+                                    onValueChange={(val) => setFormData({ ...formData, unit: val.toUpperCase() })}
+                                    patterns={["UN", "KG", "M", "CX", "PC", "PAR", "L"]}
+                                    tableName="products"
+                                    columnName="unit"
+                                    placeholder="Ex: UN, KG, M..."
+                                    icon="bi-box-seam"
+                                />
                                 <div className="flex flex-col gap-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Categorias associadas</label>
                                     <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar border border-slate-100 dark:border-slate-800 rounded-xl p-2 bg-slate-50 dark:bg-slate-950">
@@ -441,27 +489,15 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6 md:col-span-2">
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Preço de Venda (R$)</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.unitPrice}
-                                        onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
-                                        className="w-full px-4 py-4 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-lg font-black text-blue-600 dark:text-blue-400"
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Unidade de Medida</label>
-                                    <input
-                                        type="text"
-                                        value={formData.unit}
-                                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                                        className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100"
-                                        placeholder="UN, KG, PC, LT..."
-                                    />
-                                </div>
+                            <div className="flex flex-col gap-2 md:col-span-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Preço de Venda (R$)</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.unitPrice}
+                                    onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
+                                    className="w-full px-4 py-4 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-lg font-black text-blue-600 dark:text-blue-400"
+                                />
                             </div>
                         </div>
                     )}
@@ -579,8 +615,131 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
 
                                     <div className="mt-2 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 block mb-1">Status do Estoque Atual</label>
-                                        <span className="text-xl font-black text-blue-700 dark:text-blue-300">{formData.stock || 0} {formData.unit}</span>
+                                        <span className="text-xl font-black text-blue-700 dark:text-blue-300">{formData.stock || 0}</span>
                                     </div>
+                                </div>
+
+                                {/* Notification Configuration */}
+                                <div className="bg-amber-50/50 dark:bg-amber-900/10 p-6 rounded-3xl border border-amber-100 dark:border-amber-900/30 flex flex-col gap-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center shadow-md shadow-amber-200/50 dark:shadow-amber-900/30">
+                                            <i className="bi bi-bell-fill text-white text-sm" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">Configuração de Notificações</h4>
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                                Defina quais alertas este produto deve gerar no sistema.
+                                                {formData.condition === 'salvado' && (
+                                                    <span className="ml-1 font-black text-amber-600 dark:text-amber-400">
+                                                        (Produto salvado — sem alertas por padrão)
+                                                    </span>
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Master toggle */}
+                                    <div
+                                        className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 cursor-pointer group"
+                                        onClick={() => setFormData(prev => ({
+                                            ...prev,
+                                            notificationConfig: {
+                                                enabled: !(prev.notificationConfig?.enabled ?? true),
+                                                notifyZeroStock: prev.notificationConfig?.notifyZeroStock ?? true,
+                                                notifyMinStock: prev.notificationConfig?.notifyMinStock ?? true,
+                                                notifyCustom: prev.notificationConfig?.notifyCustom
+                                            }
+                                        }))}
+                                    >
+                                        <div>
+                                            <p className="text-xs font-black text-slate-800 dark:text-slate-100">Notificações Ativadas</p>
+                                            <p className="text-[10px] text-slate-500 font-medium mt-0.5">Habilitar ou desabilitar todos os alertas deste produto</p>
+                                        </div>
+                                        <div className={`w-12 h-6 rounded-full p-1 transition-all group-hover:ring-2 group-hover:ring-amber-300 dark:group-hover:ring-amber-700 ${(formData.notificationConfig?.enabled ?? true) ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${(formData.notificationConfig?.enabled ?? true) ? 'translate-x-6' : 'translate-x-0'}`} />
+                                        </div>
+                                    </div>
+
+                                    {/* Individual toggles */}
+                                    {(formData.notificationConfig?.enabled ?? true) && (
+                                        <div className="flex flex-col gap-3">
+                                            {/* Notify Zero Stock */}
+                                            <div
+                                                className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 cursor-pointer group"
+                                                onClick={() => setFormData(prev => ({
+                                                    ...prev,
+                                                    notificationConfig: {
+                                                        enabled: prev.notificationConfig?.enabled ?? true,
+                                                        notifyZeroStock: !(prev.notificationConfig?.notifyZeroStock ?? true),
+                                                        notifyMinStock: prev.notificationConfig?.notifyMinStock ?? true,
+                                                        notifyCustom: prev.notificationConfig?.notifyCustom
+                                                    }
+                                                }))}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <i className="bi bi-exclamation-octagon-fill text-red-500 text-lg" />
+                                                    <div>
+                                                        <p className="text-xs font-black text-slate-800 dark:text-slate-100">Alerta de Estoque Zerado</p>
+                                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">Notificar quando estoque chegar a 0</p>
+                                                    </div>
+                                                </div>
+                                                <div className={`w-12 h-6 rounded-full p-1 transition-all group-hover:ring-2 group-hover:ring-red-200 dark:group-hover:ring-red-900 ${(formData.notificationConfig?.notifyZeroStock ?? true) ? 'bg-red-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${(formData.notificationConfig?.notifyZeroStock ?? true) ? 'translate-x-6' : 'translate-x-0'}`} />
+                                                </div>
+                                            </div>
+
+                                            {/* Notify Min Stock */}
+                                            <div
+                                                className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 cursor-pointer group"
+                                                onClick={() => setFormData(prev => ({
+                                                    ...prev,
+                                                    notificationConfig: {
+                                                        enabled: prev.notificationConfig?.enabled ?? true,
+                                                        notifyZeroStock: prev.notificationConfig?.notifyZeroStock ?? true,
+                                                        notifyMinStock: !(prev.notificationConfig?.notifyMinStock ?? true),
+                                                        notifyCustom: prev.notificationConfig?.notifyCustom
+                                                    }
+                                                }))}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <i className="bi bi-exclamation-triangle-fill text-amber-500 text-lg" />
+                                                    <div>
+                                                        <p className="text-xs font-black text-slate-800 dark:text-slate-100">Alerta de Estoque Mínimo</p>
+                                                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                                                            Notificar quando atingir o limite mínimo
+                                                            {(formData.minStock || 0) > 0 ? ` (atual: ${formData.minStock} ${formData.unit || 'un'})` : ' (defina o estoque mínimo acima)'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className={`w-12 h-6 rounded-full p-1 transition-all group-hover:ring-2 group-hover:ring-amber-200 dark:group-hover:ring-amber-900 ${(formData.notificationConfig?.notifyMinStock ?? true) ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${(formData.notificationConfig?.notifyMinStock ?? true) ? 'translate-x-6' : 'translate-x-0'}`} />
+                                                </div>
+                                            </div>
+
+                                            {/* Custom note */}
+                                            <div className="flex flex-col gap-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-2">
+                                                    <i className="bi bi-chat-left-text text-slate-400" />
+                                                    Nota interna sobre este produto (opcional)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.notificationConfig?.notifyCustom || ''}
+                                                    onChange={(e) => setFormData(prev => ({
+                                                        ...prev,
+                                                        notificationConfig: {
+                                                            enabled: prev.notificationConfig?.enabled ?? true,
+                                                            notifyZeroStock: prev.notificationConfig?.notifyZeroStock ?? true,
+                                                            notifyMinStock: prev.notificationConfig?.notifyMinStock ?? true,
+                                                            notifyCustom: e.target.value
+                                                        }
+                                                    }))}
+                                                    placeholder="Ex: Produto sazonal. Verificar com fornecedor antes de repor."
+                                                    className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400/70"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -617,9 +776,10 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                                             <tr>
                                                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Nome da Variação</th>
                                                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">SKU / Código</th>
-                                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Sinc. Pai</th>
-                                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Preço Venda</th>
+                                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Sinc. Tudo</th>
+                                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">R$ Venda</th>
                                                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Estoque</th>
+                                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Est. Mín.</th>
                                                 <th className="px-6 py-4 text-center"></th>
                                             </tr>
                                         </thead>
@@ -627,12 +787,22 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                                             {formData.variations?.map(v => (
                                                 <tr key={v.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                                                     <td className="px-6 py-4">
-                                                        <input
-                                                            value={v.name}
-                                                            onChange={(e) => updateVariation(v.id, 'name', e.target.value)}
-                                                            className="w-full bg-transparent border-none outline-none text-sm font-bold dark:text-slate-200"
-                                                            placeholder="Ex: Azul / P"
-                                                        />
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateVariation(v.id, 'syncDescription', !v.syncDescription)}
+                                                                className={`p-1 rounded-md transition-colors ${v.syncDescription ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-slate-300 hover:bg-slate-100'}`}
+                                                                title="Herdar descrição do pai"
+                                                            >
+                                                                <i className={`bi ${v.syncDescription ? 'bi-link-45deg' : 'bi-link-45deg opacity-30'}`}></i>
+                                                            </button>
+                                                            <input
+                                                                value={v.name}
+                                                                onChange={(e) => updateVariation(v.id, 'name', e.target.value)}
+                                                                className="w-full bg-transparent border-none outline-none text-sm font-bold dark:text-slate-200"
+                                                                placeholder="Ex: Azul / P"
+                                                            />
+                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <input
@@ -642,20 +812,47 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                                                             placeholder="SKU-VAR-001"
                                                         />
                                                     </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className={`w-8 h-4 rounded-full p-0.5 cursor-pointer transition-colors ${v.syncWithParent ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`} onClick={() => updateVariation(v.id, 'syncWithParent', !v.syncWithParent)} title="Puxar dados do produto principal">
-                                                            <div className={`w-3 h-3 bg-white rounded-full transition-transform ${v.syncWithParent ? 'translate-x-4' : 'translate-x-0'}`} />
-                                                        </div>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const allOn = v.syncUnitPrice && v.syncCostPrice && v.syncDescription;
+                                                                const target = !allOn;
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    variations: prev.variations?.map(vi => vi.id === v.id ? {
+                                                                        ...vi,
+                                                                        syncUnitPrice: target,
+                                                                        syncCostPrice: target,
+                                                                        syncDescription: target,
+                                                                        syncWithParent: target
+                                                                    } : vi)
+                                                                }));
+                                                            }}
+                                                            className={`p-1.5 rounded-xl transition-all ${(v.syncUnitPrice && v.syncCostPrice && v.syncDescription) ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600'}`}
+                                                            title="Sincronizar todos os campos com o pai"
+                                                        >
+                                                            <i className={`bi bi-link-45deg text-lg ${(v.syncUnitPrice && v.syncCostPrice && v.syncDescription) ? 'rotate-0' : '-rotate-45'} transition-transform`}></i>
+                                                        </button>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <input
-                                                            type="number"
-                                                            value={v.unitPrice}
-                                                            disabled={v.syncWithParent}
-                                                            onChange={(e) => updateVariation(v.id, 'unitPrice', parseFloat(e.target.value))}
-                                                            className={`w-24 bg-transparent border-none outline-none text-sm font-black ${v.syncWithParent ? 'text-slate-400' : 'text-blue-600 dark:text-blue-400'}`}
-                                                            title={v.syncWithParent ? "Desative sincronização para editar" : ""}
-                                                        />
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateVariation(v.id, 'syncUnitPrice', !v.syncUnitPrice)}
+                                                                className={`p-1 rounded-md transition-colors ${v.syncUnitPrice ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-slate-300 hover:bg-slate-100'}`}
+                                                                title="Herdar preço do pai"
+                                                            >
+                                                                <i className={`bi ${v.syncUnitPrice ? 'bi-link-45deg' : 'bi-link-45deg opacity-30'}`}></i>
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                value={v.unitPrice}
+                                                                disabled={v.syncUnitPrice}
+                                                                onChange={(e) => updateVariation(v.id, 'unitPrice', parseFloat(e.target.value))}
+                                                                className={`w-20 bg-transparent border-none outline-none text-sm font-black ${v.syncUnitPrice ? 'text-slate-400' : 'text-blue-600 dark:text-blue-400'}`}
+                                                            />
+                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <input
@@ -663,6 +860,15 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                                                             value={v.stock}
                                                             onChange={(e) => updateVariation(v.id, 'stock', parseInt(e.target.value))}
                                                             className="w-16 bg-transparent border-none outline-none text-sm font-bold dark:text-slate-200"
+                                                        />
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <input
+                                                            type="number"
+                                                            value={v.minStock || 0}
+                                                            onChange={(e) => updateVariation(v.id, 'minStock', parseInt(e.target.value))}
+                                                            className="w-16 bg-transparent border-none outline-none text-sm font-medium text-amber-600 dark:text-amber-500/80"
+                                                            placeholder="0"
                                                         />
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
@@ -776,19 +982,18 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                <div className="flex flex-col gap-2 relative">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Material / Composição</label>
-                                    <input
-                                        type="text"
+                                <div className="md:col-span-1">
+                                    <SmartInput
+                                        label="Material / Composição"
                                         value={formData.fiscal?.material || ""}
-                                        onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, material: e.target.value } })}
-                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm dark:text-slate-200"
+                                        onValueChange={(val) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, material: val } })}
+                                        suggestions={["Madeira MDF", "Vidro Canelado", "Aço Inox", "Algodão", "Plástico ABS"]}
                                         placeholder="Ex: Madeira MDF e Vidro"
                                     />
-                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 italic">O material ajuda a IA a buscar o NCM exato.</p>
+                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 italic mt-1">O material ajuda a IA a buscar o NCM exato.</p>
                                 </div>
-                                <div className="flex flex-col gap-2 relative">
-                                    <div className="flex items-center justify-between">
+                                <div className="relative">
+                                    <div className="flex items-center justify-between mb-2">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">NCM (8 Dígitos)</label>
                                         <button
                                             onClick={handleGenerateNCM}
@@ -798,15 +1003,15 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                                             <i className="bi bi-magic mr-1"></i>Buscar c/ IA
                                         </button>
                                     </div>
-                                    <input
-                                        type="text"
+                                    <SmartInput
                                         value={formData.fiscal?.ncm || ""}
-                                        onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, ncm: e.target.value } })}
-                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm dark:text-slate-200"
+                                        onValueChange={(val) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, ncm: val } })}
+                                        tableName="products"
+                                        columnName="fiscal->ncm"
                                         placeholder="0000.00.00"
                                     />
                                     {formData.fiscal?.ncmDescription && (
-                                        <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest leading-tight">
+                                        <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest leading-tight mt-1">
                                             <i className="bi bi-info-circle mr-1"></i>{formData.fiscal.ncmDescription}
                                         </p>
                                     )}
@@ -834,23 +1039,21 @@ const ProductFormModal = ({ isOpen, onClose, product, onSuccess }: ProductFormMo
                                     </select>
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Situação Tributária (CST/CSOSN)</label>
-                                    <input
-                                        type="text"
+                                <div>
+                                    <SmartInput
+                                        label="Situação Tributária (CST/CSOSN)"
                                         value={formData.fiscal?.cst}
-                                        onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, cst: e.target.value } })}
-                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm dark:text-slate-200"
+                                        onValueChange={(val) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, cst: val } })}
+                                        suggestions={["101", "102", "300", "400", "500", "00", "20", "40", "60"]}
                                         placeholder="EX: 102 ou 00"
                                     />
                                 </div>
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">CFOP Padrão</label>
-                                    <input
-                                        type="text"
+                                <div>
+                                    <SmartInput
+                                        label="CFOP Padrão"
                                         value={formData.fiscal?.cfop}
-                                        onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, cfop: e.target.value } })}
-                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm dark:text-slate-200"
+                                        onValueChange={(val) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, cfop: val } })}
+                                        suggestions={["5102", "5405", "6102", "6405", "5933"]}
                                         placeholder="EX: 5102"
                                     />
                                 </div>

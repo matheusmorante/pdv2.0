@@ -11,6 +11,7 @@ interface PersonCardProps {
     showTrash?: boolean;
     isSelected?: boolean;
     onToggleSelection?: () => void;
+    onViewPurchaseHistory?: (person: Person) => void;
 }
 
 const PersonCard = ({
@@ -22,7 +23,8 @@ const PersonCard = ({
     onToggleActive,
     showTrash,
     isSelected,
-    onToggleSelection
+    onToggleSelection,
+    onViewPurchaseHistory
 }: PersonCardProps) => {
     return (
         <div 
@@ -134,6 +136,16 @@ const PersonCard = ({
                             <i className="bi bi-trash-fill text-base" />
                             <span className="text-[8px] font-black uppercase">Excluir</span>
                         </button>
+
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onViewPurchaseHistory?.(person); }}
+                                className="flex flex-col items-center justify-center gap-1 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-lg col-span-3 mt-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <i className="bi bi-clock-history text-sm" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">Ver Histórico de Pedidos</span>
+                                </div>
+                            </button>
                     </>
                 )}
             </div>

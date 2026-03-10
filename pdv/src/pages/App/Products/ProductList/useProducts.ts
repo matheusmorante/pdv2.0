@@ -74,10 +74,43 @@ export const useProducts = (filters?: any) => {
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const totalItems = filteredProducts.length;
 
+    const transformedProducts = useMemo(() => {
+        const flattened: any[] = [];
+        filteredProducts.forEach(product => {
+            // Parent Row
+            flattened.push({ ...product, isParent: product.hasVariations });
+            
+            // Child Rows
+            if (product.hasVariations && product.variations) {
+                product.variations.forEach((v: any) => {
+                    const child = {
+                        ...product,
+                        id: `${product.id}_${v.sku}`,
+                        sku: v.sku,
+                        description: v.syncDescription ? `${product.description} - ${v.name}` : v.name,
+                        unitPrice: v.unitPrice,
+                        costPrice: v.costPrice,
+                        stock: v.stock,
+                        active: v.active,
+                        images: v.images || [],
+                        parentImages: product.images || [],
+                        isVariation: true,
+                        parentId: product.id,
+                        categoryIds: product.categoryIds,
+                        category: product.category,
+                        unit: product.unit
+                    };
+                    flattened.push(child);
+                });
+            }
+        });
+        return flattened;
+    }, [filteredProducts]);
+
     const paginatedProducts = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return filteredProducts.slice(start, start + itemsPerPage);
-    }, [filteredProducts, currentPage, itemsPerPage]);
+        return transformedProducts.slice(start, start + itemsPerPage);
+    }, [transformedProducts, currentPage, itemsPerPage]);
 
     const handleDelete = async (id: string) => {
         await moveToTrash(id);
@@ -100,8 +133,10 @@ export const useProducts = (filters?: any) => {
         if (selectedProducts.length === 0) return;
         setLoading(true);
         try {
-            await Promise.all(selectedProducts.map(id => moveToTrash(id)));
-            toast.info(`${selectedProducts.length} produto(s) movido(s) para a lixeira.`);
+            // Filter out variation IDs (which are synthetic in this implementation for UI)
+            const realIds = selectedProducts.filter(id => !id.toString().includes('_'));
+            await Promise.all(realIds.map(id => moveToTrash(id)));
+            toast.info(`${realIds.length} produto(s) movido(s) para a lixeira.`);
             setSelectedProducts([]);
         } catch (error) {
             toast.error("Erro ao mover alguns produtos para a lixeira.");
@@ -141,9 +176,45 @@ export const useProducts = (filters?: any) => {
     };
 
     const toggleSelection = (id: string) => {
-        setSelectedProducts(prev =>
-            prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
-        );
+        const product = paginatedProducts.find(p => p.id === id);
+        
+        setSelectedProducts(prev => {
+            let next = [...prev];
+            const isSelected = prev.includes(id);
+            
+            if (product?.isParent) {
+                // Cascading selection for parent
+                const childIds = paginatedProducts.filter(p => p.parentId === id).map(p => p.id!);
+                if (isSelected) {
+                    next = next.filter(sid => sid !== id && !childIds.includes(sid));
+                } else {
+                    next = [...new Set([...next, id, ...childIds])];
+                }
+            } else if (product?.isVariation) {
+                // Logic for variation
+                if (isSelected) {
+                    next = next.filter(sid => sid !== id);
+                    // Unselect parent if child is unselected
+                    next = next.filter(sid => sid !== product.parentId);
+                } else {
+                    next.push(id);
+                    // Select parent if ALL children are selected
+                    const siblingIds = paginatedProducts.filter(p => p.parentId === product.parentId).map(p => p.id!);
+                    const allSiblingsSelected = siblingIds.every(sid => next.includes(sid));
+                    if (allSiblingsSelected) {
+                        next.push(product.parentId);
+                    }
+                }
+            } else {
+                // Normal product
+                if (isSelected) {
+                    next = next.filter(sid => sid !== id);
+                } else {
+                    next.push(id);
+                }
+            }
+            return next;
+        });
     };
 
     const selectAll = () => {

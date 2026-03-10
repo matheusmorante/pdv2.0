@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { formatToBRDate } from "../../utils/formatters";
+import { formatToBRDate, formatCurrency } from "../../utils/formatters";
 import { saveOrder, subscribeToOrders } from "../../utils/orderHistoryService";
 import { toast } from "react-toastify";
 import Order, { AssistanceItem } from "../../types/order.type";
+import Item from "../../types/items.type";
 import CustomerData from "../../types/customerData.type";
+import Product, { Variation } from "../../types/product.type";
+import ProductSearchModal from "./ProductSearchModal";
 import OrderSelectionModal from "./OrderSelectionModal";
 import TagInput from "../../../components/TagInput";
+import SmartInput from "../../../components/SmartInput";
+import CustomerSearchModal from "./CustomerSearchModal";
 
 interface AssistanceOrderModalProps {
     onClose: () => void;
@@ -49,17 +54,19 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
     const [isLinked, setIsLinked] = useState(!!order?.linkedOrderId);
     const [linkedOrderId, setLinkedOrderId] = useState(order?.linkedOrderId || "");
     const [selectedAssistanceItems, setSelectedAssistanceItems] = useState<AssistanceItem[]>(order?.assistanceItems || []);
+    const [extraItems, setExtraItems] = useState<Item[]>(order?.items || []);
     const [saleOrders, setSaleOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
     const [loadingOrders, setLoadingOrders] = useState(true);
     const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
+    const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
+    const [isCustomerSearchOpen, setIsCustomerSearchOpen] = useState(false);
 
     const isEditing = !!order;
 
     // Fetch all sale orders to allow linking
     useEffect(() => {
         const unsubscribe = subscribeToOrders((data) => {
-            // Filter only valid sale orders that are not deleted
             setSaleOrders(data.filter(o => o.orderType !== 'assistance' && !o.deleted));
             setLoadingOrders(false);
         });
@@ -135,11 +142,21 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                     linkedOrderId,
                     assistanceItems: selectedAssistanceItems
                 } : {}),
-                date: order?.date || new Date().toLocaleString('pt-BR'),
-                items: order?.items || [],
-                itemsSummary: order?.itemsSummary || { totalQuantity: 0, itemsSubtotal: 0, totalFixedDiscount: 0, itemsTotalValue: 0 },
+                date: order?.date || new Date().toISOString(),
+                items: extraItems,
+                itemsSummary: {
+                    totalQuantity: extraItems.reduce((acc, i) => acc + i.quantity, 0),
+                    itemsSubtotal: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0),
+                    totalFixedDiscount: 0,
+                    itemsTotalValue: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0),
+                },
                 payments: order?.payments || [],
-                paymentsSummary: order?.paymentsSummary || { totalPaymentsFee: 0, totalOrderValue: 0, totalAmountPaid: 0, amountRemaining: 0 },
+                paymentsSummary: order?.paymentsSummary || {
+                    totalPaymentsFee: 0,
+                    totalOrderValue: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0),
+                    totalAmountPaid: 0,
+                    amountRemaining: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0)
+                },
                 shipping: order?.shipping || DEFAULT_SHIPPING,
                 seller: order?.seller || "",
             };
@@ -164,9 +181,10 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
             <div
                 className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800"
                 onClick={(e) => e.stopPropagation()}
+                style={{ maxHeight: '90vh' }}
             >
                 {/* Header */}
-                <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-900/10">
+                <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-900/10 shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="bg-amber-500 p-2.5 rounded-2xl shadow-lg shadow-amber-200 dark:shadow-amber-900/30">
                             <i className="bi bi-tools text-white text-xl" />
@@ -197,18 +215,25 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                             Dados do Cliente
                         </h3>
 
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                                Nome do Cliente <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={customerName}
-                                onChange={(e) => setCustomerName(e.target.value)}
-                                placeholder="Ex: João da Silva"
+                        <div className="flex flex-col gap-2 relative">
+                            <SmartInput
+                                label="Nome do Cliente"
                                 required
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all invalid:border-red-500 invalid:ring-4 invalid:ring-red-500/10"
+                                value={customerName}
+                                onValueChange={(val: string) => setCustomerName(val)}
+                                tableName="people"
+                                columnName="fullName"
+                                placeholder="Ex: João da Silva"
+                                icon="bi-person"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setIsCustomerSearchOpen(true)}
+                                className="absolute right-3 top-[34px] p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                                title="Busca Avançada"
+                            >
+                                <i className="bi bi-search text-xs"></i>
+                            </button>
                         </div>
 
                         <div className="flex flex-col gap-2">
@@ -246,7 +271,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 <div className="p-2 bg-indigo-500 rounded-xl shadow-md shadow-indigo-200 dark:shadow-indigo-900/30">
                                     <i className="bi bi-link-45deg text-white text-lg" />
                                 </div>
-                                <div>
+                                <div className="flex flex-col">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                                         Vínculo com Venda
                                     </h3>
@@ -362,16 +387,15 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                             Detalhes da Assistência
                         </h3>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                                Descrição do Serviço <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                rows={4}
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Descreva o problema, o equipamento e o serviço a ser prestado..."
+                            <SmartInput
+                                label="Descrição do Serviço"
                                 required
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all resize-none invalid:border-red-500 invalid:ring-4 invalid:ring-red-500/10"
+                                value={description}
+                                onValueChange={(val: string) => setDescription(val)}
+                                tableName="orders"
+                                columnName="assistanceDescription"
+                                placeholder="Descreva o problema ou solicitação..."
+                                icon="bi-wrench"
                             />
                         </div>
                         <div className="flex flex-col gap-2 mt-4 px-1">
@@ -381,6 +405,68 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 onChange={setObservation}
                                 placeholder="Notas internas, peças extras, observações, etc..."
                             />
+                        </div>
+                    </div>
+
+                    {/* Pieces and Materials */}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-2">
+                                <i className="bi bi-box-seam-fill text-indigo-500" />
+                                Peças e Materiais Utilizados
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setIsProductSearchOpen(true)}
+                                className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 dark:border-indigo-900/50"
+                            >
+                                <i className="bi bi-plus-lg mr-1.5" />
+                                Adicionar Item
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            {extraItems.length === 0 ? (
+                                <div className="p-8 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[2rem] flex flex-col items-center justify-center text-center">
+                                    <div className="w-10 h-10 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-300 mb-3">
+                                        <i className="bi bi-cart-plus text-lg" />
+                                    </div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nenhuma peça adicionada</p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-2">
+                                    {extraItems.map((item, idx) => (
+                                        <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+                                                    {item.description}
+                                                </span>
+                                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                                    {item.quantity} {item.quantity === 1 ? 'unidade' : 'unidades'} • {formatCurrency(item.unitPrice)}/un
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-xs font-black text-indigo-600">
+                                                    {formatCurrency(item.quantity * item.unitPrice)}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setExtraItems(prev => prev.filter((_, i) => i !== idx))}
+                                                    className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors shadow-sm opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <i className="bi bi-trash3" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className="flex justify-end px-4 py-2 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/30">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 dark:text-indigo-500 mr-2">Subtotal Peças:</span>
+                                        <span className="text-xs font-black text-indigo-600">
+                                            {formatCurrency(extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0))}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="flex flex-col gap-4">
@@ -411,8 +497,8 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                         </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="flex gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    {/* Footer Actions */}
+                    <div className="flex gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
@@ -430,7 +516,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                             ) : (
                                 <i className="bi bi-check-lg" />
                             )}
-                            {loading ? "Salvando..." : "Criar Pedido"}
+                            {loading ? "Salvando..." : isEditing ? "Salvar Alterações" : "Criar Pedido"}
                         </button>
                     </div>
                 </form>
@@ -441,6 +527,36 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                     orders={saleOrders}
                     onClose={() => setIsSelectionModalOpen(false)}
                     onSelect={handleSelectOrder}
+                />
+            )}
+
+            {isProductSearchOpen && (
+                <ProductSearchModal
+                    onClose={() => setIsProductSearchOpen(false)}
+                    onSelect={(p, v) => {
+                        const description = v ? `${p.description} (${v.name})` : p.description;
+                        const newItem: Item = {
+                            productId: p.id!,
+                            variationId: v?.id,
+                            description,
+                            quantity: 1,
+                            unitPrice: (v ? v.unitPrice : p.unitPrice) || 0,
+                            unitDiscount: 0,
+                            discountType: 'fixed',
+                            handlingType: 'Standard'
+                        };
+                        setExtraItems(prev => [...prev, newItem]);
+                    }}
+                />
+            )}
+
+            {isCustomerSearchOpen && (
+                <CustomerSearchModal
+                    onClose={() => setIsCustomerSearchOpen(false)}
+                    onSelect={(c) => {
+                        setCustomerName(c.fullName);
+                        setCustomerPhone(c.phone || "");
+                    }}
                 />
             )}
         </div>

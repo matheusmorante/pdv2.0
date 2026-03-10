@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
-import Product from "../../../types/product.type";
-import { subscribeToProducts, updateProduct } from "../../../utils/productService";
+import Product, { Variation } from "../../../types/product.type";
+import { subscribeToProducts } from "../../../utils/productService";
+import { saveInventoryMove } from "../../../utils/inventoryService";
 import { toast } from "react-toastify";
+import InventoryMove from "../../../types/inventoryMove.type";
 
 interface StockLaunchModalProps {
     isOpen: boolean;
     onClose: () => void;
     targetProduct: Product | null;
+    targetVariation?: Variation;
 }
 
 type LaunchType = 'entry' | 'exit' | 'adjustment';
 
-const StockLaunchModal = ({ isOpen, onClose, targetProduct }: StockLaunchModalProps) => {
+const StockLaunchModal = ({ isOpen, onClose, targetProduct, targetVariation }: StockLaunchModalProps) => {
     const [type, setType] = useState<LaunchType>('entry');
     const [quantity, setQuantity] = useState<number>(0);
     const [reason, setReason] = useState("");
@@ -46,17 +49,21 @@ const StockLaunchModal = ({ isOpen, onClose, targetProduct }: StockLaunchModalPr
 
         setIsSaving(true);
         try {
-            let newStock = Number(activeProduct.stock || 0);
-            
-            if (type === 'entry') {
-                newStock += Number(quantity);
-            } else if (type === 'exit') {
-                newStock -= Number(quantity);
-            } else if (type === 'adjustment') {
-                newStock = Number(quantity);
-            }
+            const move: InventoryMove = {
+                productId: selectedProductId,
+                variationId: targetVariation?.id,
+                productDescription: targetVariation
+                    ? `${activeProduct.description} (${targetVariation.name})`
+                    : activeProduct.description,
+                type: type === 'adjustment' ? 'balance' : (type === 'entry' ? 'entry' : 'withdrawal'),
+                quantity: quantity,
+                date: new Date().toISOString(),
+                label: 'Ajuste Manual',
+                observation: reason
+            };
 
-            await updateProduct(selectedProductId, { stock: newStock });
+            const currentStock = targetVariation ? (targetVariation.stock || 0) : Number(activeProduct.stock || 0);
+            await saveInventoryMove(move, currentStock);
             
             toast.success("Lançamento de estoque realizado com sucesso! ✨");
             onClose();
@@ -107,14 +114,23 @@ const StockLaunchModal = ({ isOpen, onClose, targetProduct }: StockLaunchModalPr
 
                     {targetProduct && (
                         <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Produto Selecionado</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                {targetVariation ? 'Variação Selecionada' : 'Produto Selecionado'}
+                            </span>
                             <div className="mt-2 flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
-                                    <i className="bi bi-box-seam text-2xl"></i>
+                                    <i className={`bi ${targetVariation ? 'bi-stack' : 'bi-box-seam'} text-2xl`}></i>
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-800 dark:text-slate-100">{targetProduct.description}</h4>
-                                    <p className="text-xs text-slate-500 font-medium tracking-tight">Saldo Atual: <span className="font-black text-slate-700 dark:text-slate-200">{targetProduct.stock} {targetProduct.unit}</span></p>
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-100">
+                                        {targetProduct.description}
+                                        {targetVariation && <span className="text-emerald-600 ml-2">({targetVariation.name})</span>}
+                                    </h4>
+                                    <p className="text-xs text-slate-500 font-medium tracking-tight">
+                                        Saldo Atual: <span className="font-black text-slate-700 dark:text-slate-200">
+                                            {targetVariation ? targetVariation.stock : targetProduct.stock} {targetProduct.unit}
+                                        </span>
+                                    </p>
                                 </div>
                             </div>
                         </div>

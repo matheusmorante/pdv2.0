@@ -6,6 +6,8 @@ import { useAuth } from "./context/AuthContext";
 import DesktopNav from "./components/layout/DesktopNav";
 import MobileNav from "./components/layout/MobileNav";
 import AIChatAssistant from "./components/shared/AIChatAssistant";
+import GlobalAutoScroll from "./components/shared/GlobalAutoScroll";
+import NotificationBell from "./components/shared/NotificationBell";
 
 type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
 
@@ -17,6 +19,7 @@ export default function AppLayout() {
 
   return (
     <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-screen font-['Inter',_sans-serif] transition-colors duration-300">
+      <GlobalAutoScroll />
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -48,6 +51,7 @@ export default function AppLayout() {
         </div>
 
         <div className="flex items-center gap-2 xl:gap-4">
+          <NotificationBell />
           <button
             onClick={toggleTheme}
             className="p-2 xl:p-3 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-yellow-400 transition-all rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"

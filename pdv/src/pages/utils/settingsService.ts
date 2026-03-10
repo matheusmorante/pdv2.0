@@ -75,6 +75,14 @@ export interface AppSettings {
         autoSendCustomerOrder: boolean;
         deliveryPhone: string;
     };
+    stockNotificationConditions?: ('novo' | 'usado' | 'salvado')[];
+    rolePermissions?: {
+        manualStockMovement: string[]; // Roles that can do manual withdrawal/reversal
+        productConfig: string[]; // Roles that can edit product notification settings
+        viewFinancials: string[]; // Roles that can see financial summaries
+        deleteOrders: string[]; // Roles that can send orders to trash
+        manageSettings: string[]; // Roles that can access settings page
+    };
 }
 
 const SETTINGS_KEY = 'pdv_app_settings';
@@ -137,7 +145,6 @@ export const getDefaultSettings = (): AppSettings => ({
 Sua tarefa é criar uma descrição de produto incrivelmente persuasiva, focada em vendas.
 
 Produto: {{productName}}
-Categoria: {{category}}
 Preço: {{unitPrice}}
 
 Instruções Adicionais:
@@ -194,6 +201,14 @@ RESPOSTA NO FORMATO JSON:
         autoSendWhatsAppDelivery: true,
         autoSendCustomerOrder: true,
         deliveryPhone: ''
+    },
+    stockNotificationConditions: ['novo'],
+    rolePermissions: {
+        manualStockMovement: ['administrator', 'manager'],
+        productConfig: ['administrator', 'manager'],
+        viewFinancials: ['administrator', 'manager', 'accountant'],
+        deleteOrders: ['administrator', 'manager'],
+        manageSettings: ['administrator']
     }
 });
 

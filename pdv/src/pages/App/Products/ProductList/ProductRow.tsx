@@ -1,6 +1,7 @@
 import React from "react";
 import Product, { ProductVisibilitySettings } from "../../../types/product.type";
 import { formatCurrency } from "../../../utils/formatters";
+import { getCategoryBreadcrumb } from "../../../utils/categoryService";
 
 interface ProductRowProps {
     product: Product;
@@ -15,6 +16,7 @@ interface ProductRowProps {
     orderedColumnKeys?: string[];
     isSelected?: boolean;
     onToggleSelection?: () => void;
+    categoryTree?: any;
 }
 
 const ProductRow = ({
@@ -29,7 +31,8 @@ const ProductRow = ({
     showTrash,
     orderedColumnKeys,
     isSelected,
-    onToggleSelection
+    onToggleSelection,
+    categoryTree
 }: ProductRowProps) => {
 
     const renderCell = (key: string) => {
@@ -38,8 +41,8 @@ const ProductRow = ({
         switch (key) {
             case 'code':
                 return (
-                    <td key="code" className="px-6 py-4 text-left">
-                        <span className="font-mono text-xs text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                    <td key="code" className="px-6 py-4 text-left w-[1%] whitespace-nowrap">
+                        <span className="font-mono text-xs text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg break-all whitespace-normal max-w-[150px] inline-block">
                             {product.code || "-"}
                         </span>
                     </td>
@@ -47,30 +50,44 @@ const ProductRow = ({
             case 'description':
                 return (
                     <td key="description" className="px-6 py-4 text-left">
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{product.description}</span>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${product.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
-                                    {product.itemType === 'service' ? 'Serviço' : 'Produto'}
+                        <div className="flex items-center gap-3">
+                            {product.isVariation && (
+                                <div className="flex items-center text-slate-300 dark:text-slate-700 ml-4 mr-1">
+                                    <i className="bi bi-arrow-return-right text-sm" />
+                                </div>
+                            )}
+                            <div className="flex flex-col">
+                                <span className={`text-sm ${product.isParent ? 'font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter' : 'font-bold text-slate-700 dark:text-slate-200'}`}>
+                                    {product.description}
                                 </span>
-                                {product.itemType === 'product' && product.condition && (
-                                    <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${product.condition === 'salvado' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-                                        product.condition === 'usado' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
-                                            'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
-                                        }`}>
-                                        {product.condition === 'salvado' ? 'Salvado' : product.condition === 'usado' ? 'Usado' : 'Novo'}
-                                    </span>
-                                )}
-                                {product.category && (
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
-                                        {product.category}
-                                    </span>
-                                )}
+                                <div className="flex items-center gap-2 mt-1">
+                                    {product.itemType === 'service' ? (
+                                        <span className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border border-amber-100 dark:border-amber-900/30">
+                                            <i className="bi bi-tools"></i> Serviço
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <span className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/30">
+                                                <i className="bi bi-box-seam"></i> Produto
+                                            </span>
+                                            {product.condition && (
+                                                <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest border ${
+                                                    product.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/30' :
+                                                    product.condition === 'usado' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-900/30' :
+                                                    'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/30'
+                                                }`}>
+                                                    {product.condition}
+                                                </span>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </td>
                 );
             case 'costPrice':
+                if (product.isParent) return <td key="costPrice" className="px-6 py-4"></td>;
                 return (
                     <td key="costPrice" className="px-6 py-4 text-right">
                         <button
@@ -83,6 +100,7 @@ const ProductRow = ({
                     </td>
                 );
             case 'unitPrice':
+                if (product.isParent) return <td key="unitPrice" className="px-6 py-4"></td>;
                 return (
                     <td key="unitPrice" className="px-6 py-4 text-right">
                         <button
@@ -95,33 +113,32 @@ const ProductRow = ({
                     </td>
                 );
             case 'stock':
+                if (product.isParent) return <td key="stock" className="px-6 py-4"></td>;
                 const isLowStock = (product.stock || 0) <= (product.minStock || 0);
                 return (
                     <td key="stock" className="px-6 py-4 text-center">
-                        <div className="flex flex-col items-center">
-                            <span className={`text-sm font-black ${isLowStock ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                                {product.itemType === 'service' ? '-' : (product.stock ?? 0)}
-                            </span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-widest">
-                                {product.unit}
-                            </span>
-                        </div>
-                    </td>
-                );
-            case 'unit':
-                return (
-                    <td key="unit" className="px-6 py-4 text-center">
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
-                            {product.unit}
+                        <span className={`text-sm font-black ${isLowStock ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                            {product.itemType === 'service' ? '-' : (product.stock ?? 0)}
                         </span>
                     </td>
                 );
             case 'category':
+                if (product.isParent) return <td key="category" className="px-6 py-4"></td>;
+                const categoryDisplay = getCategoryBreadcrumb(product.categoryIds || [], categoryTree);
                 return (
                     <td key="category" className="px-6 py-4 text-left">
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">
-                            {product.category || "-"}
-                        </span>
+                        <div className="flex flex-wrap gap-x-2 gap-y-1 max-w-[250px]">
+                            {categoryDisplay.split(' | ').map((path, idx) => {
+                                const [parents, catName] = path.includes(' > ') ? path.split(' > ') : ["", path];
+                                return (
+                                    <div key={idx} className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                                        {parents && <span className="text-slate-400 dark:text-slate-600 font-medium">{parents} &gt; </span>}
+                                        <span className="text-slate-600 dark:text-slate-300">{catName}</span>
+                                        {idx < categoryDisplay.split(' | ').length - 1 && <span className="ml-2 text-blue-500 opacity-50">|</span>}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </td>
                 );
             case 'actions':
@@ -185,7 +202,7 @@ const ProductRow = ({
 
     return (
         <tr
-            className={`transition-colors group cursor-pointer bg-slate-50/50 dark:bg-slate-900/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/50`}
+            className={`transition-colors group cursor-pointer ${product.isParent ? 'bg-blue-50/30 dark:bg-blue-900/10' : product.isVariation ? 'bg-slate-50/20 dark:bg-slate-900/10' : 'bg-slate-50/50 dark:bg-slate-900/30'} hover:bg-slate-100/50 dark:hover:bg-slate-800/50`}
             onClick={() => onEdit(product)}
         >
             {/* Row Checkbox */}

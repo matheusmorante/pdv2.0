@@ -7,7 +7,16 @@ export type Variation = {
     costPrice?: number;
     active: boolean;
     attributes: { name: string; value: string }[];
-    syncWithParent?: boolean;
+    syncWithParent?: boolean; // Legacy/Global
+    syncUnitPrice?: boolean;
+    syncCostPrice?: boolean;
+    syncDescription?: boolean;
+    images?: string[];
+    freightType?: 'fixed' | 'percentage';
+    freightCost?: number;
+    ipiPercent?: number;
+    finalPurchasePrice?: number;
+    minStock?: number;
 };
 
 export type FiscalInfo = {
@@ -59,8 +68,23 @@ export type Product = {
     // Item Type
     itemType: 'product' | 'service';
 
+    // UI Hierarchical fields (Synthetic)
+    isParent?: boolean;
+    isVariation?: boolean;
+    parentId?: string;
+
     // Fiscal
     fiscal?: FiscalInfo;
+
+    // Per-product notification configuration
+    notificationConfig?: ProductNotificationConfig;
+};
+
+export type ProductNotificationConfig = {
+    enabled: boolean;             // Master toggle — disable all alerts for this product
+    notifyZeroStock: boolean;     // Alert when stock reaches 0
+    notifyMinStock: boolean;      // Alert when stock reaches minStock threshold
+    notifyCustom?: string;        // Optional: custom note about what to watch for this product
 };
 
 export type ProductVisibilitySettings = {
@@ -70,7 +94,6 @@ export type ProductVisibilitySettings = {
     costPrice: boolean;
     unitPrice: boolean;
     stock: boolean;
-    unit: boolean;
     actions: boolean;
 };
 

@@ -22,6 +22,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UsersManagementPage from './pages/App/Users/Index';
 import ProfilePage from './pages/App/Profile/Index';
+import PurchasesPage from './pages/App/Stock/Purchases/Index';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading, isPending } = useAuth();
@@ -85,6 +86,7 @@ function Router() {
             <Route path='/registrations/products' element={<Products />} />
             <Route path='/registrations/product-categories' element={<Categories />} />
             <Route path='/stock' element={<Stock />} />
+            <Route path='/stock/purchases' element={<PurchasesPage />} />
             <Route path='/registrations/services' element={<Services />} />
             <Route path='/registrations/variations' element={<Variations />} />
             <Route path='/registrations/customers' element={<Customers />} />

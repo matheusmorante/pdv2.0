@@ -3,6 +3,7 @@ import { formatCurrency } from '../../utils/formatters';
 import { StatsCard } from './components/StatsCard';
 import { ChartContainer, SimpleAreaChart, SimplePieChart } from './components/DashboardCharts';
 import { useDashboardData, Period } from './useDashboardData';
+import AlertsPanel from './components/AlertsPanel';
 
 interface VisibilityConfig {
     stats: boolean;
@@ -174,6 +175,9 @@ export default function Dashboard() {
                     <StatsCard title="Pendentes" value={stats.pendingOrders} icon="clock-history" color="bg-rose-600" />
                 </div>
             )}
+
+            {/* System Alerts */}
+            <AlertsPanel maxItems={5} />
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

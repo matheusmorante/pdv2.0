@@ -3,6 +3,7 @@ import Order, { VisibilitySettings } from "../../../types/order.type";
 import { useOrderHistory } from "./useOrderHistory";
 import OrderHistoryTable from "./OrderHistoryTable";
 import OrderDetailsModal from "../../DeliverySchedule/OrderDetailsModal";
+import StockActionModal from "../OrderActions/StockActionModal";
 
 type OrderHistoryListProps = {
     onEdit: (order: Order) => void;
@@ -39,6 +40,19 @@ const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn,
 
     const [pageInput, setPageInput] = React.useState(String(currentPage));
     const [viewOrder, setViewOrder] = React.useState<Order | null>(null);
+    const [stockModal, setStockModal] = React.useState<{ order: Order, type: 'withdrawal' | 'entry' } | null>(null);
+
+    const onAction = (actionKey: string, order: Order) => {
+        if (actionKey === 'stockWithdrawal') {
+            setStockModal({ order, type: 'withdrawal' });
+            return;
+        }
+        if (actionKey === 'stockReversal') {
+            setStockModal({ order, type: 'entry' });
+            return;
+        }
+        handleAction(actionKey, order);
+    };
 
     React.useEffect(() => {
         setPageInput(String(currentPage));
@@ -140,7 +154,7 @@ const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn,
                     onDelete={handleDelete}
                     onRestore={handleRestore}
                     onPermanentDelete={handlePermanentDelete}
-                    onAction={handleAction}
+                    onAction={onAction}
                     onStatusUpdate={handleStatusUpdate}
                     onViewDetails={setViewOrder}
                     visibilitySettings={visibilitySettings}
@@ -263,6 +277,14 @@ const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn,
                 <OrderDetailsModal
                     order={viewOrder}
                     onClose={() => setViewOrder(null)}
+                />
+            )}
+            {stockModal && (
+                <StockActionModal
+                    isOpen={!!stockModal}
+                    order={stockModal.order}
+                    type={stockModal.type}
+                    onClose={() => setStockModal(null)}
                 />
             )}
         </div>

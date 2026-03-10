@@ -85,6 +85,12 @@ export const actionsMap: Record<OrderAction, (order: Order) => void> = {
     'SEND_CUSTOMER_REVIEWS': (order) => {
         const message = `*Avaliação do Pedido*%0A%0AOlá! Poderia nos avaliar?`;
         window.open(`https://wa.me/?text=${message}`, "_blank");
+    },
+    'STOCK_WITHDRAWAL': () => {
+        // Handled in UI
+    },
+    'STOCK_REVERSAL': () => {
+        // Handled in UI
     }
 };
 

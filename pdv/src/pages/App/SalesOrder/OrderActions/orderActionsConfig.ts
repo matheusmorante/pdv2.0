@@ -26,6 +26,12 @@ export const actionsMap: Record<OrderAction, (order: Order) => void> = {
     },
     'SEND_CUSTOMER_REVIEWS': (order) => {
         window.open(customerReviewsWhatsappUrl(order), "_blank");
+    },
+    'STOCK_WITHDRAWAL': () => {
+        // Handled in UI to show modal
+    },
+    'STOCK_REVERSAL': () => {
+        // Handled in UI to show modal
     }
 };
 
@@ -79,4 +85,20 @@ export const buttons: OrderButton[] = [
         color: "text-yellow-500 hover:bg-yellow-50",
         tooltip: "Enviar pedido de avaliação da loja no Google Maps"
     },
+    {
+        key: "stockWithdrawal",
+        icon: "bi-box-arrow-right",
+        action: "STOCK_WITHDRAWAL",
+        label: "Lançar Saída",
+        color: "text-orange-600 hover:bg-orange-50",
+        tooltip: "Lançar saída de estoque manualmente para este pedido"
+    },
+    {
+        key: "stockReversal",
+        icon: "bi-arrow-counterclockwise",
+        action: "STOCK_REVERSAL",
+        label: "Estornar Saída",
+        color: "text-blue-600 hover:bg-blue-50",
+        tooltip: "Estornar (devolver) itens para o estoque"
+    }
 ];

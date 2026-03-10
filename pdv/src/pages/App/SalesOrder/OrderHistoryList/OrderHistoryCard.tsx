@@ -143,19 +143,28 @@ const OrderHistoryCard = ({
                                     <>
                                         <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
                                         <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl z-[100] p-1.5 flex flex-col gap-1 animate-slide-up">
-                                            {buttons.map((btn) => (
+                                                {buttons.map((btn) => {
+                                                    const isPrintReceipt = btn.key === 'printReceipt';
+                                                    const disablePrintReceipt = isPrintReceipt && (!order.customerData?.fullName || order.customerData.fullName === "Nenhum" || order.customerData.fullName === "Ao Consumidor");
+
+                                                    return (
                                                 <button
                                                     key={btn.key}
-                                                    onClick={() => {
+                                                        disabled={disablePrintReceipt}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (disablePrintReceipt) return;
                                                         onAction(btn.key, order);
                                                         setShowMenu(false);
                                                     }}
-                                                    className={`flex items-center gap-3 w-full p-2.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 ${btn.color}`}
+                                                        className={`flex items-center gap-3 w-full p-2.5 rounded-lg transition-all ${disablePrintReceipt ? 'opacity-50 cursor-not-allowed text-slate-400 bg-slate-50 dark:bg-slate-900/50' : `hover:bg-slate-50 dark:hover:bg-slate-800 ${btn.color}`}`}
+                                                        title={disablePrintReceipt ? 'Não é possível imprimir recibo sem cliente associado' : btn.tooltip}
                                                 >
                                                     <i className={`bi ${btn.icon} text-base`} />
                                                     <span className="text-[9px] font-black uppercase tracking-widest">{btn.label}</span>
                                                 </button>
-                                            ))}
+                                                )
+                                            })}
                                             <div className="border-t border-slate-50 dark:border-slate-800/50 my-1" />
                                             <button
                                                 onClick={() => onDelete(order.id!)}

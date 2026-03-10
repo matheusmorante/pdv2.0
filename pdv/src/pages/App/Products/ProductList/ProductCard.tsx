@@ -1,6 +1,7 @@
 import React from "react";
 import Product from "../../../types/product.type";
 import { formatCurrency } from "../../../utils/formatters";
+import { getCategoryBreadcrumb } from "../../../utils/categoryService";
 
 interface ProductCardProps {
     product: Product;
@@ -12,6 +13,7 @@ interface ProductCardProps {
     showTrash?: boolean;
     isSelected?: boolean;
     onToggleSelection?: () => void;
+    categoryTree?: any;
 }
 
 const ProductCard = ({
@@ -23,7 +25,8 @@ const ProductCard = ({
     onToggleActive,
     showTrash,
     isSelected,
-    onToggleSelection
+    onToggleSelection,
+    categoryTree
 }: ProductCardProps) => {
     const isLowStock = (product.stock || 0) <= (product.minStock || 0);
 
@@ -67,11 +70,9 @@ const ProductCard = ({
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-2">
                     {product.description}
                 </h3>
-                {product.category && (
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-0.5">
-                        {product.category}
-                    </p>
-                )}
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1 leading-relaxed">
+                    {getCategoryBreadcrumb(product.categoryIds || [], categoryTree)}
+                </p>
             </div>
 
             <div className="flex justify-between items-end border-t border-slate-50 dark:border-slate-800/50 pt-2.5">

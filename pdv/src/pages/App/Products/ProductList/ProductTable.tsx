@@ -25,6 +25,7 @@ interface ProductTableProps {
     onBulkTrash: () => void;
     onBulkRestore: () => void;
     onBulkPermanentDelete: () => void;
+    categoryTree?: any;
 }
 
 interface ColumnDef {
@@ -40,7 +41,6 @@ const COLUMNS_DEF: ColumnDef[] = [
     { key: 'costPrice', label: 'Preço Custo', align: 'text-right' },
     { key: 'unitPrice', label: 'Preço Venda', align: 'text-right' },
     { key: 'stock', label: 'Estoque', align: 'text-center' },
-    { key: 'unit', label: 'Unid.', align: 'text-center' },
     { key: 'actions', label: 'Ações', align: 'text-center' },
 ];
 
@@ -48,7 +48,7 @@ const ProductTable = ({
     products, onEdit, onShowHistory, onDelete, onRestore, onPermanentDelete, onToggleActive,
     visibilitySettings, onToggleColumn, showTrash, filters, onSort,
     selectedProducts, onToggleSelection, onSelectAll, onClearSelection,
-    onBulkTrash, onBulkRestore, onBulkPermanentDelete
+    onBulkTrash, onBulkRestore, onBulkPermanentDelete, categoryTree
 }: ProductTableProps) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const settings = getSettings();
@@ -159,10 +159,10 @@ const ProductTable = ({
 
             {/* Desktop Table View */}
             <div className="hidden md:block">
-                <div ref={containerRef} className="overflow-x-auto custom-scrollbar rounded-xl border border-slate-100 dark:border-slate-800">
+                <div ref={containerRef} className="overflow-x-auto overflow-y-auto max-h-[70vh] custom-scrollbar rounded-xl border border-slate-100 dark:border-slate-800">
                     <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 transition-colors">
+                        <thead className="sticky top-0 z-20 bg-slate-50 dark:bg-slate-900">
+                            <tr className="border-b border-slate-100 dark:border-slate-800 transition-colors">
                                 <th className="px-6 py-4 w-12 text-center">
                                     <label className="flex items-center cursor-pointer">
                                         <input
@@ -193,7 +193,7 @@ const ProductTable = ({
                                             onDragOver={handleDragOver}
                                             onDrop={(e) => handleDrop(e, col.key as string)}
                                             onDragEnd={() => setDraggedColumn(null)}
-                                            className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 transition-all ${col.align || ''} ${draggedColumn === col.key ? 'opacity-20' : 'opacity-100'}`}
+                                            className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 transition-all ${col.align || ''} ${draggedColumn === col.key ? 'opacity-20' : 'opacity-100'} ${col.key === 'code' ? 'w-[1%] whitespace-nowrap' : ''}`}
                                         >
                                             <div className={`flex items-center gap-2 ${col.align === 'text-right' ? 'justify-end' : col.align === 'text-center' ? 'justify-center' : ''}`}>
                                                 <div className="flex items-center group/header w-fit cursor-grab active:cursor-grabbing">
@@ -248,6 +248,7 @@ const ProductTable = ({
                                     orderedColumnKeys={orderedColumns.map(c => c.key as string)}
                                     isSelected={selectedProducts.includes(product.id!)}
                                     onToggleSelection={() => onToggleSelection(product.id!)}
+                                    categoryTree={categoryTree}
                                 />
                             ))}
                         </tbody>
@@ -275,6 +276,7 @@ const ProductTable = ({
                             showTrash={showTrash}
                             isSelected={selectedProducts.includes(product.id!)}
                             onToggleSelection={() => onToggleSelection(product.id!)}
+                            categoryTree={categoryTree}
                         />
                     ))
                 )}

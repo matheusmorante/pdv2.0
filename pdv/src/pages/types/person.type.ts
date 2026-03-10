@@ -11,7 +11,7 @@ export type Person = {
     phone?: string;
     noPhone?: boolean;
     fullAddress?: FullAddress;
-    type: 'customer' | 'supplier' | 'employee';
+    type: 'customers' | 'suppliers' | 'employees';
     marketingOrigin?: 'organic' | 'paid' | ''; // Origem de marketing (organic = loja física, paid = tráfego pago)
     active: boolean;
     leadTime?: number;

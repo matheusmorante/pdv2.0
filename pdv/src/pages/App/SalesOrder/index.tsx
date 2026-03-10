@@ -32,7 +32,7 @@ const SalesOrder = () => {
         totalValue: true,
         status: true,
         orderType: true,
-        manuseio: true,
+
         actions: true,
     });
 
@@ -146,7 +146,7 @@ const SalesOrder = () => {
                                                 { key: 'totalValue', label: 'Valor Total' },
                                                 { key: 'status', label: 'Status' },
                                                 { key: 'orderType', label: 'Tipo de Pedido' },
-                                                { key: 'manuseio', label: 'Manuseio' },
+
                                                 { key: 'actions', label: 'Ações' },
                                             ].map((col) => (
                                                 <button

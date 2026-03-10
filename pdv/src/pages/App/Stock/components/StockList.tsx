@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import Product from "../../../types/product.type";
+import Product, { Variation } from "../../../types/product.type";
 import { subscribeToProducts } from "../../../utils/productService";
 
 interface StockListProps {
-    onLaunch: (product: Product) => void;
+    onLaunch: (product: Product, variation?: Variation) => void;
 }
 
 const StockList = ({ onLaunch }: StockListProps) => {
@@ -37,7 +37,7 @@ const StockList = ({ onLaunch }: StockListProps) => {
 
     return (
         <div className="flex flex-col">
-            <div className="p-6 border-b border-slate-50 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="p-6 border-b border-slate-50 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-md">
                     <i className="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input 
@@ -54,48 +54,86 @@ const StockList = ({ onLaunch }: StockListProps) => {
                 </div>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                    <thead>
-                        <tr className="bg-slate-50/50 dark:bg-slate-950/20">
-                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 dark:border-slate-800">Item / Produto</th>
-                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 dark:border-slate-800 text-center">Saldo Atual</th>
-                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 dark:border-slate-800 text-right">Ações</th>
+            <div className="overflow-x-auto overflow-y-auto max-h-[60vh] custom-scrollbar">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                    <thead className="sticky top-0 z-20 bg-slate-50 dark:bg-slate-950">
+                        <tr>
+                            <th className="px-4 md:px-8 py-3 md:py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">Item / Produto</th>
+                            <th className="px-4 md:px-8 py-3 md:py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Saldo Atual</th>
+                            <th className="px-4 md:px-8 py-3 md:py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                         {filtered.map((product) => (
-                            <tr key={product.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
-                                <td className="px-8 py-5">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 dark:group-hover:bg-emerald-900/30 transition-all">
-                                            <i className="bi bi-box-seam text-lg"></i>
+                            <React.Fragment key={product.id}>
+                                <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
+                                    <td className="px-4 md:px-8 py-3 md:py-5">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 dark:group-hover:bg-emerald-900/30 transition-all shrink-0">
+                                                <i className="bi bi-box-seam text-lg"></i>
+                                            </div>
+                                            <div className="flex flex-col min-w-[120px]">
+                                                <span className="block font-bold text-slate-700 dark:text-slate-200 truncate">{product.description}</span>
+                                                {product.code && <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{product.code}</span>}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span className="block font-bold text-slate-700 dark:text-slate-200">{product.description}</span>
-                                            {product.code && <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{product.code}</span>}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-8 py-5 text-center">
-                                    <div className={`inline-flex items-center px-4 py-2 rounded-2xl font-black text-sm ${
-                                        (product.stock || 0) <= (product.minStock || 0) 
-                                            ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400' 
+                                    </td>
+                                    <td className="px-4 md:px-8 py-3 md:py-5 text-center">
+                                        <div className={`inline-flex items-center px-4 py-2 rounded-2xl font-black text-sm ${(product.stock || 0) <= (product.minStock || 0)
+                                            ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
                                             : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
-                                    }`}>
-                                        {product.stock || 0} {product.unit}
-                                    </div>
-                                </td>
-                                <td className="px-8 py-5 text-right">
-                                    <button 
-                                        onClick={() => onLaunch(product)}
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-900/50 rounded-xl transition-all font-black uppercase text-[10px] tracking-widest shadow-sm"
-                                    >
-                                        <i className="bi bi-lightning-charge"></i>
-                                        Lançar
-                                    </button>
-                                </td>
-                            </tr>
+                                            }`}>
+                                            {product.stock || 0} {product.unit}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 md:px-8 py-3 md:py-5 text-right">
+                                        {!product.hasVariations && (
+                                            <button
+                                                onClick={() => onLaunch(product)}
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-900/50 rounded-xl transition-all font-black uppercase text-[10px] tracking-widest shadow-sm"
+                                            >
+                                                <i className="bi bi-lightning-charge"></i>
+                                                <span className="hidden sm:inline">Lançar</span>
+                                            </button>
+                                        )}
+                                        {product.hasVariations && (
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Ver Variações</span>
+                                        )}
+                                    </td>
+                                </tr>
+                                {product.hasVariations && product.variations?.map(v => (
+                                    <tr key={v.id} className="bg-slate-50/30 dark:bg-slate-900/30 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 transition-colors group border-l-4 border-emerald-500/20">
+                                        <td className="px-4 md:px-8 py-3 md:py-4 pl-8 md:pl-16">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300 border border-slate-100 dark:border-slate-800 shrink-0">
+                                                    <i className="bi bi-stack text-sm"></i>
+                                                </div>
+                                                <div className="flex flex-col min-w-[120px]">
+                                                    <span className="text-sm font-bold text-slate-600 dark:text-slate-400 truncate">{v.name}</span>
+                                                    <span className="block text-[8px] font-black text-slate-400 uppercase tracking-widest truncate">{v.sku || "Sem SKU"}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 md:px-8 py-3 md:py-4 text-center">
+                                            <div className={`inline-flex items-center px-3 py-1.5 rounded-xl font-black text-xs ${v.stock <= (v.minStock || 0)
+                                                ? 'bg-rose-50/50 text-rose-500'
+                                                : 'bg-emerald-50/50 text-emerald-500'
+                                                }`}>
+                                                {v.stock} {product.unit}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 md:px-8 py-3 md:py-4 text-right">
+                                            <button
+                                                onClick={() => onLaunch(product, v)}
+                                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 hover:text-emerald-600 rounded-lg transition-all font-black uppercase text-[9px] tracking-widest"
+                                            >
+                                                <i className="bi bi-lightning-charge"></i>
+                                                <span className="hidden sm:inline">Lançar</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </React.Fragment>
                         ))}
                     </tbody>
                 </table>

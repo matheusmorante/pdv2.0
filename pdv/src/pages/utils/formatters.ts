@@ -49,7 +49,15 @@ export const formatToBRDate = (value: string | undefined | null) => {
     if (!value) return "-";
     if (value.includes('/') && value.length >= 8) return value; // Already formatted
 
-    // Handle YYYY-MM-DD
+    // If it's YYYY-MM-DD, handle it carefully to avoid timezone shifts
+    if (value.includes('-') && value.length >= 10) {
+        const parts = value.split('T')[0].split('-');
+        if (parts.length === 3) {
+            const [y, m, d] = parts;
+            return `${d}/${m}/${y}`;
+        }
+    }
+
     const date = new Date(value);
     if (isNaN(date.getTime())) return value;
 

@@ -59,17 +59,7 @@ export const OrderTypeLabelsSection = ({ deliveryMethod, orderType }: { delivery
     );
 };
 
-export const HandlingTypeSection = ({ handlingType }: { handlingType?: string }) => (
-    <section>
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-5 flex items-center gap-2">
-            <i className="bi bi-box-seam-fill" /> Manuseio
-        </h3>
-        <div className="bg-slate-50/50 dark:bg-slate-800/20 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 transition-colors duration-300 flex items-center gap-3 text-slate-700 dark:text-slate-300">
-            <i className="bi bi-tag-fill text-xl opacity-40" />
-            <span className="text-sm font-black uppercase tracking-widest">{handlingType || "NÃO INFORMADO"}</span>
-        </div>
-    </section>
-);
+
 
 import MapRoute from "../../SalesOrder/ShippingComponents/MapRoute";
 

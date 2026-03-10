@@ -8,6 +8,7 @@ import FreteDistancia from "./ShippingComponents/FreteDistancia";
 import Agendamento from "./ShippingComponents/Agendamento";
 import MapRoute from "./ShippingComponents/MapRoute";
 import InputMask from "react-input-mask";
+import SmartInput from "../../../components/SmartInput";
 
 interface Props {
     shipping: Shipping;
@@ -238,14 +239,16 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
                                         </div>
                                     </div>
 
-                                    <div className="flex-1">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">Ponto de Referência / Observação de Entrega</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-amber-100 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-amber-300 dark:placeholder:text-amber-700/50"
-                                            placeholder="Ex: Casa verde em frente a padaria..."
+                                    <div>
+                                        <SmartInput
+                                            label="Ponto de Referência / Observação de Entrega"
                                             value={shipping.deliveryAddress?.observation || ""}
-                                            onChange={e => updateDeliveryAddress('observation', e.target.value)}
+                                            onValueChange={val => updateDeliveryAddress('observation', val)}
+                                            tableName="orders"
+                                            columnName="observation"
+                                            placeholder="Ex: Casa verde em frente a padaria..."
+                                            icon="bi-geo-alt"
+                                            className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/30"
                                         />
                                     </div>
                                 </div>

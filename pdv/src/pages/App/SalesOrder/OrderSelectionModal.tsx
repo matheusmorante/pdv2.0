@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import Order from "../../types/order.type";
-import { formatCurrency } from "../../utils/formatters";
+import { formatCurrency, formatToBRDate } from "../../utils/formatters";
 
 interface OrderSelectionModalProps {
     orders: Order[];
@@ -88,7 +88,7 @@ const OrderSelectionModal = ({ orders, onSelect, onClose }: OrderSelectionModalP
                                 filteredOrders.map(o => (
                                     <tr key={o.id} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors group">
                                         <td className="px-4 py-4 text-xs font-mono font-bold text-slate-500">#{o.id}</td>
-                                        <td className="px-4 py-4 text-xs font-bold text-slate-700 dark:text-slate-300">{o.date}</td>
+                                        <td className="px-4 py-4 text-xs font-bold text-slate-700 dark:text-slate-300">{formatToBRDate(o.date)}</td>
                                         <td className="px-4 py-4 text-xs font-bold text-slate-800 dark:text-slate-100">{o.customerData?.fullName}</td>
                                         <td className="px-4 py-4 text-xs font-black text-blue-600 dark:text-blue-400 text-right">
                                             {formatCurrency(o.paymentsSummary?.totalOrderValue || 0)}

@@ -5,6 +5,10 @@ import ProductFormModal from "./ProductFormModal";
 import Product, { ProductVisibilitySettings } from "../../types/product.type";
 import { Link } from "react-router-dom";
 import PriceHistoryModal from "./PriceHistoryModal";
+import VariationFormModal from "./VariationFormModal";
+import { fetchGroupsAndCategories } from "../../utils/categoryService";
+import { Variation } from "../../types/product.type";
+import BlingImportModal from "./BlingImportModal";
 
 interface ProductFiltersData {
     search: string;
@@ -16,13 +20,32 @@ interface ProductFiltersData {
 }
 
 const Products = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isTrashOpen, setIsTrashOpen] = useState(false);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [historyProduct, setHistoryProduct] = useState<Product | null>(null);
+    const [categoryTree, setCategoryTree] = useState<any>(null);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+    // Variation Modal State
+    const [isVariationModalOpen, setIsVariationModalOpen] = useState(false);
+    const [editingVariation, setEditingVariation] = useState<Variation | null>(null);
+    const [variationParentProduct, setVariationParentProduct] = useState<Product | null>(null);
+
+    React.useEffect(() => {
+        const loadCategoryData = async () => {
+            try {
+                const data = await fetchGroupsAndCategories();
+                setCategoryTree(data);
+            } catch (err) {
+                console.error("Erro ao carregar hierarquia de categorias:", err);
+            }
+        };
+        loadCategoryData();
+    }, []);
 
     const [filters, setFilters] = useState<ProductFiltersData>({
         search: "",
@@ -39,7 +62,6 @@ const Products = () => {
         unitPrice: true,
         costPrice: true,
         stock: true,
-        unit: true,
         actions: true,
     });
 
@@ -87,6 +109,7 @@ const Products = () => {
                     </div>
 
                     <div className="flex gap-4">
+
                         <button
                             onClick={() => { setEditingProduct(null); setIsFormModalOpen(true); }}
                             className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
@@ -163,7 +186,6 @@ const Products = () => {
                                                 { key: 'costPrice', label: 'Preço de Custo' },
                                                 { key: 'unitPrice', label: 'Preço de Venda' },
                                                 { key: 'stock', label: 'Estoque' },
-                                                { key: 'unit', label: 'Unidade' },
                                                 { key: 'actions', label: 'Ações' },
                                             ].map((col) => (
                                                 <button
@@ -188,12 +210,29 @@ const Products = () => {
 
                     <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none md:shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                         <ProductList
-                            onEdit={(p) => { setEditingProduct(p); setIsFormModalOpen(true); }}
+                            onEdit={(p: any) => {
+                                if (p.isVariation) {
+                                    // It's a variation. We need to find the parent to get the actual variation object 
+                                    // and the parent's data for sync.
+                                    // Since p is synthetic, we find the real variation in p.variations if available, 
+                                    // but useProducts flattens it.
+                                    // Actually, we can just find the parent in a list or pass it.
+                                    // Better: let's use the ID to find the parent.
+                                    setVariationParentProduct(p); // p has parent data too in synthetic object
+                                    const actualVariation = p.variations?.find((v: Variation) => v.sku === p.sku);
+                                    setEditingVariation(actualVariation || p);
+                                    setIsVariationModalOpen(true);
+                                } else {
+                                    setEditingProduct(p);
+                                    setIsFormModalOpen(true);
+                                }
+                            }}
                             onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
                             filters={activeFilters}
                             visibilitySettings={visibilitySettings}
                             onToggleColumn={toggleVisibility}
                             onSort={handleSort}
+                            categoryTree={categoryTree}
                         />
                     </div>
                 </div>
@@ -217,12 +256,23 @@ const Products = () => {
                         </div>
                         <div className="flex-1 overflow-y-auto custom-scrollbar">
                             <ProductList
-                                onEdit={(p) => { setEditingProduct(p); setIsFormModalOpen(true); }}
+                                onEdit={(p: any) => {
+                                    if (p.isVariation) {
+                                        setVariationParentProduct(p);
+                                        const actualVariation = p.variations?.find((v: Variation) => v.sku === p.sku);
+                                        setEditingVariation(actualVariation || p);
+                                        setIsVariationModalOpen(true);
+                                    } else {
+                                        setEditingProduct(p);
+                                        setIsFormModalOpen(true);
+                                    }
+                                }}
                                 onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
                                 filters={trashFilters}
                                 visibilitySettings={visibilitySettings}
                                 onToggleColumn={toggleVisibility}
                                 onSort={handleSort}
+                                categoryTree={categoryTree}
                             />
                         </div>
                     </div>
@@ -236,10 +286,24 @@ const Products = () => {
                 product={editingProduct}
             />
 
+            <BlingImportModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onSuccess={() => {/* Page will reflect changes via subscription */ }}
+            />
+
             <PriceHistoryModal
                 isOpen={isHistoryModalOpen}
                 onClose={() => { setIsHistoryModalOpen(false); setHistoryProduct(null); }}
                 product={historyProduct}
+            />
+
+            <VariationFormModal
+                isOpen={isVariationModalOpen}
+                onClose={() => { setIsVariationModalOpen(false); setEditingVariation(null); setVariationParentProduct(null); }}
+                parentId={variationParentProduct?.parentId || ""}
+                parentProduct={variationParentProduct || {} as any}
+                variation={editingVariation}
             />
         </div>
     );

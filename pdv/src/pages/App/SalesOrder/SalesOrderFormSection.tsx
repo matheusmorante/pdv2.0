@@ -71,6 +71,19 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                     {/* Right Column - Customer & Shipping */}
                     <div className="flex flex-col gap-8">
                         <SectionCard
+                            icon="bi bi-person-workspace"
+                            iconBg="bg-blue-600 shadow-blue-100 dark:shadow-blue-900/20"
+                            title="Atendimento"
+                            className="bg-white dark:bg-slate-900"
+                        >
+                            <Seller
+                                seller={state.seller}
+                                setSeller={actions.setSeller}
+                                errors={state.errors}
+                            />
+                        </SectionCard>
+
+                        <SectionCard
                             icon="bi bi-person-badge"
                             iconBg="bg-purple-600 shadow-purple-100 dark:shadow-purple-900/20"
                             title="Dados do Cliente"
@@ -90,11 +103,6 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                             className="bg-white dark:bg-slate-900 transition-colors duration-300"
                         >
                             <div className="space-y-8">
-                                <Seller
-                                    seller={state.seller}
-                                    setSeller={actions.setSeller}
-                                    errors={state.errors}
-                                />
                                 <ShippingInputs
                                     shipping={state.shipping}
                                     setShipping={actions.setShipping}
