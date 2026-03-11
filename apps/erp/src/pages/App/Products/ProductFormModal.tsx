@@ -693,6 +693,9 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        const { requiredFields } = getSettings();
+
         if (!formData.description) {
             toast.error("O título do produto é obrigatório.");
             return;
@@ -707,6 +710,30 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
         if (formData.itemType === 'product' && !formData.condition) {
             toast.error("A condição do móvel (Novo, Usado ou Salvado) é obrigatória para produtos.");
             setActiveTab('geral');
+            return;
+        }
+        
+        if (requiredFields.product?.code && !formData.code) {
+            toast.error("O código interno (SKU) geral é obrigatório.");
+            setActiveTab('geral');
+            return;
+        }
+
+        if (requiredFields.product?.brand && !formData.brand) {
+            toast.error("A marca é obrigatória.");
+            setActiveTab('geral');
+            return;
+        }
+
+        if (requiredFields.product?.costPrice && (!formData.costPrice || formData.costPrice <= 0)) {
+            toast.error("O preço de custo é obrigatório.");
+            setActiveTab('geral');
+            return;
+        }
+
+        if (requiredFields.product?.minStock && (formData.minStock === undefined || formData.minStock === null)) {
+            toast.error("O estoque mínimo é obrigatório.");
+            setActiveTab('estoque');
             return;
         }
 
@@ -1266,12 +1293,16 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                                     </h4>
 
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Quantidade Inicial</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-2">
+                                            Quantidade Inicial
+                                            {!!product && <span className="text-[8px] text-amber-500 font-bold lowercase tracking-normal">(use o botão de "Estoque" na lista para alterar)</span>}
+                                        </label>
                                         <input
                                             type="number"
                                             value={formData.initialStock}
                                             onChange={(e) => setFormData({ ...formData, initialStock: parseInt(e.target.value), stock: parseInt(e.target.value) })}
-                                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none text-sm font-bold"
+                                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none text-sm font-bold disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900"
+                                            disabled={!!product}
                                         />
                                     </div>
 

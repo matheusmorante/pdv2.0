@@ -11,6 +11,7 @@ interface ProductRowProps {
     onPermanentDelete: (id: string) => void;
     onToggleActive: (id: string, currentStatus: boolean) => void;
     onShowHistory?: (product: Product) => void;
+    onLaunchStock?: (product: any) => void;
     visibilitySettings: ProductVisibilitySettings;
     showTrash?: boolean;
     orderedColumnKeys?: string[];
@@ -27,6 +28,7 @@ const ProductRow = ({
     onPermanentDelete,
     onToggleActive,
     onShowHistory,
+    onLaunchStock,
     visibilitySettings,
     showTrash,
     orderedColumnKeys,
@@ -186,6 +188,16 @@ const ProductRow = ({
                                     >
                                         <i className={`bi ${product.active ? 'bi-toggle-on' : 'bi-toggle-off'} text-lg`} />
                                     </button>
+
+                                    {product.itemType !== 'service' && !product.isParent && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onLaunchStock?.(product); }}
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-xl transition-all shadow-sm bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800"
+                                            title="Lançar / Estornar Estoque"
+                                        >
+                                            <i className="bi bi-box-seam text-sm" />
+                                        </button>
+                                    )}
 
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onEdit(product); }}

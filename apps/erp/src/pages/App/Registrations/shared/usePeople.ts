@@ -5,17 +5,26 @@ import { toast } from "react-toastify";
 
 export const usePeople = (collectionName: string, filters?: any) => {
     const [people, setPeople] = useState<Person[]>([]);
+    const [trashedPeople, setTrashedPeople] = useState<Person[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(50);
     const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
 
+    // Subscription for active records
     useEffect(() => {
         const unsubscribe = subscribeToPeople(collectionName, (data: Person[]) => {
             setPeople(data);
             setLoading(false);
-        });
+        }, false);
+        return () => unsubscribe();
+    }, [collectionName]);
 
+    // Subscription for deleted records (trash)
+    useEffect(() => {
+        const unsubscribe = subscribeToPeople(collectionName, (data: Person[]) => {
+            setTrashedPeople(data);
+        }, true);
         return () => unsubscribe();
     }, [collectionName]);
 
@@ -28,26 +37,22 @@ export const usePeople = (collectionName: string, filters?: any) => {
         const showTrash = filters?.showTrash || false;
         const isDraft = filters?.isDraft || false;
 
-        return people
-            .filter(person => {
-                if (showTrash) {
-                    if (!person.deleted) return false;
-                } else {
-                    if (person.deleted) return false;
-                }
+        // Use the appropriate list from DB — already filtered server-side
+        const sourceList = showTrash ? trashedPeople : people;
 
+        return sourceList
+            .filter(person => {
                 // Draft logic: if we are viewing drafts, only show drafts.
-                // If we are NOT viewing drafts, hide them.
                 if (isDraft) {
                     if (!person.isDraft) return false;
-                } else if (!showTrash) { // Don't hide drafts in trash if they are already deleted (though usually drafts aren't in trash)
+                } else if (!showTrash) {
                     if (person.isDraft) return false;
                 }
 
                 if (!filters) return true;
 
                 const searchMatch = !filters.search ||
-                    person.fullName.toLowerCase().includes(filters.search.toLowerCase()) ||
+                    person.fullName?.toLowerCase().includes(filters.search.toLowerCase()) ||
                     person.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
                     person.cpfCnpj?.includes(filters.search);
 
@@ -68,7 +73,7 @@ export const usePeople = (collectionName: string, filters?: any) => {
                 const sortOrder = filters?.sortOrder || 'asc';
                 return sortOrder === "asc" ? comparison : -comparison;
             });
-    }, [people, filters]);
+    }, [people, trashedPeople, filters]);
 
     const totalPages = Math.ceil(filteredPeople.length / itemsPerPage);
     const totalItems = filteredPeople.length;

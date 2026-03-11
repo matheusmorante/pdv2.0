@@ -26,7 +26,12 @@ const SmartInput: React.FC<SmartInputProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [dynamicSuggestions, setDynamicSuggestions] = useState<string[]>([]);
     const [activeIndex, setActiveIndex] = useState(-1);
+    const [inputValue, setInputValue] = useState(value || "");
     const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setInputValue(value || "");
+    }, [value]);
 
     // Fetch dynamic suggestions if table and column are provided
     useEffect(() => {
@@ -62,15 +67,9 @@ const SmartInput: React.FC<SmartInputProps> = ({
     }, [patterns, suggestions, dynamicSuggestions]);
 
     const filteredSuggestions = useMemo(() => {
-        const query = (String(value || "")).toLowerCase();
+        const query = (String(inputValue || "")).toLowerCase();
         if (!query) return allSuggestions.slice(0, 10); 
 
-        // Prioritization logic:
-        // 1. Exact matches in patterns
-        // 2. Starts with in patterns
-        // 3. Starts with in other suggestions
-        // 4. Contains
-        
         const patternMatches = patterns.filter(s => s.toLowerCase().startsWith(query));
         const otherMatches = allSuggestions.filter(s => 
             s.toLowerCase().startsWith(query) && !patternMatches.includes(s)
@@ -81,18 +80,36 @@ const SmartInput: React.FC<SmartInputProps> = ({
             !otherMatches.includes(s)
         );
 
-        return [...patternMatches, ...otherMatches, ...containsMatches].slice(0, 10);
-    }, [value, allSuggestions, patterns]);
+        const results = [...patternMatches, ...otherMatches, ...containsMatches].slice(0, 10);
+        
+        // Add "Usar..." option for new entries if not an exact match
+        if (query && !results.some(s => s.toLowerCase() === query)) {
+            results.unshift(`Usar "${inputValue}"`);
+        }
+
+        return results;
+    }, [inputValue, allSuggestions, patterns]);
+
+    const handleSelect = (suggestion: string) => {
+        let finalValue = suggestion;
+        if (suggestion.startsWith('Usar "') && suggestion.endsWith('"')) {
+            finalValue = suggestion.slice(6, -1);
+        }
+        setInputValue(finalValue);
+        onValueChange(finalValue);
+        setIsOpen(false);
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
+                setInputValue(value || ""); // Revert on blur
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [value]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isOpen) {
@@ -106,10 +123,10 @@ const SmartInput: React.FC<SmartInputProps> = ({
             setActiveIndex((prev: number) => (prev > 0 ? prev - 1 : -1));
         } else if (e.key === "Enter" && activeIndex >= 0) {
             e.preventDefault();
-            onValueChange(filteredSuggestions[activeIndex]);
-            setIsOpen(false);
+            handleSelect(filteredSuggestions[activeIndex]);
         } else if (e.key === "Escape") {
             setIsOpen(false);
+            setInputValue(value || "");
         }
     };
 
@@ -126,9 +143,9 @@ const SmartInput: React.FC<SmartInputProps> = ({
                 )}
                 <input
                     {...props}
-                    value={value}
+                    value={inputValue}
                     onChange={(e) => {
-                        onValueChange(e.target.value);
+                        setInputValue(e.target.value);
                         setIsOpen(true);
                         setActiveIndex(-1);
                     }}
@@ -144,10 +161,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
                                 <button
                                     key={index}
                                     type="button"
-                                    onClick={() => {
-                                        onValueChange(suggestion);
-                                        setIsOpen(false);
-                                    }}
+                                    onClick={() => handleSelect(suggestion)}
                                     onMouseEnter={() => setActiveIndex(index)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${index === activeIndex ? 'bg-blue-600 text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'}`}
                                 >

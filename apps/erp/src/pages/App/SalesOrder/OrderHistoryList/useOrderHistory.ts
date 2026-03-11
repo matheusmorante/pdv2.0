@@ -95,8 +95,22 @@ export const useOrderHistory = (filters?: any) => {
                 if (!filters) return true;
 
                 const orderDateComp = toComparableDate(order.date);
-                const dateMatch = (!filters.dateRange.start || orderDateComp >= filters.dateRange.start) &&
+                let dateMatch = (!filters.dateRange.start || orderDateComp >= filters.dateRange.start) &&
                     (!filters.dateRange.end || orderDateComp <= (filters.dateRange.end + 'T23:59:59'));
+
+                if (isDraft) {
+                    // Drafts should always be visible in the Drafts modal regardless of creation date
+                    dateMatch = true;
+                } else if (!dateMatch && (order.status === 'scheduled' || order.orderType === 'assistance') && order.shipping?.scheduling?.date) {
+                    // For scheduled or assistance orders, check if the delivery date falls within the range
+                    const deliveryDateComp = toComparableDate(order.shipping.scheduling.date);
+                    const isAfterStart = !filters.dateRange.start || deliveryDateComp >= filters.dateRange.start;
+                    const isBeforeEnd = !filters.dateRange.end || deliveryDateComp <= (filters.dateRange.end + 'T23:59:59');
+                    
+                    if (isAfterStart && isBeforeEnd) {
+                        dateMatch = true;
+                    }
+                }
 
                 const customerMatch = !filters.customerName || matchesCustomer;
 

@@ -81,9 +81,20 @@ const mapProfileToPerson = (prof: any): Person => {
     } as any;
 };
 
-export const subscribeToPeople = (collectionName: string, callback: (people: Person[]) => void) => {
+export const subscribeToPeople = (collectionName: string, callback: (people: Person[]) => void, includeDeleted = false) => {
     const fetchAll = async () => {
-        let peopleQuery = supabase.from(TABLE_NAME).select('*').eq('is_draft', false);
+        let peopleQuery = supabase.from(TABLE_NAME).select('*');
+
+        if (!includeDeleted) {
+            // Use "not is_draft eq true" to capture both false AND null (imported records)
+            peopleQuery = peopleQuery
+                .not('is_draft', 'eq', true)
+                .not('deleted', 'eq', true);
+        } else {
+            // For trash view: show only deleted records
+            peopleQuery = peopleQuery.eq('deleted', true);
+        }
+
         if (collectionName === 'employees') {
             peopleQuery = peopleQuery.or(`person_type.eq.employees,and(position.not.is.null,position.neq."")`);
         } else if (collectionName === 'customers') {

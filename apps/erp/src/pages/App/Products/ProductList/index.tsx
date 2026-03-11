@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 interface ProductListProps {
     onEdit: (product: Product) => void;
     onShowHistory?: (product: Product) => void;
+    onLaunchStock?: (product: any) => void;
     filters?: any;
     visibilitySettings: ProductVisibilitySettings;
     onToggleColumn: (column: keyof ProductVisibilitySettings) => void;
@@ -14,7 +15,7 @@ interface ProductListProps {
     categoryTree?: any;
 };
 
-const ProductList = ({ onEdit, onShowHistory, filters, visibilitySettings, onToggleColumn, onSort, categoryTree }: ProductListProps) => {
+const ProductList = ({ onEdit, onShowHistory, onLaunchStock, filters, visibilitySettings, onToggleColumn, onSort, categoryTree }: ProductListProps) => {
     const {
         products,
         loading,
@@ -83,6 +84,7 @@ const ProductList = ({ onEdit, onShowHistory, filters, visibilitySettings, onTog
                     products={products}
                     onEdit={onEdit}
                     onShowHistory={onShowHistory}
+                    onLaunchStock={onLaunchStock}
                     onDelete={handleDelete}
                     onRestore={handleRestore}
                     onPermanentDelete={handlePermanentDelete}

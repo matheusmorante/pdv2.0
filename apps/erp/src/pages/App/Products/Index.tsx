@@ -6,6 +6,7 @@ import Product, { ProductVisibilitySettings } from "../../types/product.type";
 import { Link } from "react-router-dom";
 import PriceHistoryModal from "./PriceHistoryModal";
 import VariationFormModal from "./VariationFormModal";
+import StockLaunchModal from "../Stock/components/StockLaunchModal";
 import { fetchGroupsAndCategories } from "../../utils/categoryService";
 import { Variation } from "../../types/product.type";
 
@@ -35,6 +36,10 @@ const Products = () => {
     const [editingVariation, setEditingVariation] = useState<Variation | null>(null);
     const [variationParentProduct, setVariationParentProduct] = useState<Product | null>(null);
     const [initialFormData, setInitialFormData] = useState<Partial<Product> | null>(null);
+
+    // Stock Launch Modal State
+    const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+    const [stockLaunchTarget, setStockLaunchTarget] = useState<{product?: Product, variation?: Variation} | null>(null);
 
     React.useEffect(() => {
         const loadCategoryData = async () => {
@@ -112,6 +117,13 @@ const Products = () => {
                     </div>
 
                     <div className="flex gap-4 relative">
+                        <Link
+                            to="/app/configuracoes"
+                            className="flex items-center justify-center p-3 xl:p-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-all h-full"
+                            title="Configurar Campos Obrigatórios"
+                        >
+                            <i className="bi bi-gear-fill text-lg xl:text-xl" />
+                        </Link>
                         <button
                             onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
                             className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
@@ -288,6 +300,15 @@ const Products = () => {
                                 }
                             }}
                             onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
+                            onLaunchStock={(p: any) => {
+                                if (p.isVariation) {
+                                    const actualVariation = p.variations?.find((v: Variation) => v.sku === p.sku);
+                                    setStockLaunchTarget({ variation: actualVariation || p });
+                                } else {
+                                    setStockLaunchTarget({ product: p });
+                                }
+                                setIsStockModalOpen(true);
+                            }}
                             filters={activeFilters}
                             visibilitySettings={visibilitySettings}
                             onToggleColumn={toggleVisibility}
@@ -328,6 +349,15 @@ const Products = () => {
                                     }
                                 }}
                                 onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
+                                onLaunchStock={(p: any) => {
+                                    if (p.isVariation) {
+                                        const actualVariation = p.variations?.find((v: Variation) => v.sku === p.sku);
+                                        setStockLaunchTarget({ variation: actualVariation || p });
+                                    } else {
+                                        setStockLaunchTarget({ product: p });
+                                    }
+                                    setIsStockModalOpen(true);
+                                }}
                                 filters={trashFilters}
                                 visibilitySettings={visibilitySettings}
                                 onToggleColumn={toggleVisibility}
@@ -369,6 +399,15 @@ const Products = () => {
                                     }
                                 }}
                                 onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
+                                onLaunchStock={(p: any) => {
+                                    if (p.isVariation) {
+                                        const actualVariation = p.variations?.find((v: Variation) => v.sku === p.sku);
+                                        setStockLaunchTarget({ variation: actualVariation || p });
+                                    } else {
+                                        setStockLaunchTarget({ product: p });
+                                    }
+                                    setIsStockModalOpen(true);
+                                }}
                                 filters={draftFilters}
                                 visibilitySettings={visibilitySettings}
                                 onToggleColumn={toggleVisibility}
@@ -400,6 +439,13 @@ const Products = () => {
                 parentId={variationParentProduct?.parentId || ""}
                 parentProduct={variationParentProduct || {} as any}
                 variation={editingVariation}
+            />
+
+            <StockLaunchModal
+                isOpen={isStockModalOpen}
+                onClose={() => { setIsStockModalOpen(false); setStockLaunchTarget(null); }}
+                targetProduct={stockLaunchTarget?.product || null}
+                targetVariation={stockLaunchTarget?.variation}
             />
         </div>
     );

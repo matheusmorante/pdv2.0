@@ -21,6 +21,7 @@ import ChannelDescriptionsSection from './components/ChannelDescriptionsSection'
 import WhatsAppTemplatesSection from './components/WhatsAppTemplatesSection';
 import BusinessRulesSection from './components/BusinessRulesSection';
 import ReceiptConfigSection from './components/ReceiptConfigSection';
+import ValidationConfigSection from './components/ValidationConfigSection';
 import SaveButton from './components/SaveButton';
 
 const categories: any[] = [
@@ -37,6 +38,7 @@ const categories: any[] = [
     { id: 'canais', label: 'Descrições por Canal', icon: 'bi-megaphone-fill', group: 'system', keywords: ['whatsapp', 'ecommerce', 'canal', 'marketplace', 'base', 'descrição', 'loja'] },
     { id: 'templates', label: 'Mensagens & Templates', icon: 'bi-chat-quote-fill', group: 'system', keywords: ['mensagem', 'template', 'whatsapp', 'texto', 'avaliação', 'confirmação'] },
     { id: 'regras', label: 'Regras de Negócio', icon: 'bi-gear-wide-connected', group: 'system', keywords: ['regra', 'estoque', 'negativo', 'reserva', 'venda'] },
+    { id: 'obrigatorios', label: 'Campos Obrigatórios', icon: 'bi-shield-check', group: 'system', keywords: ['obrigatório', 'bloqueio', 'venda', 'cadastro', 'cpf', 'cnpj', 'telefone', 'rg', 'endereço', 'estoque', 'email', 'cargo'] },
     { id: 'recibo', label: 'Configuração de Recibo', icon: 'bi-printer-fill', group: 'system', keywords: ['recibo', 'impressão', 'rodapé', 'vendedor', 'garantia'] },
 ];
 
@@ -231,6 +233,10 @@ export default function Settings(): any {
 
                     <SettingsSection id="regras" title="Regras de Negócio e Estoque" icon="bi-gear-wide-connected" isVisible={isVisible('regras')}>
                         <BusinessRulesSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="obrigatorios" title="Campos Obrigatórios" icon="bi-shield-check" isVisible={isVisible('obrigatorios')}>
+                        <ValidationConfigSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
 
                     <SettingsSection id="recibo" title="Configuração de Recibo e Impressão" icon="bi-printer-fill" isVisible={isVisible('recibo')}>

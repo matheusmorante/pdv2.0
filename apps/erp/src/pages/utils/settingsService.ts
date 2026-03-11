@@ -109,6 +109,30 @@ export interface AppSettings {
         allowNegativeStock: boolean;
         autoReserveStock: boolean;
     };
+    requiredFields: {
+        customer: {
+            cpfCnpj: boolean;
+            rgIe: boolean;
+            email: boolean;
+            phone: boolean;
+            position: boolean;
+            address: boolean;
+        };
+        product: {
+            code: boolean;
+            brand: boolean;
+            costPrice: boolean;
+            minStock: boolean;
+        };
+        salesOrder: {
+            seller: boolean;
+            customer: boolean;
+        };
+        assistanceOrder: {
+            seller: boolean;
+            customer: boolean;
+        };
+    };
 }
 
 const SETTINGS_KEY = 'pdv_app_settings';
@@ -345,6 +369,30 @@ RESPOSTA NO FORMATO JSON:
     businessRules: {
         allowNegativeStock: false,
         autoReserveStock: true
+    },
+    requiredFields: {
+        customer: {
+            cpfCnpj: false,
+            rgIe: false,
+            email: false,
+            phone: true,
+            position: false,
+            address: false,
+        },
+        product: {
+            code: false,
+            brand: false,
+            costPrice: false,
+            minStock: false,
+        },
+        salesOrder: {
+            seller: true,
+            customer: false,
+        },
+        assistanceOrder: {
+            seller: true,
+            customer: false,
+        }
     }
 });
 

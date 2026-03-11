@@ -1,4 +1,5 @@
 import { calcPaymentsSummary, calcItemsSummary } from "./calculations";
+import { getSettings } from "./settingsService";
 import CustomerData from "../types/customerData.type";
 import { Item } from "../types/items.type"
 import { Payment } from "../types/payments.type";
@@ -46,15 +47,40 @@ export const validatePayments = (
 
 export const validateCustomerData = (customer: CustomerData): ValidationErrors => {
     const errors: ValidationErrors = {};
+    const { requiredFields } = getSettings();
 
     if (!customer) return { customer: "Dados do cliente ausentes." };
 
-    if (!customer.fullName || !customer.fullName.trim()) errors['customer_fullName'] = "Nome completo é obrigatório.";
-    if (!customer.phone || !customer.phone.trim()) errors['customer_phone'] = "Telefone/Celular é obrigatório.";
+    if (!customer.fullName || !customer.fullName.trim()) {
+        errors['customer_fullName'] = "Nome completo é obrigatório.";
+    }
 
-    // Only strictly valid the structural presence. Address validation will be handled
-    // by Shipping validation depending on the "useCustomerAddress" toggle.
-    // If it's a delivery and useCustomerAddress is true, it verifies if customer address exists.
+    if (requiredFields.customer?.phone && (!customer.phone || !customer.phone.trim())) {
+        errors['customer_phone'] = "Telefone/Celular é obrigatório.";
+    }
+
+    if (requiredFields.customer?.cpfCnpj && (!customer.cpfCnpj || !customer.cpfCnpj.trim())) {
+        errors['customer_cpfCnpj'] = "CPF/CNPJ é obrigatório.";
+    }
+
+    if (requiredFields.customer?.email && (!customer.email || !customer.email.trim())) {
+        errors['customer_email'] = "Email é obrigatório.";
+    }
+
+    if (requiredFields.customer?.rgIe && (!(customer as any).rgIe || !(customer as any).rgIe.trim())) {
+        errors['customer_rgIe'] = "RG/IE é obrigatório.";
+    }
+
+    if (requiredFields.customer?.position && (!(customer as any).position || !(customer as any).position.trim())) {
+        errors['customer_position'] = "Cargo/Ocupação é obrigatório.";
+    }
+
+    if (requiredFields.customer?.address) {
+       const addr = customer.fullAddress;
+       if (!addr?.street || !addr?.number || !addr?.neighborhood || !addr?.city) {
+           errors['customer_address'] = "Endereço completo é obrigatório.";
+       }
+    }
 
     return errors;
 }
@@ -94,7 +120,10 @@ export const validateShipping = (shipping: Shipping, customer: CustomerData): Va
 
 export const validateSeller = (seller: Order['seller']): ValidationErrors => {
     const errors: ValidationErrors = {};
-    if (!seller) errors['seller'] = "Vendedor é obrigatório.";
+    const { requiredFields } = getSettings();
+    if (requiredFields.salesOrder?.seller && !seller) {
+        errors['seller'] = "Vendedor é obrigatório.";
+    }
     return errors;
 }
 
@@ -149,8 +178,17 @@ export const validateBase = (order: Order) => {
 
 export const validateAssistanceOrder = (order: Order): ValidationErrors => {
     const errors: ValidationErrors = {};
-    if (!order.customerData?.fullName) errors['customer_fullName'] = "Nome do cliente é obrigatório.";
-    if (!order.assistanceDescription) errors['assistanceDescription'] = "Descrição do serviço é obrigatória.";
+    const { requiredFields } = getSettings();
+
+    if (!order.customerData?.fullName && requiredFields.assistanceOrder?.customer) {
+        errors['customer_fullName'] = "Nome do cliente é obrigatório.";
+    }
+    if (!order.assistanceDescription) {
+        errors['assistanceDescription'] = "Descrição do serviço é obrigatória.";
+    }
+    if (!order.seller && requiredFields.assistanceOrder?.seller) {
+        errors['seller'] = "Vendedor é obrigatório.";
+    }
     return errors;
 };
 

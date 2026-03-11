@@ -6,6 +6,7 @@ import { getCategoryBreadcrumb } from "../../../utils/categoryService";
 interface ProductCardProps {
     product: Product;
     onEdit: (product: Product) => void;
+    onLaunchStock?: (product: any) => void;
     onDelete: (id: string) => void;
     onRestore: (id: string) => void;
     onPermanentDelete: (id: string) => void;
@@ -19,6 +20,7 @@ interface ProductCardProps {
 const ProductCard = ({
     product,
     onEdit,
+    onLaunchStock,
     onDelete,
     onRestore,
     onPermanentDelete,
@@ -102,7 +104,7 @@ const ProductCard = ({
                 )}
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5 mt-3" onClick={(e) => e.stopPropagation()}>
+            <div className={`grid ${(!showTrash && product.itemType !== 'service' && !product.isParent) ? 'grid-cols-4' : 'grid-cols-3'} gap-1.5 mt-3`} onClick={(e) => e.stopPropagation()}>
                 {showTrash ? (
                     <>
                         <button
@@ -131,6 +133,17 @@ const ProductCard = ({
                             <i className={`bi ${product.active ? 'bi-toggle-on' : 'bi-toggle-off'} text-base`} />
                             <span className="text-[8px] font-black uppercase">{product.active ? 'Ativo' : 'Inativo'}</span>
                         </button>
+
+                        {/* Stock Button - only if not service/parent */}
+                        {product.itemType !== 'service' && !product.isParent && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onLaunchStock?.(product); }}
+                                className="flex flex-col items-center justify-center gap-1 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                            >
+                                <i className="bi bi-box-seam text-base" />
+                                <span className="text-[8px] font-black uppercase">Estoque</span>
+                            </button>
+                        )}
 
                         <button
                             onClick={() => onEdit(product)}

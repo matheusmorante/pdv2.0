@@ -101,6 +101,13 @@ const SalesOrder = () => {
                     </div>
 
                     <div className="flex gap-4">
+                        <Link
+                            to="/app/configuracoes"
+                            className="flex items-center justify-center p-3 xl:p-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-all"
+                            title="Configurar Campos Obrigatórios"
+                        >
+                            <i className="bi bi-gear-fill text-lg xl:text-xl" />
+                        </Link>
                         <NewOrderDropdown onSelect={(type) => setOrderModalType(type)} />
                     </div>
                 </div>

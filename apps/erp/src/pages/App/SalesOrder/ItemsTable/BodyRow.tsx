@@ -63,17 +63,6 @@ const BodyRow = ({ item, onChange, onSelectProduct, onToggleDiscountType, onDele
                                     {item.condition}
                                 </span>
                             )}
-                            {!item.isComboItem && (
-                                <>
-                                    <i className="bi bi-box-seam text-[10px] text-slate-400" />
-                                    <input
-                                        className="bg-transparent border-0 border-b border-transparent hover:border-slate-200 focus:border-blue-400 outline-none text-[10px] font-black uppercase tracking-widest text-slate-400 focus:text-blue-500 transition-all w-full"
-                                        placeholder="Manuseio (ex: Com montagem, Na caixa...)"
-                                        value={item.handlingType || ''}
-                                        onChange={(e) => onChange(idx, 'handlingType', e.target.value)}
-                                    />
-                                </>
-                            )}
                             {item.isCombo && (
                                 <span className="px-2 py-0.5 bg-blue-600 text-white rounded text-[8px] font-black uppercase tracking-widest">
                                     Combo
@@ -109,19 +98,17 @@ const BodyRow = ({ item, onChange, onSelectProduct, onToggleDiscountType, onDele
             <td className="px-4 py-2">
                 {!item.isComboItem && (
                     <select
-                        className="w-full min-w-[100px] bg-transparent border border-slate-100 dark:border-slate-800 focus:border-blue-500 px-2 py-1.5 rounded-xl outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
-                        value={currentType}
-                        onChange={(e) => {
-                            const newType = e.target.value as 'delivery' | 'pickup';
-                            onChange(idx, 'deliveryMethod', newType);
-                            const options = newType === 'delivery' ? settings.deliveryHandlingOptions : settings.pickupHandlingOptions;
-                            if (options.length > 0) {
-                                onChange(idx, 'handlingType', options[0]);
-                            }
-                        }}
+                        className="w-full min-w-[120px] bg-transparent border border-slate-100 dark:border-slate-800 focus:border-blue-500 px-2 py-1.5 rounded-xl outline-none transition-all text-[11px] font-bold text-slate-600 dark:text-slate-400"
+                        value={item.handlingType || ''}
+                        onChange={(e) => onChange(idx, 'handlingType', e.target.value)}
                     >
-                        <option value="delivery" className="dark:bg-slate-900">{settings.orderTypeLabels.delivery}</option>
-                        <option value="pickup" className="dark:bg-slate-900">{settings.orderTypeLabels.pickup}</option>
+                        <option value="" disabled className="dark:bg-slate-900">Selecione...</option>
+                        {(deliveryMethod === 'delivery' ? (settings.deliveryHandlingOptions || []) : (settings.pickupHandlingOptions || [])).map(opt => (
+                            <option key={opt} value={opt} className="dark:bg-slate-900">{opt}</option>
+                        ))}
+                        {item.handlingType && !(deliveryMethod === 'delivery' ? (settings.deliveryHandlingOptions || []) : (settings.pickupHandlingOptions || [])).includes(item.handlingType) && (
+                            <option value={item.handlingType} className="dark:bg-slate-900">{item.handlingType}</option>
+                        )}
                     </select>
                 )}
             </td>

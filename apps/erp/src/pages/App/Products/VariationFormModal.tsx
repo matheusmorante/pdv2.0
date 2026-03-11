@@ -391,12 +391,16 @@ const VariationFormModal = ({ isOpen, onClose, parentId, parentProduct, variatio
 
                     <div className="grid grid-cols-3 gap-6 shrink-0">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Estoque Atual</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex flex-col">
+                                Estoque Atual
+                                {!!variation?.id && <span className="text-[8px] text-amber-500 font-bold lowercase tracking-normal mt-0.5">(altere na tela anterior)</span>}
+                            </label>
                             <input
                                 type="number"
                                 value={formData.stock || 0}
                                 onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20"
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-100 disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-900"
+                                disabled={!!variation?.id}
                             />
                         </div>
                         <div className="flex flex-col gap-2">

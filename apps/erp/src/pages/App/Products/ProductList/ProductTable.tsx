@@ -9,6 +9,7 @@ interface ProductTableProps {
     products: Product[];
     onEdit: (product: Product) => void;
     onShowHistory?: (product: Product) => void;
+    onLaunchStock?: (product: any) => void;
     onDelete: (id: string) => void;
     onRestore: (id: string) => void;
     onPermanentDelete: (id: string) => void;
@@ -46,7 +47,7 @@ const COLUMNS_DEF: ColumnDef[] = [
 ];
 
 const ProductTable = ({
-    products, onEdit, onShowHistory, onDelete, onRestore, onPermanentDelete, onToggleActive,
+    products, onEdit, onShowHistory, onLaunchStock, onDelete, onRestore, onPermanentDelete, onToggleActive,
     visibilitySettings, onToggleColumn, showTrash, filters, onSort,
     selectedProducts, onToggleSelection, onSelectAll, onClearSelection,
     onBulkTrash, onBulkRestore, onBulkPermanentDelete, categoryTree
@@ -240,6 +241,7 @@ const ProductTable = ({
                                     product={product}
                                     onEdit={onEdit}
                                     onShowHistory={onShowHistory}
+                                    onLaunchStock={onLaunchStock}
                                     onDelete={onDelete}
                                     onRestore={onRestore}
                                     onPermanentDelete={onPermanentDelete}
@@ -270,6 +272,7 @@ const ProductTable = ({
                             key={product.id}
                             product={product}
                             onEdit={onEdit}
+                            onLaunchStock={onLaunchStock}
                             onDelete={onDelete}
                             onRestore={onRestore}
                             onPermanentDelete={onPermanentDelete}

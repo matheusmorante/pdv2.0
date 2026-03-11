@@ -4,6 +4,7 @@ import PersonList from "./PersonList";
 import PersonFormModal from "./PersonFormModal";
 import PersonPurchaseHistoryModal from "./PersonPurchaseHistoryModal";
 import Person, { PersonVisibilitySettings } from "../../../types/person.type";
+import { useNavigate } from "react-router-dom";
 
 export type PersonSortBy = "fullName" | "createdAt";
 
@@ -70,6 +71,7 @@ const PersonPage = ({
     const [filters, setFilters] = useState<PersonFiltersData>(DEFAULT_FILTERS);
     const [visibilitySettings, setVisibilitySettings] =
         useState<PersonVisibilitySettings>(DEFAULT_VISIBILITY);
+    const navigate = useNavigate();
 
     const toggleVisibility = (column: keyof PersonVisibilitySettings) => {
         setVisibilitySettings((prev) => ({ ...prev, [column]: !prev[column] }));
@@ -150,8 +152,14 @@ const PersonPage = ({
                             {subtitle}
                         </p>
                     </div>
-                    <div className="flex gap-4">
-
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <button
+                            onClick={() => navigate('/app/configuracoes')}
+                            className="flex items-center justify-center p-3 xl:p-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-all w-full sm:w-auto mt-2 xl:mt-0"
+                            title="Configurar Campos Obrigatórios"
+                        >
+                            <i className="bi bi-gear-fill text-lg xl:text-xl" />
+                        </button>
                         <button
                             onClick={openAdd}
                             className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"

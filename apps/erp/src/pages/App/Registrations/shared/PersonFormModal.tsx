@@ -114,14 +114,45 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        const { requiredFields } = await import("../../../utils/settingsService").then(m => m.getSettings());
+
         if (!formData.fullName) {
             toast.error(formData.personType === 'PJ' ? "A Razão Social é obrigatória." : "O nome é obrigatório.");
             return;
         }
 
-        if (!formData.phone || formData.phone.trim() === '') {
+        if (requiredFields.customer?.phone && (!formData.phone || formData.phone.trim() === '')) {
             toast.error("O telefone é obrigatório.");
             return;
+        }
+
+        if (requiredFields.customer?.cpfCnpj && (!formData.cpfCnpj || formData.cpfCnpj.trim() === '')) {
+            toast.error("O CPF/CNPJ é obrigatório.");
+            return;
+        }
+
+        if (requiredFields.customer?.email && (!formData.email || formData.email.trim() === '')) {
+            toast.error("O e-mail é obrigatório.");
+            return;
+        }
+
+        if (requiredFields.customer?.rgIe && (!(formData as any).rgIe || (formData as any).rgIe.trim() === '')) {
+            toast.error("O RG/IE é obrigatório.");
+            return;
+        }
+
+        if (requiredFields.customer?.position && (!formData.position || formData.position.trim() === '')) {
+            toast.error("O Cargo/Ocupação é obrigatório.");
+            return;
+        }
+
+        if (requiredFields.customer?.address) {
+            const addr = formData.fullAddress;
+            if (!addr?.street || !addr?.number || !addr?.neighborhood || !addr?.city) {
+                toast.error("O endereço completo (Rua, Número, Bairro, Cidade) é obrigatório.");
+                return;
+            }
         }
 
         if (collectionName === 'customers' && !formData.marketingOrigin) {
