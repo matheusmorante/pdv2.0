@@ -31,10 +31,19 @@ const ProductCard = ({
     categoryTree
 }: ProductCardProps) => {
     const isLowStock = (product.stock || 0) <= (product.minStock || 0);
+    const isParent = product.isParent;
+    const isVariation = product.isVariation;
 
     return (
         <div
-            className={`bg-white dark:bg-slate-900 border ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-100 dark:border-slate-800'} rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all`}
+            className={`border rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all
+                ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 
+                  isParent ? 'border-blue-200 dark:border-blue-800/50' :
+                  isVariation ? 'border-indigo-100 dark:border-indigo-900/30' :
+                  'border-slate-100 dark:border-slate-800'}
+                ${isParent ? 'bg-blue-50/50 dark:bg-blue-900/10' : 
+                  isVariation ? 'bg-slate-50/80 dark:bg-slate-900/50' :
+                  'bg-white dark:bg-slate-900'}`}
             onClick={() => onEdit(product)}
         >
             <div className="flex justify-between items-start mb-2">
@@ -51,6 +60,19 @@ const ProductCard = ({
                     <span className="font-mono text-[9px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-800">
                         {product.code || "S/C"}
                     </span>
+                    {/* Parent / Variation indicator */}
+                    {isParent && (
+                        <span className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest bg-blue-600 text-white flex items-center gap-1">
+                            <i className="bi bi-diagram-3-fill" />
+                            Pai
+                        </span>
+                    )}
+                    {isVariation && (
+                        <span className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 flex items-center gap-1">
+                            <i className="bi bi-arrow-return-right" />
+                            Variação
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
@@ -69,7 +91,13 @@ const ProductCard = ({
             </div>
 
             <div className="mb-3">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-2">
+                <h3 className={`leading-tight line-clamp-2 ${
+                    isParent
+                        ? 'text-sm font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight'
+                        : isVariation
+                        ? 'text-xs font-bold text-slate-700 dark:text-slate-300 pl-3 border-l-2 border-indigo-200 dark:border-indigo-800'
+                        : 'text-sm font-bold text-slate-800 dark:text-slate-100'
+                }`}>
                     {product.description}
                 </h3>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1 leading-relaxed">

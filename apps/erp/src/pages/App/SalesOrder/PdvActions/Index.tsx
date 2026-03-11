@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import Order, { OrderAction, IsButtonsClicked } from "../../../types/order.type";
 import { dateNow } from "../../../utils/formatters";
 import { buttons, actionsMap } from "./orderActionsConfig";
+import { validateOrder } from "../../../utils/validations";
+import { toast } from "react-toastify";
+
 
 const OrderActions = ({ order }: { order: Order }) => {
   const [isButtonsClicked, setIsButtonsClicked] = useState<IsButtonsClicked>({
@@ -30,18 +33,32 @@ const OrderActions = ({ order }: { order: Order }) => {
   return (
     <div className="flex flex-wrap items-center justify-center gap-6">
       {buttons.map((btn) => {
+        const isPrintAction = btn.action === 'PRINT_RECEIPT' || btn.action === 'PRINT_SHIPPING_ORDER';
+        const orderErrors = isPrintAction ? validateOrder(order) : {};
+        const hasErrors = Object.keys(orderErrors).length > 0;
+
         const isPrintReceipt = btn.key === 'printReceipt';
-        const disablePrintReceipt = isPrintReceipt && (!order.customerData?.fullName || order.customerData.fullName === "Nenhum" || order.customerData.fullName === "Ao Consumidor");
+        const noCustomer = isPrintReceipt && (!order.customerData?.fullName || order.customerData.fullName === "Nenhum" || order.customerData.fullName === "Ao Consumidor");
+        const isDisabled = noCustomer || (isPrintAction && hasErrors);
+
+        const disabledReason = noCustomer
+            ? 'Não é possível imprimir recibo sem cliente associado'
+            : isPrintAction && hasErrors
+            ? `Preencha os campos obrigatórios antes de imprimir: ${Object.values(orderErrors).join(', ')}`
+            : btn.label;
 
         return (
         <button
           key={btn.key}
-            disabled={disablePrintReceipt}
-            className={`${disablePrintReceipt ? 'opacity-50 cursor-not-allowed bg-slate-300 text-slate-500 rounded-xl px-6 py-3 shadow-sm' : btn.color} flex items-center gap-3 whitespace-nowrap active:scale-95`}
-            title={disablePrintReceipt ? 'Não é possível imprimir recibo sem cliente associado' : btn.label}
+            disabled={isDisabled}
+            className={`${isDisabled ? 'opacity-50 cursor-not-allowed bg-slate-300 text-slate-500 rounded-xl px-6 py-3 shadow-sm' : btn.color} flex items-center gap-3 whitespace-nowrap active:scale-95`}
+            title={disabledReason}
           onClick={(e) => {
             e.preventDefault();
-            if (disablePrintReceipt) return;
+            if (isDisabled) {
+                toast.warning(disabledReason);
+                return;
+            }
             handleAction(btn.action);
             markClicked(btn.key as keyof IsButtonsClicked);
           }}
@@ -54,6 +71,7 @@ const OrderActions = ({ order }: { order: Order }) => {
       })}
     </div>
   );
+
 };
 
 export default OrderActions;

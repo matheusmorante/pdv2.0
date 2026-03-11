@@ -17,22 +17,26 @@ interface Props {
  */
 const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index: number; onOrderClick: (order: Order) => void }) => {
     const settings = getSettings();
-    const { scheduling } = order.shipping;
-    const isRange = scheduling.type === "range";
-    const displayTime = isRange
-        ? `${scheduling.startTime} - ${scheduling.endTime}`
-        : (scheduling.startTime || scheduling.time || "Horário não definido");
+    const isAssistance = order.orderType === 'assistance';
+    const isPickup = order.shipping?.deliveryMethod === 'pickup';
+
+    // Assistance orders store time at top level; regular orders use shipping.scheduling
+    const scheduling = order.shipping?.scheduling;
+    let displayTime = "Horário não definido";
+    if (isAssistance) {
+        const t = (order as any).scheduledTime;
+        displayTime = t || "Horário não definido";
+    } else if (scheduling) {
+        const isRange = scheduling.type === "range";
+        displayTime = isRange
+            ? `${scheduling.startTime} - ${scheduling.endTime}`
+            : (scheduling.startTime || scheduling.time || "Horário não definido");
+    }
+    const isRange = scheduling?.type === "range" && !isAssistance;
 
     const colors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
     const colorKey = resolveOrderColor(order.orderType, order.shipping?.deliveryMethod, colors);
     const cls = getOrderTypeClasses(colorKey);
-
-    const isPickup = order.shipping?.deliveryMethod === 'pickup';
-    const isAssistance = order.orderType === 'assistance';
-
-    const labelText = isAssistance
-        ? settings.orderTypeLabels.assistance
-        : (isPickup ? settings.orderTypeLabels.pickup : settings.orderTypeLabels.delivery);
 
     const typeLabel = isAssistance
         ? settings.orderTypeLabels.assistance
@@ -63,7 +67,7 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                             </div>
                             <div className="flex flex-col">
                                 <span className="font-black text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-0.5">
-                                    {labelText}
+                                    {typeLabel}
                                 </span>
                                 <span className="font-black text-sm tracking-tight flex items-center text-slate-800 dark:text-slate-200">
                                     <i className={`bi bi-clock-fill mr-2 ${cls.timeText}`} />
@@ -99,7 +103,17 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                             </div>
                         </div>
 
-                        {!isPickup && (
+                        {/* Assistance: show description */}
+                        {isAssistance && (order as any).assistanceDescription && (
+                            <div className="flex items-start gap-3 bg-amber-50/60 dark:bg-amber-900/10 p-3 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                                <i className="bi bi-tools text-amber-500 mt-0.5 shrink-0" />
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 leading-snug">
+                                    {(order as any).assistanceDescription}
+                                </span>
+                            </div>
+                        )}
+
+                        {!isPickup && !isAssistance && (
                             <div className="flex items-start gap-3 text-slate-500 dark:text-slate-400 font-bold bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800/50 transition-colors">
                                 <i className="bi bi-geo-alt-fill text-red-500 mt-0.5" />
                                 <span className="leading-snug text-xs">
@@ -108,12 +122,13 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                             </div>
                         )}
 
+                        {(order.items && order.items.length > 0) && (
                         <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
                             {/* Header */}
                             <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
                                 <i className="bi bi-box-seam text-[10px] text-slate-400 dark:text-slate-500" />
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                                    Lista de Itens
+                                    {isAssistance ? 'Peças / Materiais' : 'Lista de Itens'}
                                 </span>
                                 <span className="ml-auto text-[9px] font-black text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full px-2 py-0.5">
                                     {order.items?.length ?? 0}
@@ -143,6 +158,7 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                                 ))}
                             </div>
                         </div>
+                        )}
 
                         {order.observation && (
                             <div className="text-amber-800 dark:text-amber-200/70 bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-xl text-xs border border-amber-100/50 dark:border-amber-900/30 flex items-start gap-3 transition-colors">

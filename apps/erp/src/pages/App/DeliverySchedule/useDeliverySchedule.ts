@@ -28,17 +28,31 @@ const processOrders = (orders: Order[], filter: ScheduleFilter, typeFilter: Orde
     endOfWeek.setHours(23, 59, 59, 999);
 
     const scheduledOrders = orders.filter((o) => {
-        if (o.status !== 'scheduled' && o.status !== 'fulfilled') return false; // Show scheduled and fulfilled orders
+        const isAssistance = o.orderType === 'assistance';
 
-        const orderDateStr = o.shipping?.scheduling?.date;
+        if (!isAssistance) {
+            // Regular orders: need scheduled/fulfilled status
+            if (o.status !== 'scheduled' && o.status !== 'fulfilled') return false;
+        } else {
+            // Assistance orders: show any non-deleted status if they have a scheduled date
+            if (o.deleted) return false;
+        }
+
+        // For assistance: check scheduledDate (top-level field) or shipping.scheduling.date
+        const orderDateStr = isAssistance
+            ? (o as any).scheduledDate || o.shipping?.scheduling?.date
+            : o.shipping?.scheduling?.date;
+
         if (!orderDateStr) return false;
 
-        const hasTime = o.shipping?.scheduling?.time || o.shipping?.scheduling?.startTime;
-        if (!hasTime) return false;
+        // For assistance, time is optional; for regular orders require a time
+        if (!isAssistance) {
+            const hasTime = o.shipping?.scheduling?.time || o.shipping?.scheduling?.startTime;
+            if (!hasTime) return false;
+        }
 
         // Apply order type filter
         const isPickup = o.shipping?.deliveryMethod === 'pickup';
-        const isAssistance = o.orderType === 'assistance';
         const isDelivery = !isPickup && !isAssistance;
 
         if (typeFilter === 'pickup' && !isPickup) return false;
@@ -69,18 +83,26 @@ const processOrders = (orders: Order[], filter: ScheduleFilter, typeFilter: Orde
 
     const grouped: Record<string, Order[]> = {};
     scheduledOrders.forEach((o) => {
-        const dateStr = o.shipping.scheduling.date;
+        const isAssistance = o.orderType === 'assistance';
+        // Get the correct date field
+        const dateStr = isAssistance
+            ? (o as any).scheduledDate || o.shipping?.scheduling?.date
+            : o.shipping.scheduling.date;
+        if (!dateStr) return;
         if (!grouped[dateStr]) grouped[dateStr] = [];
         grouped[dateStr].push(o);
+
     });
 
     Object.keys(grouped).forEach((date) => {
         grouped[date].sort((a, b) => {
-            if (a.orderIndex !== undefined && b.orderIndex !== undefined && a.shipping.scheduling.date === b.shipping.scheduling.date) {
+            const aDate = a.orderType === 'assistance' ? (a as any).scheduledDate : a.shipping?.scheduling?.date;
+            const bDate = b.orderType === 'assistance' ? (b as any).scheduledDate : b.shipping?.scheduling?.date;
+            if (a.orderIndex !== undefined && b.orderIndex !== undefined && aDate === bDate) {
                 return a.orderIndex - b.orderIndex;
             }
-            const timeA = a.shipping.scheduling.startTime || a.shipping.scheduling.time || "";
-            const timeB = b.shipping.scheduling.startTime || b.shipping.scheduling.time || "";
+            const timeA = (a.orderType === 'assistance' ? (a as any).scheduledTime : null) || a.shipping?.scheduling?.startTime || a.shipping?.scheduling?.time || "";
+            const timeB = (b.orderType === 'assistance' ? (b as any).scheduledTime : null) || b.shipping?.scheduling?.startTime || b.shipping?.scheduling?.time || "";
             return timeA.localeCompare(timeB);
         });
     });
