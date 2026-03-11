@@ -38,9 +38,9 @@ export type ComboItem = {
     productId: string;
     variationId?: string;
     quantity: number;
-    description?: string;
-    unitPrice?: number;
-    stock?: number;
+    description: string;
+    unitPrice: number;
+    stock: number;
 };
 
 export type ExtraDimension = {

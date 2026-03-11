@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../utils/supabaseConfig';
-import Product from '../../../types/product.type';
+import Product, { ComboItem } from '../../../types/product.type';
 import { toast } from 'react-toastify';
-
-interface ComboItem {
-    productId: string;
-    variationId?: string;
-    quantity: number;
-    description: string;
-    unitPrice: number;
-    stock: number;
-}
 
 interface ComboItemSelectorProps {
     currentItems: ComboItem[];
@@ -56,9 +47,9 @@ const ComboItemSelector = ({ currentItems, onAdd, onRemove, onUpdateQuantity }: 
         const item: ComboItem = {
             productId: prod.id,
             variationId: variation?.id,
-            description: variation ? `${prod.description} - ${variation.name}` : prod.description,
-            unitPrice: variation ? variation.unitPrice : prod.unitPrice,
-            stock: variation ? variation.stock : prod.stock,
+            description: variation ? `${prod.description} - ${variation.name}` : (prod.description || ''),
+            unitPrice: (variation ? variation.unitPrice : prod.unitPrice) || 0,
+            stock: (variation ? variation.stock : prod.stock) || 0,
             quantity: 1
         };
 
