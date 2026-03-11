@@ -11,6 +11,22 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const navigate = useNavigate();
 
+    const handleForgotPassword = async () => {
+        if (!email) {
+            return toast.warning('Por favor, informe seu e-mail primeiro.');
+        }
+
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+            if (error) throw error;
+            toast.success('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+        } catch (error: any) {
+            toast.error(translateAuthError(error.message));
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -66,7 +82,13 @@ const Login = () => {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center px-1">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Senha</label>
-                                <button type="button" className="text-[9px] font-black uppercase text-blue-500 hover:text-blue-600 tracking-wider">Esqueceu?</button>
+                                <button
+                                    type="button"
+                                    onClick={handleForgotPassword}
+                                    className="text-[9px] font-black uppercase text-blue-500 hover:text-blue-600 tracking-wider"
+                                >
+                                    Esqueceu?
+                                </button>
                             </div>
                             <div className="relative group">
                                 <i className="bi bi-shield-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />

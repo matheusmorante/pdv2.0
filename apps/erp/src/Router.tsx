@@ -23,12 +23,9 @@ import Signup from './pages/Signup';
 import UsersManagementPage from './pages/App/Users/Index';
 import ProfilePage from './pages/App/Profile/Index';
 import PurchasesPage from './pages/App/Stock/Purchases/Index';
-<<<<<<< HEAD:pdv/src/Router.tsx
 import OrderRouteMap from './pages/App/SalesOrder/OrderRouteMap';
-=======
 import AttendanceDashboard from './pages/App/Attendance/Dashboard';
 import WhatsAppMarketplace from './pages/App/Products/WhatsAppMarketplace';
->>>>>>> dev:apps/erp/src/Router.tsx
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading, isPending } = useAuth();
@@ -67,6 +64,8 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+import ResetPassword from './pages/ResetPassword';
+
 function Router() {
   return (
     <AuthProvider>
@@ -74,6 +73,7 @@ function Router() {
         <Routes>
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Signup />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
 
           {/* Publicly accessible order pages could go here if needed */}
           <Route path='/receipt' element={<ReceiptPage />} />
