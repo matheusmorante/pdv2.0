@@ -1,20 +1,30 @@
 {
-  "name": "pdv",
+  "name": "moveismorantehub",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.tsx",
+  "description": "Monorepo for Móveis Morante - ERP & Ecommerce",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently -n \"ERP,ECOMM,SERVER\" -c \"blue,green,yellow\" \"npm run erp\" \"npm run ecomm\" \"npm run server\"",
+    "erp": "npm run dev -w apps/erp",
+    "ecomm": "npm run dev -w apps/ecommerce",
+    "server": "npm run start -w apps/server",
+    "erp:build": "npm run build -w apps/erp",
+    "ecommerce:build": "npm run build -w apps/ecommerce",
+    "test": "npm test --workspaces"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.577.0",
     "react": "^19.1.1",
     "recharts": "^3.8.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

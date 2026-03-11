@@ -1,0 +1,227 @@
+/** @jsxImportSource react */
+import React, { useState, useEffect, useCallback } from 'react';
+import { getSettings, saveSettings, AppSettings, subscribeToSettings } from '../../utils/settingsService';
+import { useTheme } from '../../../context/ThemeContext';
+import { toast } from 'react-toastify';
+import { PatternFormat } from 'react-number-format';
+
+// Modular Components
+import SettingsSidebar from './components/SettingsSidebar';
+import SettingsSection from './components/SettingsSection';
+import StatusLabelsSection from './components/StatusLabelsSection';
+import LogisticsSection from './components/LogisticsSection';
+import HandlingSection from './components/HandlingSection';
+import AutoScrollSection from './components/AutoScrollSection';
+import AppearanceSection from './components/AppearanceSection';
+import AIPromptsSection from './components/AIPromptsSection';
+import OrderAutomationSection from './components/OrderAutomationSection';
+import WhatsAppConfigSection from './components/WhatsAppConfigSection';
+import InventoryNotificationsSection from './components/InventoryNotificationsSection';
+import ChannelDescriptionsSection from './components/ChannelDescriptionsSection';
+import SaveButton from './components/SaveButton';
+
+const categories: any[] = [
+    { id: 'empresa', label: 'Dados da Empresa', icon: 'bi-building-fill', group: 'system', keywords: ['empresa', 'nome', 'endereço', 'loja', 'origem', 'cnpj', 'contato', 'telefone'] },
+    { id: 'labels', label: 'Rótulos do Sistema', icon: 'bi-tags-fill', group: 'system', keywords: ['rascunho', 'agendado', 'atendido', 'cancelado', 'entrega', 'retirada'] },
+    { id: 'logistica', label: 'Logística e Frete', icon: 'bi-truck', group: 'system', keywords: ['frete', 'km', 'distância', 'valor', 'entrega'] },
+
+    { id: 'scroll', label: 'Scroll Automático', icon: 'bi-mouse3-fill', group: 'user', keywords: ['scroll', 'rolagem', 'automática', 'velocidade', 'sensibilidade'] },
+    { id: 'aparencia', label: 'Aparência', icon: 'bi-palette', group: 'user', keywords: ['tema', 'escuro', 'claro', 'modo'] },
+    { id: 'ia', label: 'Inteligência Artificial', icon: 'bi-robot', group: 'system', keywords: ['ia', 'ai', 'robot', 'prompt', 'descrição', 'chat', 'assistente'] },
+    { id: 'automacao', label: 'Automação de Pedidos', icon: 'bi-magic', group: 'system', keywords: ['automação', 'imprimir', 'recibo', 'whatsapp', 'entrega', 'cliente'] },
+    { id: 'whatsapp', label: 'WhatsApp & Catálogo', icon: 'bi-whatsapp', group: 'system', keywords: ['whatsapp', 'api', 'token', 'catálogo', 'marketplace', 'vendas'] },
+    { id: 'notificacoes', label: 'Notificações', icon: 'bi-bell-fill', group: 'system', keywords: ['notificação', 'alerta', 'estoque', 'novo', 'usado', 'salvado'] },
+    { id: 'canais', label: 'Descrições por Canal', icon: 'bi-megaphone-fill', group: 'system', keywords: ['whatsapp', 'ecommerce', 'canal', 'marketplace', 'base', 'descrição', 'loja'] },
+];
+
+/**
+ * Settings Page
+ * Returns 'any' to fix React 19 / TS 4.9 incompatibility during Vercel build.
+ */
+export default function Settings(): any {
+    const { theme, setTheme } = useTheme();
+    const [settings, setSettings] = useState<AppSettings>(getSettings());
+    const [search, setSearch] = useState("");
+
+    // Real-time synchronization with Firebase
+    useEffect(() => {
+        const unsubscribe = subscribeToSettings((newSettings) => {
+            setSettings(newSettings);
+
+            // Sync theme if it's different from current
+            if (newSettings.defaultTheme && newSettings.defaultTheme !== (theme as any)) {
+                setTheme(newSettings.defaultTheme);
+            }
+        });
+        return () => unsubscribe();
+    }, [setTheme, theme]);
+
+    const handleChange = useCallback((path: string, value: any) => {
+        if (path === 'defaultTheme') {
+            setTheme(value);
+        }
+
+        setSettings((prev: AppSettings) => {
+            const next = { ...prev };
+            const parts = path.split('.');
+            let current: any = next;
+
+            for (let i = 0; i < parts.length - 1; i++) {
+                current[parts[i]] = { ...current[parts[i]] };
+                current = current[parts[i]];
+            }
+
+            current[parts[parts.length - 1]] = value;
+            return next;
+        });
+    }, [setTheme]);
+
+    const handleSave = () => {
+        saveSettings(settings);
+        toast.success("Configurações aplicadas com sucesso! ✨");
+    };
+
+    const isVisible = (id: string) => {
+        if (!search) return true;
+        const normalizedSearch = search.toLowerCase();
+        const category = categories.find(c => c.id === id);
+        if (!category) return false;
+
+        return category.label.toLowerCase().includes(normalizedSearch) ||
+            category.keywords.some((k: string) => k.toLowerCase().includes(normalizedSearch));
+    };
+
+    return (
+        <div className="flex flex-col gap-10 max-w-5xl mx-auto py-12 px-6 min-h-screen">
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 animate-slide-down">
+                <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-[0.2em] mb-3">
+                        Configurações do Sistema
+                    </div>
+                    <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Preferências</h1>
+                    <p className="text-slate-500 dark:text-slate-500 mt-2 text-base font-medium">Personalize cada detalhe da sua experiência no ERP Móveis Morante.</p>
+                </div>
+
+                <div className="relative group w-full md:w-96">
+                    <i className="bi bi-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 transition-colors group-focus-within:text-blue-500" />
+                    <input
+                        type="text"
+                        placeholder="Pesquisar por nome ou funcionalidade..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[1.5rem] pl-14 pr-6 py-4 text-sm outline-none focus:ring-4 focus:ring-blue-50 dark:focus:ring-blue-900/10 focus:border-blue-500 dark:focus:border-blue-500 transition-all shadow-xl shadow-slate-200/20 dark:shadow-none font-bold"
+                    />
+                </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <SettingsSidebar categories={categories as any} isAdmin={true} />
+
+                <div className="lg:col-span-9 pb-48">
+                    <SettingsSection id="empresa" title="Dados da Empresa" icon="bi-building-fill" isVisible={isVisible('empresa')}>
+                        <div className="p-8 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex-1 max-w-lg">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider">Nome da Empresa</h4>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">Nome que será exibido em documentos e comunicações.</p>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={settings.companyName || ''}
+                                    onChange={(e) => handleChange('companyName', e.target.value)}
+                                    className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 dark:text-slate-200 w-full md:w-80 transition-all font-medium"
+                                />
+                            </div>
+                        </div>
+                        <div className="p-8 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex-1 max-w-lg">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider">CNPJ</h4>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">Cadastro Nacional da Pessoa Jurídica da empresa.</p>
+                                </div>
+                                <div className="w-full md:w-80">
+                                    <PatternFormat
+                                        format="##.###.###/####-##"
+                                        mask="_"
+                                        value={settings.companyCnpj || ''}
+                                        onValueChange={(values) => handleChange('companyCnpj', values.value || "")}
+                                        className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 dark:text-slate-200 w-full transition-all font-medium"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-8 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex-1 max-w-lg">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wider">Telefone</h4>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 leading-relaxed">Telefone oficial de atendimento da empresa.</p>
+                                </div>
+                                <div className="w-full md:w-80 flex gap-2">
+                                    <PatternFormat
+                                        format="(##) #####-####"
+                                        mask="_"
+                                        value={settings.companyPhone || ''}
+                                        onValueChange={(values) => handleChange('companyPhone', values.value || "")}
+                                        className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 dark:text-slate-200 w-full transition-all font-medium"
+                                    />
+                                    <button type="button"
+                                        onClick={() => {
+                                            if (!settings.companyPhone) return;
+                                            const cleanPhone = settings.companyPhone.replace(/\D/g, '');
+                                            const finalPhone = cleanPhone.length >= 10 && cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+                                            window.open(`https://wa.me/${finalPhone}`, '_blank');
+                                        }}
+                                        title="Verificar WhatsApp"
+                                        className="shrink-0 w-12 flex items-center justify-center bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl transition-all shadow-sm shadow-[#25D366]/30 active:scale-95"
+                                    >
+                                        <i className="bi bi-whatsapp text-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </SettingsSection>
+
+                    <SettingsSection id="labels" title="Rótulos do Sistema" icon="bi-tags-fill" isVisible={isVisible('labels')}>
+                        <StatusLabelsSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="logistica" title="Logística e Frete" icon="bi-truck" isVisible={isVisible('logistica')}>
+                        <LogisticsSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+
+
+                    <SettingsSection id="scroll" title="Rolagem Automática" icon="bi-mouse3-fill" isVisible={isVisible('scroll')}>
+                        <AutoScrollSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="aparencia" title="Aparência" icon="bi-palette" isVisible={isVisible('aparencia')}>
+                        <AppearanceSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="ia" title="Assistente de IA" icon="bi-robot" isVisible={isVisible('ia')}>
+                        <AIPromptsSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="automacao" title="Automação de Pedidos" icon="bi-magic" isVisible={isVisible('automacao')}>
+                        <OrderAutomationSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="whatsapp" title="Integração WhatsApp" icon="bi-whatsapp" isVisible={isVisible('whatsapp')}>
+                        <WhatsAppConfigSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="notificacoes" title="Notificações de Inventário" icon="bi-bell-fill" isVisible={isVisible('notificacoes')}>
+                        <InventoryNotificationsSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="canais" title="Descrições Base por Canal" icon="bi-megaphone-fill" isVisible={isVisible('canais')}>
+                        <ChannelDescriptionsSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+                </div>
+            </div>
+
+            <SaveButton onClick={handleSave} />
+        </div>
+    );
+}
