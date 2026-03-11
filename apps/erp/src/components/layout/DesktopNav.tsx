@@ -103,11 +103,8 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                     <div className={dropdownClass}>
                         <Link to="/sales-order" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Lista de Pedidos</Link>
                         <Link to="/delivery-schedule" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Cronograma Logístico</Link>
-<<<<<<< HEAD:pdv/src/components/layout/DesktopNav.tsx
                         <Link to="/sales-order/route-map" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Mapa de Rotas</Link>
-=======
                         <Link to="/attendance-dashboard" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>BI de Atendimento</Link>
->>>>>>> dev:apps/erp/src/components/layout/DesktopNav.tsx
                     </div>
                 )}
             </div>

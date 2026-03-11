@@ -37,12 +37,10 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.itemType !== undefined) data.item_type = product.itemType;
     if (product.fiscal !== undefined) data.fiscal = product.fiscal;
     if (product.notificationConfig !== undefined) data.notification_config = product.notificationConfig;
-<<<<<<< HEAD:pdv/src/pages/utils/productService.ts
     if (product.isCombo !== undefined) data.is_combo = product.isCombo;
     if (product.comboItems !== undefined) data.combo_items = product.comboItems;
-=======
     
-    // New fields
+    // Dimensions & Details
     if (product.width !== undefined) data.width = product.width;
     if (product.height !== undefined) data.height = product.height;
     if (product.depth !== undefined) data.depth = product.depth;
@@ -52,12 +50,6 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.material !== undefined) data.material = product.material;
     if (product.colors !== undefined) data.colors = product.colors;
     if (product.notIncluded !== undefined) data.not_included = product.notIncluded;
-    if (product.isCombo !== undefined) data.is_combo = product.isCombo;
-    if (product.comboItems !== undefined) data.combo_items = product.comboItems;
-    if (product.ecommerceTemplate !== undefined) data.ecommerce_template = product.ecommerceTemplate;
-    if (product.whatsappDescription !== undefined) data.whatsapp_description = product.whatsappDescription;
-    if (product.whatsappTemplate !== undefined) data.whatsapp_template = product.whatsappTemplate;
->>>>>>> dev:apps/erp/src/pages/utils/productService.ts
 
     return data;
 };
@@ -100,7 +92,7 @@ const mapFromDB = (data: any): Product => {
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         
-        // New fields
+        // Dimensions & Details
         width: data.width,
         height: data.height,
         depth: data.depth,
@@ -109,12 +101,7 @@ const mapFromDB = (data: any): Product => {
         mainDifferential: data.main_differential,
         material: data.material,
         colors: data.colors,
-        notIncluded: data.not_included,
-        isCombo: data.is_combo,
-        comboItems: data.combo_items || [],
-        ecommerceTemplate: data.ecommerce_template,
-        whatsappDescription: data.whatsapp_description,
-        whatsappTemplate: data.whatsapp_template
+        notIncluded: data.not_included
     };
 };
 
@@ -173,16 +160,11 @@ export const saveProduct = async (product: Product): Promise<string> => {
             }
             return String(newId);
         }
-<<<<<<< HEAD:pdv/src/pages/utils/productService.ts
+        return "";
     } catch (error: any) {
         console.error("Erro ao salvar o produto:", error.message || error);
         if (error.details) console.error("Detalhes do erro:", error.details);
         if (error.hint) console.error("Dica:", error.hint);
-=======
-        return "";
-    } catch (error) {
-        console.error("Erro ao salvar o produto: ", error);
->>>>>>> dev:apps/erp/src/pages/utils/productService.ts
         throw error;
     }
 };

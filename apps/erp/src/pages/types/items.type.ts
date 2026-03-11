@@ -11,6 +11,8 @@ export type Item = {
     handlingType: string;
     condition?: 'novo' | 'usado' | 'salvado' | '';
     deliveryMethod?: 'delivery' | 'pickup';
+    isCombo?: boolean;
+    isComboItem?: boolean;
 }
 
 export type ItemsSummary = {

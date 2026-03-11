@@ -17,18 +17,7 @@ export type Variation = {
     ipiPercent?: number;
     finalPurchasePrice?: number;
     minStock?: number;
-<<<<<<< HEAD:pdv/src/pages/types/product.type.ts
-    comboItems?: {
-        productId: string;
-        variationId?: string;
-        quantity: number;
-        description: string;
-        unitPrice: number;
-        stock: number;
-    }[];
-=======
     comboItems?: ComboItem[];
->>>>>>> dev:apps/erp/src/pages/types/product.type.ts
 };
 
 export type FiscalInfo = {
@@ -84,20 +73,16 @@ export type Product = {
     updatedAt?: string;
     supplierId?: string;
 
-<<<<<<< HEAD:pdv/src/pages/types/product.type.ts
-    // Dimensions & Material
-    material?: string;
+    // Dimensions & Details
     width?: number;
     height?: number;
     depth?: number;
+    extraDimensions?: ExtraDimension[];
     line?: string;
     mainDifferential?: string;
+    material?: string;
     colors?: string;
     notIncluded?: string;
-    extraDimensions?: {
-        label: string;
-        value: string;
-    }[];
 
     // Ecommerce & Marketplace
     images?: string[];
@@ -105,31 +90,10 @@ export type Product = {
     whatsappDescription?: string;
     ecommerceTemplate?: string;
     whatsappTemplate?: string;
-=======
-    // Dimensions
-    width?: number;
-    height?: number;
-    depth?: number;
-    extraDimensions?: ExtraDimension[];
 
-    // Details
-    line?: string;
-    mainDifferential?: string;
-    material?: string;
-    colors?: string;
-    notIncluded?: string;
-
-    // Ecommerce
-    images?: string[];
-    ecommerceDescription?: string;
-    ecommerceTemplate?: string;
-    whatsappDescription?: string;
-    whatsappTemplate?: string;
-
-    // Combo
+    // Combo / Jogo
     isCombo?: boolean;
     comboItems?: ComboItem[];
->>>>>>> dev:apps/erp/src/pages/types/product.type.ts
 
     // Variations
     hasVariations?: boolean;
@@ -148,18 +112,6 @@ export type Product = {
 
     // Per-product notification configuration
     notificationConfig?: ProductNotificationConfig;
-
-    // Combo / Jogo
-    isCombo?: boolean;
-    comboItems?: {
-        productId: string;
-        variationId?: string;
-        quantity: number;
-        // Denormalized data for UI
-        description: string;
-        unitPrice: number;
-        stock: number;
-    }[];
 };
 
 export type ProductNotificationConfig = {

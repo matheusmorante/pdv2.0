@@ -36,7 +36,7 @@ interface ColumnDef {
 
 const COLUMNS_DEF: ColumnDef[] = [
     { key: 'code', label: 'Código' },
-    { key: 'description', label: 'Descrição' },
+    { key: 'description', label: 'Título' },
     { key: 'category', label: 'Categoria' },
     { key: 'createdAt', label: 'Data Criação' },
     { key: 'costPrice', label: 'Preço Custo', align: 'text-right' },

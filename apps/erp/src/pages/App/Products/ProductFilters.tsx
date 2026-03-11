@@ -69,7 +69,7 @@ const ProductFilters = ({ filters, setFilters }: ProductFiltersProps) => {
                                 name="search"
                                 value={filters.search}
                                 onChange={handleChange}
-                                placeholder="Descrição ou código..."
+                                placeholder="Título ou código..."
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700"
                             />
                         </div>

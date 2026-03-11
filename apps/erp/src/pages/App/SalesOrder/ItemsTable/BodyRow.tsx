@@ -30,25 +30,8 @@ const BodyRow = ({ item, onChange, onSelectProduct, onToggleDiscountType, onDele
     const currentType = item.deliveryMethod || deliveryMethod;
 
     const handleSelectProduct = (product: Product, variation?: Variation) => {
-<<<<<<< HEAD:pdv/src/pages/App/SalesOrder/ItemsTable/BodyRow.tsx
         onSelectProduct(idx, product, variation);
         setIsSearchModalOpen(false);
-=======
-        onChange(idx, 'productId', product.id!);
-
-        let finalDescription = product.description;
-        if (variation) {
-            finalDescription += ` (${variation.name})`;
-            onChange(idx, 'variationId', variation.id);
-        }
-
-        onChange(idx, 'description', finalDescription);
-        onChange(idx, 'unitPrice', (variation ? variation.unitPrice : product.unitPrice) || 0);
-
-        if (product.condition) {
-            onChange(idx, 'condition', product.condition);
-        }
->>>>>>> dev:apps/erp/src/pages/App/SalesOrder/ItemsTable/BodyRow.tsx
     };
 
     return (

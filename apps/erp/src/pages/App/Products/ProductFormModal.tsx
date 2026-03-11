@@ -35,7 +35,7 @@ const VariationRow = React.memo(({ v, updateVariation, removeVariation, setFormD
                     type="button"
                     onClick={() => updateVariation(v.id, 'syncDescription', !v.syncDescription)}
                     className={`p-1 rounded-md transition-colors ${v.syncDescription ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-slate-300 hover:bg-slate-100'}`}
-                    title="Herdar descrição do pai"
+                    title="Herdar título do pai"
                 >
                     <i className={`bi ${v.syncDescription ? 'bi-link-45deg' : 'bi-link-45deg opacity-30'}`}></i>
                 </button>
@@ -519,7 +519,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
 
     const handleGenerateAIDescription = async (channel: 'ecommerce' | 'whatsapp') => {
         if (!formData.description) {
-            toast.warning("Preencha a 'Descrição Comercial' na aba Cadastro Geral primeiro.");
+            toast.warning("Preencha o 'Título do Produto' na aba Cadastro Geral primeiro.");
             setActiveTab('geral');
             return;
         }
@@ -546,10 +546,10 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                 3. SUBSTITUA as tags entre colchetes ou chaves (ex: [NOME], {price}) pelos valores REAIS.
 
                 TEMPLATE PARA SEGUIR:
-                ${basePrompt || "[NOME DO PRODUTO]\nPreço: [PREÇO]\n..."}
+                ${basePrompt || "[TÍTULO DO PRODUTO]\nPreço: [PREÇO]\n..."}
 
                 DADOS DO PRODUTO:
-                Nome: ${formData.description}
+                Título: ${formData.description}
                 Linha/Modelo: ${formData.line || "Não informado"}
                 Diferencial Principal: ${formData.mainDifferential || "Não informado"}
                 Material: ${formData.material || "Não informado"}
@@ -576,7 +576,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                 ${basePrompt}
 
                 DADOS DO PRODUTO:
-                Nome Comercial: ${formData.description}
+                Título do Produto: ${formData.description}
                 Linha/Modelo: ${formData.line || "Não informado"}
                 Diferencial Principal: ${formData.mainDifferential || "Não informado"}
                 Material: ${formData.material || "Não informado"}
@@ -612,7 +612,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
 
     const handleGenerateNCM = async () => {
         if (!formData.description) {
-            toast.warning("Preencha a 'Descrição Comercial' na aba Cadastro Geral primeiro para eu entender do que se trata o produto.");
+            toast.warning("Preencha o 'Título do Produto' na aba Cadastro Geral primeiro para eu entender do que se trata o produto.");
             setActiveTab('geral');
             return;
         }

@@ -124,11 +124,7 @@ const Body = ({ items, setItems, deliveryMethod, errors }: Props) => {
             {
                 items.map((item, idx) => (
                     <BodyRow
-<<<<<<< HEAD:pdv/src/pages/App/SalesOrder/ItemsTable/Body.tsx
                         key={`${idx}-${item.productId || 'empty'}`}
-=======
-                        key={idx}
->>>>>>> dev:apps/erp/src/pages/App/SalesOrder/ItemsTable/Body.tsx
                         item={item}
                         idx={idx}
                         onChange={changeItems}

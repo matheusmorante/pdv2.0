@@ -143,14 +143,10 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
 
         setLoading(true);
         try {
-<<<<<<< HEAD:pdv/src/pages/App/Registrations/shared/PersonFormModal.tsx
-            const dataToSave = capitalizePerson(formData as Person);
+            const dataToSave = capitalizePerson({ ...formData, isDraft: false } as Person);
             if (dataToSave.position?.trim() === "") {
                 dataToSave.position = null as any;
             }
-=======
-            const dataToSave = capitalizePerson({ ...formData, isDraft: false } as Person);
->>>>>>> dev:apps/erp/src/pages/App/Registrations/shared/PersonFormModal.tsx
             const savedPerson = await savePerson(collectionName, dataToSave);
             toast.success(person ? "Atualizado com sucesso!" : "Criado com sucesso!");
             if (onSuccess) onSuccess(savedPerson);

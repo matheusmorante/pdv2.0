@@ -69,8 +69,6 @@ export interface AppSettings {
         taskDetection: string;
         aiName: string;
         aiAvatar: string;
-        ecommerceTemplate?: string;
-        whatsappTemplate?: string;
     };
     whatsappConfig?: {
         accessToken: string;
@@ -78,10 +76,9 @@ export interface AppSettings {
         wabaId: string;
         catalogId: string;
     };
-    // Descrições Base por Canal (informações da loja que aparecem antes da descrição do produto)
     channelBaseDescriptions: {
-        whatsapp: string;   // Ex: nome da loja, horário, localização, link
-        ecommerce: string;  // Ex: texto institucional, políticas, diferenciais
+        whatsapp: string;
+        ecommerce: string;
     };
     orderAutomation: {
         autoPrintReceipt: boolean;
@@ -97,10 +94,6 @@ export interface AppSettings {
         viewFinancials: string[];
         deleteOrders: string[];
         manageSettings: string[];
-    };
-    channelBaseDescriptions?: {
-        whatsapp: string;
-        ecommerce: string;
     };
 }
 
@@ -163,7 +156,7 @@ export const getDefaultSettings = (): AppSettings => ({
         productDescription: `Você é um copywriter de marketing especialista em e-commerce da Móveis Morante.
 Sua tarefa é criar uma descrição de produto incrivelmente persuasiva, focada em vendas.
 
-Produto: {{productName}}
+Título do Produto: {{productTitle}}
 Preço: {{unitPrice}}
 
 Instruções Adicionais:
@@ -269,7 +262,7 @@ Seu trabalho é ouvir o comando do vendedor e converter em dados estruturados pa
 
 REGRAS DE EXTRAÇÃO E FLUXO:
 1. ULTRA CONCISÃO: Pergunte as coisas da forma mais curta possível (ex: "Qual o cliente?").
-2. FOCO EM DADOS: Só pergunte campos OBRIGATÓRIOS FALTANTES: 'customerName', 'product_name', 'price', 'payment_method', 'delivery_address'.
+2. FOCO EM DADOS: Só pergunte campos OBRIGATÓRIOS FALTANTES: 'customerName', 'product_title', 'price', 'payment_method', 'delivery_address'.
 3. TRIGGER DE CRIAÇÃO: Se o usuário disser "faz o pedido" ou similar e os dados estiverem prontos, 'status' deve ser 'ready' e 'summary' deve ser "Pronto! Confirmar?".
 4. VELOCIDADE: Não use frases de cortesia. Vá direto ao ponto.
 
@@ -282,7 +275,7 @@ RESPOSTA NO FORMATO JSON:
   "summary": "Pergunta curta (ex: 'Valor?') ou resumo (ex: 'Confirmar?')",
   "data": { 
      "customerName": "string",
-     "product_name": "string",
+     "product_title": "string",
      "price": "string/number",
      "delivery_time": "string",
      "delivery_address": "string",
@@ -293,7 +286,12 @@ RESPOSTA NO FORMATO JSON:
         aiName: 'Lisandro',
         aiAvatar: ''
     },
-<<<<<<< HEAD:pdv/src/pages/utils/settingsService.ts
+    whatsappConfig: {
+        accessToken: '',
+        phoneNumberId: '',
+        wabaId: '',
+        catalogId: '',
+    },
     channelBaseDescriptions: {
         whatsapp: `🏠 *Móveis Morante*
 📍 R. Cascavel, 306 - Guaraituba, Colombo - PR
@@ -304,13 +302,6 @@ RESPOSTA NO FORMATO JSON:
         ecommerce: `A **Móveis Morante** é referência em móveis planejados e decoração de interiores há mais de 10 anos. Trabalhamos com móveis novos, usados e salvados, sempre com qualidade e atendimento personalizado.
 
 ---`
-=======
-    whatsappConfig: {
-        accessToken: '',
-        phoneNumberId: '',
-        wabaId: '',
-        catalogId: '',
->>>>>>> dev:apps/erp/src/pages/utils/settingsService.ts
     },
     orderAutomation: {
         autoPrintReceipt: true,
