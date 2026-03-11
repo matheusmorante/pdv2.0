@@ -170,7 +170,7 @@ const Signup = () => {
                                 const { error } = await supabase.auth.signInWithOAuth({
                                     provider: 'google',
                                     options: {
-                                        redirectTo: import.meta.env.VITE_APP_URL || window.location.origin
+                                        redirectTo: `${window.location.origin}/`
                                     }
                                 });
                                 if (error) throw error;
