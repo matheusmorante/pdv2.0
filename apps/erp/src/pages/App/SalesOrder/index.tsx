@@ -17,8 +17,9 @@ const SalesOrder = () => {
         customerName: "",
         productName: "",
         valueRange: { min: 0, max: 1000000 },
-        sortBy: "date" as "date" | "customer",
-        sortOrder: "desc" as "asc" | "desc"
+        sortBy: "date" as any, // Legacy field
+        sortOrder: "desc" as any, // Legacy field
+        multiSort: [{ key: 'date', order: 'desc' }] as { key: string, order: 'asc' | 'desc' }[]
     });
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -41,12 +42,30 @@ const SalesOrder = () => {
         setVisibilitySettings(prev => ({ ...prev, [column]: !prev[column] }));
     };
 
-    const handleSort = (sortBy: string, sortOrder: 'asc' | 'desc') => {
-        setFilters(prev => ({
-            ...prev,
-            sortBy: sortBy as any,
-            sortOrder
-        }));
+    const handleSort = (key: string, order: 'asc' | 'desc', isMulti: boolean = false) => {
+        setFilters(prev => {
+            let newMultiSort = [...prev.multiSort];
+
+            if (isMulti) {
+                // If column already in list, update its order
+                const existingIdx = newMultiSort.findIndex(s => s.key === key);
+                if (existingIdx !== -1) {
+                    newMultiSort[existingIdx] = { key, order };
+                } else {
+                    newMultiSort.push({ key, order });
+                }
+            } else {
+                // Single sort: replace all with just this one
+                newMultiSort = [{ key, order }];
+            }
+
+            return {
+                ...prev,
+                sortBy: key as any,
+                sortOrder: order,
+                multiSort: newMultiSort
+            };
+        });
     };
 
     const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false, isDraft: false }), [filters]);

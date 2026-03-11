@@ -3,6 +3,7 @@ import { supabase } from "./supabaseConfig";
 import { capitalizeOrder } from "./formatters";
 import { saveInventoryMove } from "./inventoryService";
 import { updateProduct } from "./productService";
+import { getSettings } from "./settingsService";
 
 const TABLE_NAME = "orders";
 
@@ -96,48 +97,10 @@ export const saveOrder = async (order: Order): Promise<string> => {
         if (error) throw error;
         const rowId = (data as any)?.[0]?.id;
 
-        // Inventory management - Only subtract stock if the order is FINAL (not a draft)
-        if (order.orderType === 'sale' && order.items && order.status !== 'draft') {
-            for (const item of order.items) {
-                if (item.productId) {
-                    // Fetch latest stock to be sure
-                    const { data: p } = await supabase.from('products').select('*').eq('id', item.productId).single();
-                    if (!p) continue;
-                    const currentStock = p.stock || 0;
-
-                    if (p.isCombo && p.combo_items && Array.isArray(p.combo_items)) {
-                        for (const comboItem of p.combo_items) {
-                            // Find current stock of the part
-                            const { data: part } = await supabase.from('products').select('stock').eq('id', comboItem.productId).single();
-                            const currentPartStock = part?.stock || 0;
-
-                            await saveInventoryMove({
-                                productId: comboItem.productId,
-                                variationId: comboItem.variationId,
-                                productDescription: comboItem.description || `Parte do combo ${item.description}`,
-                                type: 'withdrawal',
-                                quantity: comboItem.quantity * item.quantity, // Multiply part qty by combo qty
-                                date: new Date().toISOString(),
-                                label: 'Venda (Combo)',
-                                observation: `Parte do Combo #${item.description} no Pedido #${rowId}`
-                            }, currentPartStock);
-                        }
-                    }
-
-                    // Always record the movement for the main product (or combo itself, for history/reference)
-                    // Even if it's a combo with virtual stock, recording the move helps tracking.
-                    await saveInventoryMove({
-                        productId: item.productId,
-                        variationId: item.variationId,
-                        productDescription: item.description,
-                        type: 'withdrawal',
-                        quantity: item.quantity,
-                        date: new Date().toISOString(),
-                        label: 'Venda',
-                        observation: `Pedido #${rowId}`
-                    }, currentStock);
-                }
-            }
+        // Stock Management logic refactored into a separate function for reuse and clarity
+        const updatedOrder = await handleStockAndBusinessRules(rowId, orderToSave);
+        if (updatedOrder.stockProcessed) {
+            await updateOrder(String(rowId), { stockProcessed: true });
         }
 
         return String(rowId);
@@ -146,6 +109,82 @@ export const saveOrder = async (order: Order): Promise<string> => {
         throw error;
     }
 };
+
+/**
+ * Centrailized logic for stock movements based on settings and order state.
+ * Returns the modified order with stockProcessed flag if applicable.
+ */
+async function handleStockAndBusinessRules(orderId: string, order: Order): Promise<Order> {
+    const settings = getSettings();
+    const { businessRules } = settings;
+    const orderToUpdate = { ...order };
+
+    // Don't process assistance orders or orders already processed
+    if (order.orderType !== 'sale' || order.stockProcessed) return orderToUpdate;
+
+    // Determine if stock should be subtracted:
+    // - If it's NOT a draft
+    // - OR if autoReserveStock is enabled
+    const shouldSubtractStock = order.status !== 'draft' || businessRules.autoReserveStock;
+
+    if (shouldSubtractStock && order.items) {
+        // Rule: Negative Stock Check (if disabled)
+        if (!businessRules.allowNegativeStock) {
+            for (const item of order.items) {
+                if (item.productId) {
+                    const { data: p } = await supabase.from('products').select('stock, title').eq('id', item.productId).single();
+                    if (p && (p.stock || 0) < item.quantity) {
+                        throw new Error(`Estoque insuficiente para o produto: ${p.title}. (Saldo: ${p.stock || 0}, Necessário: ${item.quantity})`);
+                    }
+                }
+            }
+        }
+
+        // All checks passed, proceed with withdrawal
+        for (const item of order.items) {
+            if (item.productId) {
+                const { data: p } = await supabase.from('products').select('*').eq('id', item.productId).single();
+                if (!p) continue;
+                
+                const currentStock = p.stock || 0;
+
+                // Handle Combo Items
+                if (p.isCombo && p.combo_items && Array.isArray(p.combo_items)) {
+                    for (const comboItem of p.combo_items) {
+                        const { data: part } = await supabase.from('products').select('stock').eq('id', comboItem.productId).single();
+                        const currentPartStock = part?.stock || 0;
+
+                        await saveInventoryMove({
+                            productId: comboItem.productId,
+                            variationId: comboItem.variationId,
+                            productDescription: comboItem.description || `Parte do combo ${item.description}`,
+                            type: 'withdrawal',
+                            quantity: comboItem.quantity * item.quantity,
+                            date: new Date().toISOString(),
+                            label: 'Venda (Combo)',
+                            observation: `Parte do Combo #${item.description} no Pedido #${orderId}`
+                        }, currentPartStock);
+                    }
+                }
+
+                // Record move for main product
+                await saveInventoryMove({
+                    productId: item.productId,
+                    variationId: item.variationId,
+                    productDescription: item.description,
+                    type: 'withdrawal',
+                    quantity: item.quantity,
+                    date: new Date().toISOString(),
+                    label: 'Venda',
+                    observation: `Pedido #${orderId}`
+                }, currentStock);
+            }
+        }
+        orderToUpdate.stockProcessed = true;
+    }
+
+    return orderToUpdate;
+}
 
 /**
  * Atualiza um pedido. Quando `currentOrder` é fornecido (estado local),
@@ -191,6 +230,21 @@ export const updateOrder = async (
             .eq('id', id);
 
         if (error) throw error;
+
+        // Check if we need to process stock NOW (transition from draft or settings change)
+        if (!merged.stockProcessed) {
+            const updatedOrder = await handleStockAndBusinessRules(id, merged);
+            if (updatedOrder.stockProcessed) {
+                // Secondary update to mark stock as processed to avoid double-dipping
+                await supabase
+                    .from(TABLE_NAME)
+                    .update({
+                        order_data: { ...merged, stockProcessed: true },
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', id);
+            }
+        }
     } catch (error) {
         console.error("Erro ao atualizar o pedido: ", error);
         throw error;
@@ -237,3 +291,35 @@ export const permanentDeleteOrder = async (id: string): Promise<void> => {
 
 /** @deprecated Use moveToTrash instead */
 export const deleteOrder = moveToTrash;
+
+/**
+ * Analisa os últimos pedidos para identificar a frequência de uso de avisos (observações)
+ */
+export const getNoticeFrequency = async (): Promise<Record<string, number>> => {
+    try {
+        const { data, error } = await supabase
+            .from(TABLE_NAME)
+            .select('order_data')
+            .order('id', { ascending: false })
+            .limit(200);
+
+        if (error) throw error;
+
+        const frequency: Record<string, number> = {};
+        
+        data?.forEach(row => {
+            const observation = row.order_data?.observation;
+            if (observation) {
+                const tags = observation.split(';').map((t: string) => t.trim()).filter((t: string) => t !== "");
+                tags.forEach((tag: string) => {
+                    frequency[tag] = (frequency[tag] || 0) + 1;
+                });
+            }
+        });
+
+        return frequency;
+    } catch (error) {
+        console.error("Erro ao carregar frequência de avisos:", error);
+        return {};
+    }
+};

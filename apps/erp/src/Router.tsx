@@ -84,7 +84,7 @@ function Router() {
           <Route path='/' element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path='/sales-order' element={<SalesOrder />} />
-            <Route path='/sales-order/route-map' element={<OrderRouteMap />} />
+            <Route path='/sales-order/freight-calculation' element={<OrderRouteMap />} />
             <Route path='/warranty-term' element={<WarrantyTermPage />} />
             <Route path='/delivery-schedule' element={<DeliverySchedule />} />
             <Route path='/attendance-dashboard' element={<AttendanceDashboard />} />

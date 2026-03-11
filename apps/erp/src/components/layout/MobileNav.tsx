@@ -114,7 +114,7 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                             <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
                                 <Link to="/sales-order" onClick={onClose} className={mobileSubLinkClass}>Lista de Pedidos</Link>
                                 <Link to="/delivery-schedule" onClick={onClose} className={mobileSubLinkClass}>Cronograma Logístico</Link>
-                                <Link to="/sales-order/route-map" onClick={onClose} className={mobileSubLinkClass}>Mapa de Rotas</Link>
+                                <Link to="/sales-order/freight-calculation" onClick={onClose} className={mobileSubLinkClass}>Cálculo de Frete</Link>
                                 <Link to="/attendance-dashboard" onClick={onClose} className={mobileSubLinkClass}>BI de Atendimento</Link>
                             </div>
                         )}

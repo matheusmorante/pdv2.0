@@ -18,7 +18,7 @@ interface OrderHistoryTableProps {
     onToggleColumn: (column: keyof VisibilitySettings) => void;
     showTrash?: boolean;
     filters?: any;
-    onSort?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
+    onSort?: (sortBy: string, sortOrder: 'asc' | 'desc', isMulti: boolean) => void;
     selectedOrders: string[];
     onToggleSelection: (id: string) => void;
     onSelectAll: () => void;
@@ -184,8 +184,12 @@ const OrderHistoryTable = ({
                                     // Map keys for the backend
                                     const sortByValueMap: any = { orderDate: 'date', deliveryDate: 'deliveryDate', customer: 'customer', totalValue: 'totalValue', status: 'status' };
                                     const sortByKey = sortByValueMap[col.key];
-                                    const isSorted = filters?.sortBy === sortByKey;
-                                    const sortOrder = filters?.sortOrder || 'desc';
+                                    
+                                    const multiSort = filters?.multiSort || [];
+                                    const sortIndex = multiSort.findIndex((s: any) => s.key === sortByKey);
+                                    const isSorted = sortIndex !== -1;
+                                    const activeSort = isSorted ? multiSort[sortIndex] : null;
+                                    const sortOrder = activeSort?.order || 'desc';
 
                                     if (!isVisible) return null;
 
@@ -209,16 +213,24 @@ const OrderHistoryTable = ({
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
+                                                            const isMulti = e.shiftKey || e.ctrlKey || e.metaKey;
                                                             const newOrder = isSorted && sortOrder === 'desc' ? 'asc' : 'desc';
-                                                            onSort?.(sortByKey, newOrder);
+                                                            onSort?.(sortByKey, newOrder, isMulti);
                                                         }}
-                                                        className={`ml-2 flex items-center transition-all ${isSorted ? 'text-blue-600 dark:text-blue-400 scale-150' : 'text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400'}`}
-                                                        title={isSorted ? (sortOrder === 'desc' ? 'Ordenando: Decrescente' : 'Ordenando: Crescente') : `Clique para ordenar por ${labelText}`}
+                                                        className={`ml-2 flex items-center gap-1 transition-all ${isSorted ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400'}`}
+                                                        title={isSorted ? (sortOrder === 'desc' ? 'Ordenando: Decrescente' : 'Ordenando: Crescente') : `Clique para ordenar por ${labelText} (Shift+Clique para composição)`}
                                                     >
-                                                        {isSorted ? (
-                                                            <i className={`bi ${sortOrder === 'desc' ? 'bi-sort-down' : 'bi-sort-up'} text-sm font-black`}></i>
-                                                        ) : (
-                                                            <i className="bi bi-arrow-down-up text-xs font-bold"></i>
+                                                        <div className="flex flex-col items-center">
+                                                            {isSorted ? (
+                                                                <i className={`bi ${sortOrder === 'desc' ? 'bi-sort-down' : 'bi-sort-up'} text-sm font-black`}></i>
+                                                            ) : (
+                                                                <i className="bi bi-arrow-down-up text-xs font-bold"></i>
+                                                            )}
+                                                        </div>
+                                                        {isSorted && multiSort.length > 1 && (
+                                                            <span className="text-[9px] font-black bg-blue-100 dark:bg-blue-900/40 px-1 rounded-md min-w-[14px] text-center">
+                                                                {sortIndex + 1}
+                                                            </span>
                                                         )}
                                                     </button>
                                                 )}

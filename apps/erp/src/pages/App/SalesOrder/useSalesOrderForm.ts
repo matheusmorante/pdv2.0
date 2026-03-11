@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Order from "../../types/order.type";
+import Item from "../../types/items.type";
+import Product, { Variation } from "../../types/product.type";
 import useItems from "./hooks/useItems";
 import useShipping from "./hooks/useShipping";
 import usePaymentsData from "./hooks/usePayments";
@@ -90,12 +92,15 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
 
     const getOrderData = useCallback((newStatus?: 'draft' | 'scheduled' | 'fulfilled' | 'cancelled'): Order => {
         const s = latestState.current;
+        // Recalculate itemsSummary to ensure it's up-to-date with the latest items and includes totalItemsCost
+        const currentItemsSummary = calcItemsSummary(s.items);
+
         return {
             id: s.currentOrderId,
             orderType: 'sale',
             status: newStatus || s.status,
             items: s.items,
-            itemsSummary: s.itemsSummary,
+            itemsSummary: currentItemsSummary,
             shipping: s.shipping,
             payments: s.payments,
             paymentsSummary: s.paymentsSummary,
@@ -208,6 +213,31 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         }
     }, [setShipping]);
 
+    const handleSelectProduct = useCallback((idx: number, product: Product, variation?: Variation) => {
+        setItems(prev => {
+            const newItems = [...prev];
+            newItems[idx] = {
+                ...newItems[idx],
+                productId: product.id,
+                variationId: variation?.id,
+                description: variation ? `${product.description} - ${variation.name}` : product.description,
+                unitPrice: (variation?.unitPrice || product.unitPrice) || 0,
+                costPrice: (variation?.costPrice || product.costPrice) || 0,
+                handlingType: product.itemType === 'service' ? 'Execução no local' : 'Entrega com montagem no local',
+                condition: product.condition || 'novo'
+            };
+            return newItems;
+        });
+    }, [setItems]);
+
+    const handleItemChange = useCallback((idx: number, key: keyof Item, value: any) => {
+        setItems(prev => {
+            const newItems = [...prev];
+            newItems[idx] = { ...newItems[idx], [key]: value };
+            return newItems;
+        });
+    }, [setItems]);
+
     // Automatic calculation when address changes
     useEffect(() => {
         const addr = customerData.fullAddress;
@@ -267,7 +297,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
             return false;
         }
 
-        if (latestState.current.isSaving) return; // Note: isSaving is not in latestState in the current code structure, but we can fix it
+        if (latestState.current.isSaving) return;
         setIsSaving(true);
         setErrors({});
 
@@ -327,7 +357,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         isValidForCompletion,
         errors,
         orderDate,
-    }), [items, shipping, payments, customerData, observation, seller, marketingOrigin, currentOrderId, status, isSaving, isCalculatingDistance, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion, errors, orderDate]);
+    }), [items, shipping, payments, customerData, observation, seller, marketingOrigin, currentOrderId, status, isSaving, isSavingDraft, isCalculatingDistance, itemsSummary, paymentsSummary, currentOrder, isValidForCompletion, errors, orderDate]);
 
     const actions = useMemo(() => ({
         setItems,
@@ -353,6 +383,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
             });
         },
         setObservation,
+        handleItemChange,
         setSeller: (val: string) => {
             setSeller(val);
             setErrors(prev => {
@@ -364,13 +395,14 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         setMarketingOrigin,
         loadOrderForEditing,
         handleAutoCalculateDistance,
+        handleSelectProduct,
         handleSaveOrder,
         handleCompleteOrder,
         clearForm,
         setErrors,
         validateOrder,
         setOrderDate,
-    }), [setItems, setShipping, setPayments, setCustomerData, setObservation, setSeller, setMarketingOrigin, loadOrderForEditing, handleAutoCalculateDistance, handleSaveOrder, handleCompleteOrder, clearForm]);
+    }), [setItems, setShipping, setPayments, setCustomerData, setObservation, handleItemChange, setSeller, setMarketingOrigin, loadOrderForEditing, handleAutoCalculateDistance, handleSelectProduct, handleSaveOrder, handleCompleteOrder, clearForm]);
 
     return { state, actions };
 };

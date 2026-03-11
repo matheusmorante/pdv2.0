@@ -142,6 +142,11 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
     const [isGeneratingComboName, setIsGeneratingComboName] = useState(false);
     const [isGeneratingCategory, setIsGeneratingCategory] = useState(false);
     const [activeEcommerceSubTab, setActiveEcommerceSubTab] = useState<'photos' | 'descriptions'>('photos');
+    const [isBulkGeneratorOpen, setIsBulkGeneratorOpen] = useState(false);
+    const [bulkAttributes, setBulkAttributes] = useState<{ name: string, values: string }[]>([
+        { name: "Cor", values: "" },
+        { name: "Tamanho", values: "" }
+    ]);
     const [isDraggingPhoto, setIsDraggingPhoto] = useState(false);
     const [editingVariationComboId, setEditingVariationComboId] = useState<string | null>(null);
     const [suppliers, setSuppliers] = useState<Person[]>([]);
@@ -444,6 +449,57 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             ...prev,
             variations: [...(prev.variations || []), newVar]
         }));
+    };
+
+    const generateBulkVariations = () => {
+        const validAttrs = bulkAttributes.filter(a => a.name.trim() && a.values.trim());
+        if (validAttrs.length === 0) {
+            toast.warning("Adicione pelo menos um atributo com valores.");
+            return;
+        }
+
+        const attrValues = validAttrs.map(a => ({
+            name: a.name.trim(),
+            values: a.values.split(',').map(v => v.trim()).filter(v => v !== "")
+        }));
+
+        // Cartesian Product logic
+        const combinations: any[] = [[]];
+        for (const attr of attrValues) {
+            const nextCombinations: any[] = [];
+            for (const combo of combinations) {
+                for (const val of attr.values) {
+                    nextCombinations.push([...combo, { name: attr.name, value: val }]);
+                }
+            }
+            combinations.splice(0, combinations.length, ...nextCombinations);
+        }
+
+        const newVariations: Variation[] = combinations.map(combo => ({
+            id: Math.random().toString(36).substr(2, 9),
+            sku: "",
+            name: combo.map((c: any) => c.value).join(' / '),
+            stock: 0,
+            unitPrice: formData.unitPrice || 0,
+            costPrice: formData.costPrice || 0,
+            freightCost: formData.freightCost || 0,
+            freightType: formData.freightType || 'fixed',
+            ipiPercent: formData.ipiPercent || 0,
+            active: true,
+            attributes: combo,
+            syncWithParent: true,
+            syncUnitPrice: true,
+            syncCostPrice: true,
+            syncDescription: true
+        }));
+
+        setFormData(prev => ({
+            ...prev,
+            variations: [...(prev.variations || []), ...newVariations]
+        }));
+
+        setIsBulkGeneratorOpen(false);
+        toast.success(`${newVariations.length} variações geradas com sucesso!`);
     };
 
     const removeVariation = (id: string) => {
@@ -1397,15 +1453,98 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                                     </div>
                                 </div>
                                 {formData.hasVariations && (
-                                    <button
-                                        type="button"
-                                        onClick={addVariation}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
-                                    >
-                                        <i className="bi bi-plus-lg mr-2"></i> Adicionar Variação
-                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsBulkGeneratorOpen(true)}
+                                            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-200 dark:border-slate-700"
+                                        >
+                                            <i className="bi bi-grid-3x3-gap mr-2"></i> Gerar em Lote
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={addVariation}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/30"
+                                        >
+                                            <i className="bi bi-plus-lg mr-2"></i> Adicionar Variação
+                                        </button>
+                                    </div>
                                 )}
                             </div>
+
+                            {/* Bulk Generator Panel */}
+                            {isBulkGeneratorOpen && (
+                                <div className="bg-slate-50 dark:bg-slate-900/40 p-8 rounded-[2rem] border-2 border-dashed border-blue-200 dark:border-blue-900/30 animate-in zoom-in-95 duration-300">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div>
+                                            <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Gerador Automático de Grade</h4>
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-1">Defina os atributos e separe os valores por vírgula para gerar todas as combinações.</p>
+                                        </div>
+                                        <button onClick={() => setIsBulkGeneratorOpen(false)} className="text-slate-400 hover:text-red-500"><i className="bi bi-x-lg"></i></button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        {bulkAttributes.map((attr, idx) => (
+                                            <div key={idx} className="flex gap-2 items-start bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                                <div className="flex-1 flex flex-col gap-2">
+                                                    <input
+                                                        placeholder="Ex: Cor"
+                                                        value={attr.name}
+                                                        onChange={(e) => {
+                                                            const newAttrs = [...bulkAttributes];
+                                                            newAttrs[idx].name = e.target.value;
+                                                            setBulkAttributes(newAttrs);
+                                                        }}
+                                                        className="w-full bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 pb-1 border-b border-slate-50 dark:border-slate-800 mb-1"
+                                                    />
+                                                    <textarea
+                                                        placeholder="Ex: Azul, Marrom, Preto"
+                                                        value={attr.values}
+                                                        onChange={(e) => {
+                                                            const newAttrs = [...bulkAttributes];
+                                                            newAttrs[idx].values = e.target.value;
+                                                            setBulkAttributes(newAttrs);
+                                                        }}
+                                                        rows={2}
+                                                        className="w-full bg-transparent border-none outline-none text-sm font-bold dark:text-slate-200 resize-none"
+                                                    />
+                                                </div>
+                                                <button
+                                                    onClick={() => setBulkAttributes(bulkAttributes.filter((_, i) => i !== idx))}
+                                                    className="p-2 text-slate-300 hover:text-red-500"
+                                                >
+                                                    <i className="bi bi-trash3 text-xs"></i>
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={() => setBulkAttributes([...bulkAttributes, { name: "", values: "" }])}
+                                            className="h-full min-h-[80px] border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-950/40 text-slate-400 hover:text-blue-600 transition-all group"
+                                        >
+                                            <i className="bi bi-plus-circle text-xl group-hover:scale-110 transition-transform"></i>
+                                            <span className="text-[9px] font-black uppercase tracking-widest">Novo Atributo</span>
+                                        </button>
+                                    </div>
+
+                                    <div className="flex gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsBulkGeneratorOpen(false)}
+                                            className="px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all border border-transparent hover:border-slate-200"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={generateBulkVariations}
+                                            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20"
+                                        >
+                                            Gerar Variações
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                             {formData.hasVariations ? (
                                 <div className="border border-slate-100 dark:border-slate-800 rounded-[2rem] overflow-hidden bg-white dark:bg-slate-950 shadow-sm">

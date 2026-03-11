@@ -9,7 +9,7 @@ import CustomerData from "../../types/customerData.type";
 import Product, { Variation } from "../../types/product.type";
 import ProductSearchModal from "./ProductSearchModal";
 import OrderSelectionModal from "./OrderSelectionModal";
-import TagInput from "../../../components/TagInput";
+import NoticeInput from "../../../components/NoticeInput";
 import SmartInput from "../../../components/SmartInput";
 import CustomerSearchModal from "./CustomerSearchModal";
 
@@ -129,7 +129,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
             const assistanceOrder: Order = {
                 ...(order || {}),
                 orderType: 'assistance',
-                status: order?.status || 'draft',
+                status: order?.status || (scheduledDate ? 'scheduled' : 'fulfilled'),
                 customerData: {
                     ...(order?.customerData || EMPTY_CUSTOMER),
                     fullName: customerName.trim(),
@@ -150,6 +150,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                     itemsSubtotal: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0),
                     totalFixedDiscount: 0,
                     itemsTotalValue: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0),
+                    totalItemsCost: extraItems.reduce((acc, i) => acc + (i.quantity * (i.costPrice || 0)), 0),
                 },
                 payments: order?.payments || [],
                 paymentsSummary: order?.paymentsSummary || {
@@ -176,13 +177,13 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-[2px] animate-fade-in"
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-[3px] animate-fade-in"
             onClick={onClose}
         >
             <div
-                className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800"
-                onClick={(e) => e.stopPropagation()}
-                style={{ maxHeight: '90vh' }}
+                className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border-t sm:border border-slate-100 dark:border-slate-800"
+                style={{ height: '90vh', maxHeight: '90vh' }}
+                onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
                 <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-900/10 shrink-0">
@@ -401,11 +402,11 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                             />
                         </div>
                         <div className="flex flex-col gap-2 mt-4 px-1">
-                            <TagInput
-                                label="Observações Técnicas"
+                            <NoticeInput
+                                label="Avisos Importantes / Alertas"
                                 value={observation}
                                 onChange={setObservation}
-                                placeholder="Notas internas, peças extras, observações, etc..."
+                                placeholder="Alertas de entrega, observações críticas ou raridade..."
                             />
                         </div>
                     </div>

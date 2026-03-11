@@ -234,13 +234,13 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                         {(collectionName === 'customers' || collectionName === 'employees') && (
                             <div className="md:col-span-2">
                                 <SmartInput
-                                    label={`Cargo Principal ${collectionName === 'customers' ? '(preencha apenas se for funcionário)' : ''}`}
+                                    label={collectionName === 'customers' ? "Cargo ou Profissão" : "Cargo Principal"}
                                     value={formData.position || ""}
                                     onValueChange={(val) => setFormData({ ...formData, position: val })}
-                                    patterns={['Vendedor', 'Gerente', 'Entregador', 'Montador', 'Auxiliar']}
+                                    patterns={['Vendedor', 'Gerente', 'Entregador', 'Montador', 'Auxiliar', 'Empresário', 'Autônomo', 'Aposentado']}
                                     tableName="people"
                                     columnName="position"
-                                    placeholder="Ex: Vendedor, Gerente..."
+                                    placeholder={collectionName === 'customers' ? "Ex: Empresário, Autônomo..." : "Ex: Vendedor, Gerente..."}
                                     icon="bi-person-badge"
                                 />
                             </div>

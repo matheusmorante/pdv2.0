@@ -135,12 +135,12 @@ const CustomerSearchModal = ({ onSelect, onClose }: Props) => {
 
     return (
         <div
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-[3px] animate-fade-in"
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-[3px] animate-fade-in"
             onClick={onClose}
         >
             <div
-                className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800"
-                style={{ maxHeight: '85vh' }}
+                className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-slide-up border-t sm:border border-slate-100 dark:border-slate-800"
+                style={{ height: '90vh', maxHeight: '90vh' }}
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}

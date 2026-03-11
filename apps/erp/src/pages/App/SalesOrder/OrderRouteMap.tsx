@@ -1,45 +1,76 @@
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { supabase } from '../../utils/supabaseConfig';
 import { getSettings } from '../../utils/settingsService';
-import Order from '../../types/order.type';
-import { dateNow } from '../../utils/formatters';
+import { autoCalculateRouteDistance, searchAddressSuggestions, RouteResult } from '../../utils/maps';
+import { formatCurrency } from '../../utils/formatters';
 
-const OrderRouteMap = () => {
+const FreightCalculation = () => {
     const mapContainer = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
+
+    const [addressForm, setAddressForm] = useState({
+        street: '',
+        number: '',
+        neighborhood: '',
+        city: 'Colombo',
+        state: 'PR',
+        cep: '',
+        complement: '',
+        observation: ''
+    });
 
     const settings = getSettings();
     const origin: [number, number] = settings.storeOriginCoords;
+    const freightPerKm = settings.freightPerKm || 0;
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            setLoading(true);
-            try {
-                // Fetch scheduled orders from today onwards
-                const { data, error } = await supabase
-                    .from('orders')
-                    .select('*')
-                    .eq('status', 'scheduled')
-                    .order('created_at', { ascending: false });
+    const handleSearch = async (query: string) => {
+        if (query.length < 3) {
+            setSuggestions([]);
+            return;
+        }
+        const results = await searchAddressSuggestions(query);
+        setSuggestions(results);
+    };
 
-                if (error) throw error;
-                if (data) setOrders(data);
-            } catch (err) {
-                console.error("Erro ao buscar pedidos para o mapa:", err);
-            } finally {
-                setLoading(false);
+    const handleSelectSuggestion = (suggestion: any) => {
+        const addr = suggestion.address;
+        setAddressForm({
+            street: addr.road || addr.pedestrian || '',
+            number: addr.house_number || '',
+            neighborhood: addr.suburb || addr.neighbourhood || '',
+            city: addr.city || addr.town || addr.village || 'Colombo',
+            state: addr.state || 'PR',
+            cep: addr.postcode || '',
+            complement: '',
+            observation: ''
+        });
+        setSuggestions([]);
+    };
+
+    const calculateFreight = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const result = await autoCalculateRouteDistance(addressForm);
+            if (result) {
+                setRouteResult(result);
+            } else {
+                setError("Não foi possível calcular a rota para este endereço. Verifique os dados.");
             }
-        };
-
-        fetchOrders();
-    }, []);
+        } catch (err) {
+            setError("Erro ao processar cálculo. Tente novamente.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        if (!mapContainer.current || loading) return;
+        if (!mapContainer.current) return;
 
         const map = new maplibregl.Map({
             container: mapContainer.current,
@@ -64,94 +95,197 @@ const OrderRouteMap = () => {
                 .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML('<strong>Nossa Loja</strong>'))
                 .addTo(map);
 
-            const bounds = new maplibregl.LngLatBounds();
-            bounds.extend(origin);
+            if (routeResult) {
+                // Destination marker (blue)
+                const destEl = document.createElement('div');
+                destEl.innerHTML = `<svg width="32" height="44" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 28 16 28s16-16 16-28C32 7.16 24.84 0 16 0z" fill="#2563eb"/>
+                    <circle cx="16" cy="16" r="6" fill="white"/>
+                </svg>`;
+                new maplibregl.Marker({ element: destEl, anchor: 'bottom' })
+                    .setLngLat(routeResult.destinationCoords)
+                    .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML('<strong>Entrega</strong>'))
+                    .addTo(map);
 
-            orders.forEach((order, index) => {
-                if (order.shipping?.destinationCoords) {
-                    const coords = order.shipping.destinationCoords as [number, number];
-                    bounds.extend(coords);
+                // Add route line
+                if (routeResult.routeGeoJSON) {
+                    map.addSource('route', {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            properties: {},
+                            geometry: routeResult.routeGeoJSON
+                        }
+                    });
 
-                    // Order marker (blue)
-                    const markerEl = document.createElement('div');
-                    markerEl.innerHTML = `<svg width="24" height="34" viewBox="0 0 32 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 28 16 28s16-16 16-28C32 7.16 24.84 0 16 0z" fill="#2563eb"/>
-                        <text x="16" y="22" font-size="12" fill="white" font-weight="bold" text-anchor="middle">${index + 1}</text>
-                    </svg>`;
-                    markerEl.style.cursor = 'pointer';
+                    map.addLayer({
+                        id: 'route-layer',
+                        type: 'line',
+                        source: 'route',
+                        layout: { 'line-join': 'round', 'line-cap': 'round' },
+                        paint: {
+                            'line-color': '#3b82f6',
+                            'line-width': 5,
+                            'line-opacity': 0.8
+                        }
+                    });
 
-                    new maplibregl.Marker({ element: markerEl, anchor: 'bottom' })
-                        .setLngLat(coords)
-                        .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML(`
-                            <div className="p-2">
-                                <p className="font-black text-xs uppercase tracking-widest text-slate-400 mb-1">Pedido #${order.id?.slice(0, 8)}</p>
-                                <p className="font-bold text-slate-800">${order.customerData?.fullName || 'Cliente'}</p>
-                                <p className="text-[10px] text-slate-500 mt-1">${order.shipping?.deliveryAddress?.street}, ${order.shipping?.deliveryAddress?.number}</p>
-                            </div>
-                        `))
-                        .addTo(map);
-
-                    // Add route line if exists
-                    if (order.shipping?.routeGeoJSON) {
-                        const sourceId = `route-${order.id}`;
-                        map.addSource(sourceId, {
-                            type: 'geojson',
-                            data: {
-                                type: 'Feature',
-                                properties: {},
-                                geometry: order.shipping.routeGeoJSON
-                            }
-                        });
-
-                        map.addLayer({
-                            id: `layer-${sourceId}`,
-                            type: 'line',
-                            source: sourceId,
-                            layout: { 'line-join': 'round', 'line-cap': 'round' },
-                            paint: {
-                                'line-color': '#3b82f6',
-                                'line-width': 3,
-                                'line-opacity': 0.4
-                            }
-                        });
-                    }
+                    const bounds = new maplibregl.LngLatBounds();
+                    bounds.extend(origin);
+                    bounds.extend(routeResult.destinationCoords);
+                    routeResult.routeGeoJSON.coordinates.forEach((coord: [number, number]) => bounds.extend(coord));
+                    map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
                 }
-            });
-
-            if (orders.length > 0) {
-                map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
             }
         });
 
         return () => {
             if (mapRef.current) mapRef.current.remove();
         };
-    }, [orders, origin, loading]);
+    }, [routeResult, origin]);
 
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
             <header className="p-6 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Mapa de Rotas</h2>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Visualização logística de pedidos agendados</p>
+                        <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Cálculo de Frete</h2>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Simulação de custos logísticos por distância</p>
                     </div>
+
+                    {routeResult && (
+                        <div className="flex gap-4 animate-fade-in">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-blue-400 mb-0.5">Distância</p>
+                                <p className="text-lg font-black text-blue-700 dark:text-blue-300 tracking-tight">{routeResult.distanceKm} km</p>
+                            </div>
+                            <div className="bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-900/30">
+                                <p className="text-[9px] font-black uppercase tracking-widest text-emerald-400 mb-0.5">Valor Sugerido</p>
+                                <p className="text-lg font-black text-emerald-700 dark:text-emerald-300 tracking-tight">
+                                    {formatCurrency(routeResult.distanceKm * freightPerKm)}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </header>
 
-            <div className="flex-1 relative">
-                {loading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Carregando mapa e pedidos...</p>
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Fixed Search Form */}
+                <div className="p-6 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 z-20">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                        <div className="relative group">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-focus-within:text-blue-500 transition-colors mb-2 block">
+                                Digite o Endereço para Pesquisa Rápida
+                            </label>
+                            <div className="relative">
+                                <i className="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Ex: R. Cascavel, Colombo..."
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-3xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600"
+                                    onChange={(e) => handleSearch(e.target.value)}
+                                />
+                            </div>
+
+                            {suggestions.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden z-[100] animate-slide-up">
+                                    {suggestions.map((s, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleSelectSuggestion(s)}
+                                            className="w-full p-4 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center gap-4 border-b border-slate-50 dark:border-slate-800 last:border-0"
+                                        >
+                                            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center shrink-0">
+                                                <i className="bi bi-geo-alt-fill text-slate-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200 line-clamp-1">{s.display_name}</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{s.address.suburb || s.address.city}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="md:col-span-2">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Rua</label>
+                                <input
+                                    type="text"
+                                    value={addressForm.street}
+                                    onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-50 dark:border-slate-700 rounded-2xl text-xs font-bold"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Nº</label>
+                                <input
+                                    type="text"
+                                    value={addressForm.number}
+                                    onChange={(e) => setAddressForm({ ...addressForm, number: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-50 dark:border-slate-700 rounded-2xl text-xs font-bold"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block">Bairro</label>
+                                <input
+                                    type="text"
+                                    value={addressForm.neighborhood}
+                                    onChange={(e) => setAddressForm({ ...addressForm, neighborhood: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-50 dark:border-slate-700 rounded-2xl text-xs font-bold"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
+                            <div className="flex gap-4">
+                                <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-xl">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cidade: </span>
+                                    <span className="text-[10px] font-black text-slate-800 dark:text-slate-100">{addressForm.city}</span>
+                                </div>
+                                <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-xl">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">UF: </span>
+                                    <span className="text-[10px] font-black text-slate-800 dark:text-slate-100">{addressForm.state}</span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={calculateFreight}
+                                disabled={loading || !addressForm.street}
+                                className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 text-white rounded-3xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all flex items-center justify-center gap-3"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                        Calculando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="bi bi-calculator" />
+                                        Calcular Valor
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="p-4 bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 rounded-2xl animate-fade-in">
+                                <p className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                                    <i className="bi bi-exclamation-circle-fill" /> {error}
+                                </p>
+                            </div>
+                        )}
                     </div>
-                )}
-                <div ref={mapContainer} className="w-full h-full" />
+                </div>
+
+                <div className="flex-1 relative">
+                    <div ref={mapContainer} className="w-full h-full" />
+                </div>
             </div>
         </div>
     );
 };
 
-export default OrderRouteMap;
+export default FreightCalculation;

@@ -170,15 +170,19 @@ export default function Dashboard() {
 
             {/* Metrics */}
             {visibility.stats && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-6">
                     <StatsCard
                         title="Faturamento" value={formatCurrency(stats.totalSales)} icon="currency-dollar"
-                        trend={period !== 'today' ? 'up' : undefined} trendValue="12.5%" color="bg-blue-600"
+                        trend={period !== 'today' ? 'up' : undefined} trendValue="12.5%" color="bg-[#4361ee]"
                     />
-                    <StatsCard title="Vendas" value={stats.saleCount} icon="cart-check-fill" color="bg-emerald-600" />
-                    <StatsCard title="Pedidos Totais" value={stats.totalOrdersCount} icon="bag-plus-fill" color="bg-slate-600" />
-                    <StatsCard title="Ticket Médio (Vendas)" value={formatCurrency(stats.avgTicket)} icon="graph-up-arrow" color="bg-amber-600" />
-                    <StatsCard title="Pendentes" value={stats.pendingOrders} icon="clock-history" color="bg-rose-600" />
+                    <StatsCard 
+                        title="Lucro Estimado" value={formatCurrency(stats.totalProfit)} icon="graph-up-arrow" 
+                        color="bg-[#3a0ca3]" 
+                    />
+                    <StatsCard title="Vendas" value={stats.saleCount} icon="cart-check-fill" color="bg-[#4cc9f0]" />
+                    <StatsCard title="Pedidos" value={stats.totalOrdersCount} icon="bag-plus-fill" color="bg-[#7209b7]" />
+                    <StatsCard title="Ticket Médio" value={formatCurrency(stats.avgTicket)} icon="wallet2" color="bg-[#480ca8]" />
+                    <StatsCard title="Pendentes" value={stats.pendingOrders} icon="clock-history" color="bg-[#f72585]" />
                 </div>
             )}
 

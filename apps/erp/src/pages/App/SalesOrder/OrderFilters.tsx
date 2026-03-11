@@ -6,8 +6,9 @@ interface Filters {
     customerName: string;
     productName: string;
     valueRange: { min: number; max: number };
-    sortBy: "date" | "customer";
+    sortBy: string;
     sortOrder: "asc" | "desc";
+    multiSort: { key: string; order: "asc" | "desc" }[];
 }
 
 interface OrderFiltersProps {
@@ -86,7 +87,8 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
             productName: "",
             valueRange: { min: 0, max: 1000000 },
             sortBy: "date",
-            sortOrder: "desc"
+            sortOrder: "desc",
+            multiSort: [{ key: 'date', order: 'desc' }]
         });
     };
 

@@ -13,6 +13,10 @@ export const validateItems = (items: Item[]): ValidationErrors => {
         if (!item.description) {
             errors[`item_${idx}_description`] = "A descrição do item é obrigatória.";
         }
+        // User feedback: Must select from search, not just type
+        if (!item.productId) {
+            errors[`item_${idx}_description`] = "Selecione um produto da busca/lista.";
+        }
     });
     return errors;
 }
@@ -100,6 +104,7 @@ export const validateOrder = (order: Order): ValidationErrors => {
     const items = order.items || [];
     const payments = order.payments || [];
     const shippingValue = order.shipping?.value || 0;
+    const isDraft = order.status === 'draft';
 
     const itemsSummary = calcItemsSummary(items);
     const { amountRemaining } = calcPaymentsSummary(
@@ -110,20 +115,27 @@ export const validateOrder = (order: Order): ValidationErrors => {
 
     const errors: ValidationErrors = {
         ...validateItems(items),
-        ...validateSeller(order.seller),
-        ...validateShipping(order.shipping, order.customerData),
-        ...validatePayments(payments, amountRemaining),
         ...validateCustomerData(order.customerData)
     };
 
-    // New: Validate Order Date
-    if (!order.date || order.date.trim() === '') {
-        errors['order_date'] = "A data do pedido é obrigatória.";
+    // If it's not a draft, we require full validation
+    if (!isDraft) {
+        Object.assign(errors, {
+            ...validateSeller(order.seller),
+            ...validateShipping(order.shipping, order.customerData),
+            ...validatePayments(payments, amountRemaining)
+        });
+
+        // Validate items presence for non-drafts
+        if (items.length === 0) {
+            errors['items_summary'] = "O pedido deve conter pelo menos um item para ser finalizado.";
+        }
     }
 
-    // New: Logic for required items on non-draft orders
-    if (order.status !== 'draft' && items.length === 0) {
-        errors['items_summary'] = "O pedido deve conter pelo menos um item para ser finalizado.";
+    // Order Date is always important but for draft we could potentially skip it if we auto-fill, 
+    // but here let's keep it as is or fill it in the service.
+    if (!order.date || order.date.trim() === '') {
+        errors['order_date'] = "A data do pedido é obrigatória.";
     }
 
     return errors;

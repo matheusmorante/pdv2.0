@@ -108,36 +108,111 @@ const VariationFormModal = ({ isOpen, onClose, parentId, parentProduct, variatio
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6">
-                    <div className="grid grid-cols-2 gap-6 shrink-0">
-                        <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 shrink-0">
+                        <div className="flex flex-col gap-4">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center justify-between">
-                                Nome da Variação
+                                Atributos (Ex: Cor, Tamanho)
                                 <button
                                     type="button"
-                                    onClick={() => setFormData({ ...formData, syncDescription: !formData.syncDescription })}
-                                    className={`text-lg transition-colors ${formData.syncDescription ? 'text-blue-600' : 'text-slate-300'}`}
-                                    title="Herdar do pai"
+                                    onClick={() => {
+                                        const newAttrs = [...(formData.attributes || []), { name: "", value: "" }];
+                                        setFormData({ ...formData, attributes: newAttrs });
+                                    }}
+                                    className="p-1 px-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-[9px] hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                 >
-                                    <i className="bi bi-link-45deg"></i>
+                                    <i className="bi bi-plus-lg mr-1"></i> Adicionar
                                 </button>
                             </label>
-                            <input
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20"
-                                placeholder="Ex: Azul / P"
-                            />
+
+                            <div className="flex flex-col gap-2 max-h-[140px] overflow-y-auto pr-2 custom-scrollbar">
+                                {(formData.attributes || []).length === 0 && (
+                                    <p className="text-[10px] text-slate-400 italic py-2">Nenhum atributo definido.</p>
+                                )}
+                                {(formData.attributes || []).map((attr, idx) => (
+                                    <div key={idx} className="flex gap-2 items-center animate-in slide-in-from-left-2 duration-200">
+                                        <input
+                                            type="text"
+                                            placeholder="Nome (Ex: Cor)"
+                                            value={attr.name}
+                                            onChange={(e) => {
+                                                const newAttrs = [...(formData.attributes || [])];
+                                                newAttrs[idx].name = e.target.value;
+                                                setFormData({ ...formData, attributes: newAttrs });
+                                            }}
+                                            className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl text-[11px] font-bold outline-none focus:border-blue-500/50 transition-all"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Valor (Ex: Azul)"
+                                            value={attr.value}
+                                            onChange={(e) => {
+                                                const newAttrs = [...(formData.attributes || [])];
+                                                newAttrs[idx].value = e.target.value;
+                                                setFormData({ ...formData, attributes: newAttrs });
+                                            }}
+                                            className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl text-[11px] font-bold outline-none focus:border-blue-500/50 transition-all"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ ...formData, attributes: formData.attributes?.filter((_, i) => i !== idx) });
+                                            }}
+                                            className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                                        >
+                                            <i className="bi bi-trash3 text-xs"></i>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">SKU / Código</label>
-                            <input
-                                type="text"
-                                value={formData.sku}
-                                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20"
-                                placeholder="SKU-001"
-                            />
+
+                        <div className="flex flex-col gap-6">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center justify-between">
+                                    Nome / Descrição
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[8px] font-bold text-slate-400">Gerar com Atributos?</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if ((formData.attributes || []).length > 0) {
+                                                    const autoName = formData.attributes!.map(a => a.value).filter(v => v).join(' / ');
+                                                    if (autoName) setFormData({ ...formData, name: autoName });
+                                                }
+                                            }}
+                                            className="p-1 px-2 border border-slate-100 dark:border-slate-800 rounded-lg text-[9px] font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                            title="Gerar nome a partir dos atributos"
+                                        >
+                                            <i className="bi bi-magic mr-1"></i> Auto
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, syncDescription: !formData.syncDescription })}
+                                            className={`text-lg transition-colors ${formData.syncDescription ? 'text-blue-600' : 'text-slate-300'}`}
+                                            title="Herança do Pai"
+                                        >
+                                            <i className="bi bi-link-45deg"></i>
+                                        </button>
+                                    </div>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20"
+                                    placeholder="Ex: Azul / P"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">SKU / Código Único</label>
+                                <input
+                                    type="text"
+                                    value={formData.sku}
+                                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20"
+                                    placeholder="SKU-001"
+                                />
+                            </div>
                         </div>
                     </div>
 

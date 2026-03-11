@@ -78,12 +78,14 @@ export const calcItemsSummary = (items: Item[]): ItemsSummary => {
     }, 0);
     const itemsTotalValue = calcItemsTotalValue(items);
     const itemsSubtotal = itemsTotalValue + totalFixedDiscount;
+    const totalItemsCost = items.reduce((acc, item) => acc + (item.costPrice || 0) * item.quantity, 0);
 
     return {
         totalQuantity,
         itemsSubtotal,
         totalFixedDiscount,
         itemsTotalValue,
+        totalItemsCost
     };
 };
 

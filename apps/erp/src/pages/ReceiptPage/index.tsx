@@ -4,10 +4,12 @@ import Header from "./Header";
 import ItemsTable from "./ItemsTable";
 import PaymentsTable from "./PaymentsTable";
 import ShippingData from "./ShippingData";
+import { getSettings } from "../utils/settingsService";
 
 const ReceiptPage = () => {
     const storedOrder = sessionStorage.getItem('order');
     const order = storedOrder ? JSON.parse(storedOrder) : null;
+    const settings = getSettings();
 
     useEffect(() => {
         if (order) {
@@ -72,10 +74,18 @@ const ReceiptPage = () => {
 
             <div className="flex text-center gap-10 justify-center mt-10">
                 <div className="assinatura">
-                    <div>________________________________________________</div>
-                    <div>Assinatura do Vendedor</div>
+                    <div className="text-slate-300">________________________________________________</div>
+                    <div className="text-xs font-bold uppercase tracking-widest mt-2">Assinatura do Vendedor</div>
                 </div>
             </div>
+
+            {settings.receiptConfig?.footerText && (
+                <div className="mt-12 pt-6 border-t border-slate-100 text-center">
+                    <p className="text-[10px] text-slate-400 font-medium italic max-w-lg mx-auto leading-relaxed">
+                        {settings.receiptConfig.footerText}
+                    </p>
+                </div>
+            )}
         </div>
     )
 };

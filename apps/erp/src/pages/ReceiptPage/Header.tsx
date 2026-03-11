@@ -32,9 +32,11 @@ const Header = ({ seller }: Props) => {
                         <strong className="text-blue-600">Contato: </strong>
                         {companyPhone}
                     </p>
-                    <p className="text-xs uppercase font-black tracking-widest mt-4">
-                        <strong className="text-blue-600">Vendedor:</strong> {seller}
-                    </p>
+                    {settings.receiptConfig?.showSeller !== false && (
+                        <p className="text-xs uppercase font-black tracking-widest mt-4">
+                            <strong className="text-blue-600">Vendedor:</strong> {seller}
+                        </p>
+                    )}
                 </div>
             </div>
         </header>

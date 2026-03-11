@@ -35,7 +35,8 @@ export type Order = {
     deletedAt?: string | null,
     orderIndex?: number,
     reviewRequested?: boolean,
-    marketingOrigin?: string
+    marketingOrigin?: string,
+    stockProcessed?: boolean
 }
 
 export type OrderAction =

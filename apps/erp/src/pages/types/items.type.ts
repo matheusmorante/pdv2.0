@@ -6,6 +6,7 @@ export type Item = {
     description: string;
     quantity: number;
     unitPrice: number;
+    costPrice?: number;
     unitDiscount: number;
     discountType: DiscountType;
     handlingType: string;
@@ -19,7 +20,8 @@ export type ItemsSummary = {
     totalQuantity: number,
     itemsSubtotal: number,
     totalFixedDiscount: number,
-    itemsTotalValue: number
+    itemsTotalValue: number,
+    totalItemsCost: number
 }
 
 export default Item;

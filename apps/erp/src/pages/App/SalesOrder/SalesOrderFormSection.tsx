@@ -8,7 +8,7 @@ import FormHeader from "./FormHeader";
 import FormFooter from "./FormFooter";
 import SectionCard from "../../../components/SectionCard";
 import { useSalesOrderForm } from "./useSalesOrderForm";
-import TagInput from "../../../components/TagInput";
+import NoticeInput from "../../../components/NoticeInput";
 
 type SalesOrderFormSectionProps = {
     form: ReturnType<typeof useSalesOrderForm>;
@@ -116,15 +116,15 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                         </SectionCard>
 
                         <SectionCard
-                            icon="bi bi-card-text"
-                            iconBg="bg-slate-600 shadow-slate-100 dark:shadow-slate-800/50"
-                            title="Observações"
+                            icon="bi bi-exclamation-triangle-fill"
+                            iconBg="bg-amber-600 shadow-amber-100 dark:shadow-amber-900/20"
+                            title="Avisos Importantes"
                             className="bg-white dark:bg-slate-900"
                         >
-                            <TagInput
+                            <NoticeInput
                                 value={state.observation}
                                 onChange={(val) => actions.setObservation(val)}
-                                placeholder="Pressione Enter ou vírgula para adicionar notas..."
+                                placeholder="Destaque pontos críticos ou raros do pedido..."
                             />
                         </SectionCard>
                     </div>

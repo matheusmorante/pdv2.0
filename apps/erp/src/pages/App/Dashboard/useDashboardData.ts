@@ -1,23 +1,34 @@
 import { useState, useEffect, useMemo } from 'react';
 import { subscribeToOrders } from '../../utils/orderHistoryService';
 import Order from '../../types/order.type';
+import { parse as parseDate, isSameDay, subDays, format } from 'date-fns';
 
 export type Period = 'custom' | 'today' | 'week' | 'month' | 'last_month' | 'last_semester' | 'year';
 
+export interface SalesHistory {
+    date: string;
+    valor: number;
+    orders: number;
+}
+
+export interface DashboardStats {
+    totalSales: number;
+    saleCount: number;
+    totalOrdersCount: number;
+    totalProfit: number;
+    avgTicket: number;
+    pendingOrders: number;
+    activeSchedules: number;
+}
+
 const parsePTBRDate = (dateStr: string): Date | null => {
     try {
-        const [date] = dateStr.split(', ');
-        const [d, m, y] = date.split('/').map(Number);
-        return new Date(y, m - 1, d);
+        const [datePart] = dateStr.split(', ');
+        return parseDate(datePart, 'dd/MM/yyyy', new Date());
     } catch {
         return null;
     }
 };
-
-const isSameDay = (d1: Date, d2: Date) =>
-    d1.getDate() === d2.getDate() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getFullYear() === d2.getFullYear();
 
 const STATUS_LABELS: Record<string, string> = {
     draft: 'Rascunho',
@@ -35,7 +46,9 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
             setOrders(fetchedOrders);
             setLoading(false);
         });
-        return () => unsubscribe();
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     const filteredOrders = useMemo(() => {
@@ -75,30 +88,35 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
         });
     }, [orders, period, customStartDate, customEndDate]);
 
-    const stats = useMemo(() => {
-        // DEFINIÇÃO DE VENDA: No sistema, uma venda é reconhecida quando um pedido
-        // deixa de ser 'Rascunho' e passa para 'Agendado' (scheduled) ou 'Atendido' (fulfilled).
-        // Pedidos em rascunho ou cancelados não contabilizam como venda.
+    const stats = useMemo((): DashboardStats => {
         const recognizedStatuses = ['scheduled', 'fulfilled'];
         const saleOrders = filteredOrders.filter(o => recognizedStatuses.includes(o.status || ''));
+        
         const totalSales = saleOrders.reduce((acc, curr) => acc + (curr.paymentsSummary?.totalOrderValue || 0), 0);
-
-        // Variavel saleCount representa apenas as vendas aprovadas
         const saleCount = saleOrders.length;
         const avgTicket = saleCount > 0 ? totalSales / saleCount : 0;
-
-        // totalOrdersCount representa TUDO que caiu naquele período, indepedente de ser venda ou rascunho
         const totalOrdersCount = filteredOrders.length;
+        
+        const totalProfit = saleOrders.reduce((acc, o) => {
+            const totalCost = o.itemsSummary?.totalItemsCost || 0;
+            const totalValue = o.paymentsSummary?.totalOrderValue || 0;
+            return acc + (totalValue - totalCost);
+        }, 0);
 
-        // Pedidos pendentes são aqueles que ainda não foram atendidos (Rascunho e Agendado)
         const pendingOrders = filteredOrders.filter(o => o.status === 'scheduled' || o.status === 'draft').length;
+        
+        const activeSchedules = filteredOrders.filter(o => 
+            o.status === 'scheduled' && o.shipping?.scheduling?.date
+        ).length;
 
         return {
             totalSales,
             saleCount,
             totalOrdersCount,
+            totalProfit,
             avgTicket,
-            pendingOrders
+            pendingOrders,
+            activeSchedules,
         };
     }, [filteredOrders]);
 
@@ -142,7 +160,7 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
                 label = shortNames[dateObj.getDay()];
             }
 
-            return { name: label, valor: total };
+            return { name: label, valor: total, orders: dayOrders.length };
         });
     }, [orders, period]);
 

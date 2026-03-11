@@ -60,29 +60,45 @@ export const useOrderHistory = (filters?: any) => {
 
         const toComparableDate = (dateStr: string) => {
             if (!dateStr || !dateStr.includes('/')) return dateStr;
-            const [day, month, year] = dateStr.split('/');
-            return `${year}-${month}-${day}`;
+            // Format can be "DD/MM/YYYY" or "DD/MM/YYYY, HH:mm:ss"
+            const [datePart, timePart] = dateStr.split(', ');
+            const [day, month, year] = datePart.split('/');
+            const dateNormalized = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            if (timePart) {
+                return `${dateNormalized}T${timePart}`;
+            }
+            return dateNormalized;
         };
 
         return orders
             .filter(order => {
+                const customerNameQuery = filters?.customerName?.toLowerCase() || '';
+                const orderCustomerName = order.customerData?.fullName?.toLowerCase() || '';
+                const isSearchingCustomer = customerNameQuery.length > 0;
+                const matchesCustomer = orderCustomerName.includes(customerNameQuery);
+
                 // Filter by Deleted or Draft status
                 if (showTrash) {
                     if (!order.deleted) return false;
                 } else if (isDraft) {
                     if (order.status !== 'draft' || order.deleted) return false;
                 } else {
-                    if (order.deleted || order.status === 'draft') return false;
+                    // MAIN LIST LOGIC:
+                    // Hide deleted. 
+                    // Hide drafts UNLESS we are explicitly searching for a customer and it matches.
+                    if (order.deleted) return false;
+                    if (order.status === 'draft') {
+                        if (!(isSearchingCustomer && matchesCustomer)) return false;
+                    }
                 }
 
                 if (!filters) return true;
 
                 const orderDateComp = toComparableDate(order.date);
                 const dateMatch = (!filters.dateRange.start || orderDateComp >= filters.dateRange.start) &&
-                    (!filters.dateRange.end || orderDateComp <= filters.dateRange.end);
+                    (!filters.dateRange.end || orderDateComp <= (filters.dateRange.end + 'T23:59:59'));
 
-                const customerMatch = !filters.customerName ||
-                    order.customerData?.fullName?.toLowerCase().includes(filters.customerName.toLowerCase());
+                const customerMatch = !filters.customerName || matchesCustomer;
 
                 const productMatch = !filters.productName ||
                     (order.items?.some(item => item.description.toLowerCase().includes(filters.productName.toLowerCase()))) ||
@@ -95,26 +111,41 @@ export const useOrderHistory = (filters?: any) => {
                 return dateMatch && customerMatch && productMatch && valueMatch;
             })
             .sort((a, b) => {
-                let comparison = 0;
-                const sortBy = filters?.sortBy || 'date';
+                // Multi-column sorting logic
+                const multiSort = filters?.multiSort || []; // Array of { key: string, order: 'asc' | 'desc' }
+                
+                // If no multiSort, fallback to single sortBy for backward compatibility
+                const sortRules = multiSort.length > 0 
+                  ? multiSort 
+                  : [{ key: filters?.sortBy || 'date', order: filters?.sortOrder || 'desc' }];
 
-                if (sortBy === "customer") {
-                    comparison = (a.customerData?.fullName || "").localeCompare(b.customerData?.fullName || "");
-                } else if (sortBy === "totalValue") {
-                    comparison = (a.paymentsSummary?.totalOrderValue || 0) - (b.paymentsSummary?.totalOrderValue || 0);
-                } else if (sortBy === "status") {
-                    comparison = (a.status || "").localeCompare(b.status || "");
-                } else if (sortBy === "deliveryDate") {
-                    const dateA = toComparableDate(a.shipping?.scheduling?.date || "");
-                    const dateB = toComparableDate(b.shipping?.scheduling?.date || "");
-                    comparison = dateA.localeCompare(dateB);
-                } else {
-                    const dateA = toComparableDate(a.date || "");
-                    const dateB = toComparableDate(b.date || "");
-                    comparison = dateA.localeCompare(dateB);
+                for (const rule of sortRules) {
+                    const { key: sortBy, order: sortOrder } = rule;
+                    let comparison = 0;
+
+                    if (sortBy === "customer") {
+                        comparison = (a.customerData?.fullName || "").localeCompare(b.customerData?.fullName || "");
+                    } else if (sortBy === "totalValue") {
+                        comparison = (a.paymentsSummary?.totalOrderValue || 0) - (b.paymentsSummary?.totalOrderValue || 0);
+                    } else if (sortBy === "status") {
+                        comparison = (a.status || "").localeCompare(b.status || "");
+                    } else if (sortBy === "deliveryDate") {
+                        const dateA = toComparableDate(a.shipping?.scheduling?.date || "");
+                        const dateB = toComparableDate(b.shipping?.scheduling?.date || "");
+                        comparison = dateA.localeCompare(dateB);
+                    } else {
+                        // Default strictly handles 'date' (order date) which now includes time
+                        const dateA = toComparableDate(a.date || "");
+                        const dateB = toComparableDate(b.date || "");
+                        comparison = dateA.localeCompare(dateB);
+                    }
+
+                    if (comparison !== 0) {
+                        return sortOrder === "asc" ? comparison : -comparison;
+                    }
                 }
-                const sortOrder = filters?.sortOrder || 'desc';
-                return sortOrder === "asc" ? comparison : -comparison;
+
+                return 0;
             });
     }, [orders, filters]);
 

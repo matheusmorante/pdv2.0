@@ -18,6 +18,9 @@ import OrderAutomationSection from './components/OrderAutomationSection';
 import WhatsAppConfigSection from './components/WhatsAppConfigSection';
 import InventoryNotificationsSection from './components/InventoryNotificationsSection';
 import ChannelDescriptionsSection from './components/ChannelDescriptionsSection';
+import WhatsAppTemplatesSection from './components/WhatsAppTemplatesSection';
+import BusinessRulesSection from './components/BusinessRulesSection';
+import ReceiptConfigSection from './components/ReceiptConfigSection';
 import SaveButton from './components/SaveButton';
 
 const categories: any[] = [
@@ -32,6 +35,9 @@ const categories: any[] = [
     { id: 'whatsapp', label: 'WhatsApp & Catálogo', icon: 'bi-whatsapp', group: 'system', keywords: ['whatsapp', 'api', 'token', 'catálogo', 'marketplace', 'vendas'] },
     { id: 'notificacoes', label: 'Notificações', icon: 'bi-bell-fill', group: 'system', keywords: ['notificação', 'alerta', 'estoque', 'novo', 'usado', 'salvado'] },
     { id: 'canais', label: 'Descrições por Canal', icon: 'bi-megaphone-fill', group: 'system', keywords: ['whatsapp', 'ecommerce', 'canal', 'marketplace', 'base', 'descrição', 'loja'] },
+    { id: 'templates', label: 'Mensagens & Templates', icon: 'bi-chat-quote-fill', group: 'system', keywords: ['mensagem', 'template', 'whatsapp', 'texto', 'avaliação', 'confirmação'] },
+    { id: 'regras', label: 'Regras de Negócio', icon: 'bi-gear-wide-connected', group: 'system', keywords: ['regra', 'estoque', 'negativo', 'reserva', 'venda'] },
+    { id: 'recibo', label: 'Configuração de Recibo', icon: 'bi-printer-fill', group: 'system', keywords: ['recibo', 'impressão', 'rodapé', 'vendedor', 'garantia'] },
 ];
 
 /**
@@ -217,6 +223,18 @@ export default function Settings(): any {
 
                     <SettingsSection id="canais" title="Descrições Base por Canal" icon="bi-megaphone-fill" isVisible={isVisible('canais')}>
                         <ChannelDescriptionsSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="templates" title="Mensagens e Templates WhatsApp" icon="bi-chat-quote-fill" isVisible={isVisible('templates')}>
+                        <WhatsAppTemplatesSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="regras" title="Regras de Negócio e Estoque" icon="bi-gear-wide-connected" isVisible={isVisible('regras')}>
+                        <BusinessRulesSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="recibo" title="Configuração de Recibo e Impressão" icon="bi-printer-fill" isVisible={isVisible('recibo')}>
+                        <ReceiptConfigSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
                 </div>
             </div>
