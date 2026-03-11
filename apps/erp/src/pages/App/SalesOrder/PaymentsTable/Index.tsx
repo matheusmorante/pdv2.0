@@ -52,7 +52,7 @@ const PaymentsTable = ({ payments, setPayments, summary }: Props) => {
                     </th>
                 </tr>
             </thead>
-            <Body payments={payments} setPayments={setPayments} />
+            <Body payments={payments} setPayments={setPayments} summary={summary} />
             <Footer
                 summary={summary}
             />

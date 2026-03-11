@@ -1,13 +1,14 @@
-import { Payment } from "../../../types/payments.type";
+import { Payment, PaymentsSummary } from "../../../types/payments.type";
 import { sanitizePayment } from "../../../utils/sanitization";
 import BodyRow from "./BodyRow";
 
 interface Props {
     payments: Payment[];
     setPayments: React.Dispatch<React.SetStateAction<Payment[]>>;
+    summary: PaymentsSummary;
 }
 
-const Body = ({ payments, setPayments }: Props) => {
+const Body = ({ payments, setPayments, summary }: Props) => {
     const toggleFeeType = (idx: number) => {
         setPayments((prev: Payment[]) => {
             const newPayments = [...prev];
@@ -59,6 +60,7 @@ const Body = ({ payments, setPayments }: Props) => {
                     onChange={changePayments}
                     onDelete={() => deletePayment(idx)}
                     payment={payment}
+                    summary={summary}
                     idx={idx}
                 />
             ))}

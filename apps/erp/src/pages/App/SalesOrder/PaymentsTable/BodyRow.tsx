@@ -1,5 +1,5 @@
-import { Payment } from '../../../types/payments.type'
 import paymentMethods from "./paymentMethods";
+import { PaymentsSummary, Payment } from '../../../types/payments.type'
 import CurrencyInput from '../../../../components/CurrencyInput';
 import ToggleValueTypeBtn from '../ToggleValueTypeBtn';
 import CurrencyOrPercentInput from '../../../../components/CurrencyOrPercentInput';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 
 interface Props {
     payment: Payment,
+    summary: PaymentsSummary,
     onChange: (idx: number, key: keyof Payment, value: number | string) => void,
     onToggleFeeType: () => void,
     onDelete: () => void,
@@ -16,7 +17,7 @@ interface Props {
 }
 
 
-const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) => {
+const BodyRow = ({ payment, summary, onChange, onToggleFeeType, onDelete, idx }: Props) => {
     const [newStatus, setNewStatus] = useState(payment.status);
 
     const onBlur = () => {
@@ -50,12 +51,24 @@ const BodyRow = ({ payment, onChange, onToggleFeeType, onDelete, idx }: Props) =
                 </select>
             </td>
             <td className="px-4 py-2">
-                <CurrencyInput
-                    value={payment.amount}
-                    onChange={
-                        (value: number) => onChange(idx, 'amount', value)
-                    }
-                />
+                <div className="flex items-center gap-1 group/input">
+                    <CurrencyInput
+                        value={payment.amount}
+                        onChange={
+                            (value: number) => onChange(idx, 'amount', value)
+                        }
+                    />
+                    {summary.amountRemaining > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => onChange(idx, 'amount', payment.amount + summary.amountRemaining)}
+                            className="p-1.5 text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all"
+                            title={`Puxar saldo restante (R$ ${summary.amountRemaining.toFixed(2)})`}
+                        >
+                            <i className="bi bi-magic" />
+                        </button>
+                    )}
+                </div>
             </td>
             <td className='px-4 py-2'>
                 <div className='flex items-center gap-2 bg-slate-50/50 dark:bg-slate-800/30 rounded-lg pr-2 border border-slate-100/50 dark:border-slate-800/50 group-focus-within:border-indigo-200 dark:group-focus-within:border-indigo-500/30 transition-all'>

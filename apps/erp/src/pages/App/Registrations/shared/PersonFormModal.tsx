@@ -4,7 +4,7 @@ import { savePerson, isPersonRegisteredAs } from "../../../utils/personService";
 import { toast } from "react-toastify";
 import { capitalizePerson, toTitleCase } from "../../../utils/formatters";
 import SmartInput from "../../../../components/SmartInput";
-import InputMask from "react-input-mask";
+import { PatternFormat } from "react-number-format";
 
 interface PersonFormModalProps {
     isOpen: boolean;
@@ -276,8 +276,8 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                                 {formData.personType === 'PJ' ? 'CNPJ' : 'CPF'}
                             </label>
-                            <InputMask
-                                mask={formData.personType === 'PJ' ? "99.999.999/9999-99" : "999.999.999-99"}
+                            <PatternFormat
+                                format={formData.personType === 'PJ' ? "##.###.###/####-##" : "###.###.###-##"}
                                 type="text"
                                 value={formData.cpfCnpj}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, cpfCnpj: e.target.value })}
@@ -289,8 +289,8 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Telefone <span className="text-red-500">*</span></label>
                             <div className="flex gap-2">
-                                <InputMask
-                                    mask="(99) 99999-9999"
+                                <PatternFormat
+                                    format="(##) #####-####"
                                     type="text"
                                     value={formData.phone}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value })}

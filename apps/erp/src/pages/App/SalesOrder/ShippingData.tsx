@@ -7,7 +7,7 @@ import { getSettings } from "../../utils/settingsService";
 import FreteDistancia from "./ShippingComponents/FreteDistancia";
 import Agendamento from "./ShippingComponents/Agendamento";
 import MapRoute from "./ShippingComponents/MapRoute";
-import InputMask from "react-input-mask";
+import { PatternFormat } from "react-number-format";
 import SmartInput from "../../../components/SmartInput";
 
 interface Props {
@@ -158,8 +158,8 @@ const ShippingData = ({ shipping, setShipping, customerData, isCalculatingDistan
                                     <div className="flex flex-col md:flex-row gap-4">
                                         <div className="flex-[1]">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">CEP</label>
-                                            <InputMask
-                                                mask="99999-999"
+                                            <PatternFormat
+                                                format="#####-###"
                                                 className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                                 placeholder="00000-000"
                                                 value={shipping.deliveryAddress?.cep || ""}

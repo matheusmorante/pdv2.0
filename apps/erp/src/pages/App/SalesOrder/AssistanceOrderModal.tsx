@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatToBRDate, formatCurrency } from "../../utils/formatters";
+import { PatternFormat } from "react-number-format";
 import { saveOrder, subscribeToOrders } from "../../utils/orderHistoryService";
 import { toast } from "react-toastify";
 import Order, { AssistanceItem } from "../../types/order.type";
@@ -241,10 +242,11 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 Telefone / WhatsApp
                             </label>
                             <div className="flex gap-2">
-                                <input
+                                <PatternFormat
+                                    format="(##) #####-####"
                                     type="tel"
                                     value={customerPhone}
-                                    onChange={(e) => setCustomerPhone(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerPhone(e.target.value)}
                                     placeholder="(00) 00000-0000"
                                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
                                 />

@@ -6,7 +6,7 @@ import { ValidationErrors } from "../../utils/validations";
 import CustomerSearchModal from "./CustomerSearchModal";
 import PersonFormModal from "../Registrations/shared/PersonFormModal";
 import { getAddressByCep, searchAddressSuggestions } from "../../utils/maps";
-import InputMask from "react-input-mask";
+import { PatternFormat } from "react-number-format";
 
 interface Props {
     customerData: CustomerData;
@@ -263,8 +263,8 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                                 Telefone / Celular <span className="text-red-500">*</span>
                             </label>
                             <div className="flex gap-2">
-                                <InputMask
-                                    mask="(99) 99999-9999"
+                                <PatternFormat
+                                    format="(##) #####-####"
                                     className={field(isPhoneError)}
                                     placeholder="(00) 00000-0000"
                                     value={customerData.phone}
