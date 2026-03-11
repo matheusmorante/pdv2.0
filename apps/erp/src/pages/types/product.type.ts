@@ -17,6 +17,7 @@ export type Variation = {
     ipiPercent?: number;
     finalPurchasePrice?: number;
     minStock?: number;
+    comboItems?: ComboItem[];
 };
 
 export type FiscalInfo = {
@@ -31,6 +32,20 @@ export type FiscalInfo = {
     pisCst?: string;
     cofinsCst?: string;
     icmsPercent?: number;
+};
+
+export type ComboItem = {
+    productId: string;
+    variationId?: string;
+    quantity: number;
+    description?: string;
+    unitPrice?: number;
+    stock?: number;
+};
+
+export type ExtraDimension = {
+    label: string;
+    value: string;
 };
 
 export type Product = {
@@ -52,14 +67,35 @@ export type Product = {
     minStock?: number;
     unit: string;
     active: boolean;
+    isDraft?: boolean;
     deleted?: boolean;
     createdAt?: string;
     updatedAt?: string;
     supplierId?: string;
 
+    // Dimensions
+    width?: number;
+    height?: number;
+    depth?: number;
+    extraDimensions?: ExtraDimension[];
+
+    // Details
+    line?: string;
+    mainDifferential?: string;
+    material?: string;
+    colors?: string;
+    notIncluded?: string;
+
     // Ecommerce
     images?: string[];
     ecommerceDescription?: string;
+    ecommerceTemplate?: string;
+    whatsappDescription?: string;
+    whatsappTemplate?: string;
+
+    // Combo
+    isCombo?: boolean;
+    comboItems?: ComboItem[];
 
     // Variations
     hasVariations?: boolean;

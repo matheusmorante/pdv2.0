@@ -29,6 +29,7 @@ const SalesOrderFormSection = ({ form }: SalesOrderFormSectionProps) => {
                     onClearForm={actions.clearForm}
                     orderDate={state.orderDate}
                     setOrderDate={actions.setOrderDate}
+                    isSavingDraft={state.isSavingDraft}
                 />
 
                 {/* Main Form Content */}

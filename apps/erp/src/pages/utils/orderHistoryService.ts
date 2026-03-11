@@ -96,14 +96,36 @@ export const saveOrder = async (order: Order): Promise<string> => {
         if (error) throw error;
         const rowId = (data as any)?.[0]?.id;
 
-        // Inventory management
-        if (order.orderType === 'sale' && order.items) {
+        // Inventory management - Only subtract stock if the order is FINAL (not a draft)
+        if (order.orderType === 'sale' && order.items && order.status !== 'draft') {
             for (const item of order.items) {
                 if (item.productId) {
                     // Fetch latest stock to be sure
-                    const { data: p } = await supabase.from('products').select('stock').eq('id', item.productId).single();
-                    const currentStock = p?.stock || 0;
-                    
+                    const { data: p } = await supabase.from('products').select('*').eq('id', item.productId).single();
+                    if (!p) continue;
+                    const currentStock = p.stock || 0;
+
+                    if (p.isCombo && p.combo_items && Array.isArray(p.combo_items)) {
+                        for (const comboItem of p.combo_items) {
+                            // Find current stock of the part
+                            const { data: part } = await supabase.from('products').select('stock').eq('id', comboItem.productId).single();
+                            const currentPartStock = part?.stock || 0;
+
+                            await saveInventoryMove({
+                                productId: comboItem.productId,
+                                variationId: comboItem.variationId,
+                                productDescription: comboItem.description || `Parte do combo ${item.description}`,
+                                type: 'withdrawal',
+                                quantity: comboItem.quantity * item.quantity, // Multiply part qty by combo qty
+                                date: new Date().toISOString(),
+                                label: 'Venda (Combo)',
+                                observation: `Parte do Combo #${item.description} no Pedido #${rowId}`
+                            }, currentPartStock);
+                        }
+                    }
+
+                    // Always record the movement for the main product (or combo itself, for history/reference)
+                    // Even if it's a combo with virtual stock, recording the move helps tracking.
                     await saveInventoryMove({
                         productId: item.productId,
                         variationId: item.variationId,

@@ -23,6 +23,7 @@ const SalesOrder = () => {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isTrashOpen, setIsTrashOpen] = useState(false);
+    const [isDraftsOpen, setIsDraftsOpen] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const [visibilitySettings, setVisibilitySettings] = useState<VisibilitySettings>({
         id: true,
@@ -48,8 +49,9 @@ const SalesOrder = () => {
         }));
     };
 
-    const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false }), [filters]);
-    const trashFilters = React.useMemo(() => ({ ...filters, showTrash: true }), [filters]);
+    const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false, isDraft: false }), [filters]);
+    const trashFilters = React.useMemo(() => ({ ...filters, showTrash: true, isDraft: false }), [filters]);
+    const draftFilters = React.useMemo(() => ({ ...filters, showTrash: false, isDraft: true }), [filters]);
 
     return (
         <div className="flex -m-4 xl:-m-8 h-[calc(100vh-64px)] xl:h-[calc(100vh-80px)] overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300 relative">
@@ -107,6 +109,15 @@ const SalesOrder = () => {
                             >
                                 <i className="bi bi-trash3"></i>
                                 Lixeira
+                            </button>
+
+                            <button
+                                onClick={() => setIsDraftsOpen(true)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-sm font-bold text-xs uppercase tracking-widest border bg-white text-orange-600 border-orange-200 dark:bg-slate-900 dark:border-orange-900/30 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+                                title="Ver pedidos salvos automaticamente ou como rascunho"
+                            >
+                                <i className="bi bi-pencil-square"></i>
+                                Rascunhos
                             </button>
 
                             <Link
@@ -218,6 +229,53 @@ const SalesOrder = () => {
                                 <OrderHistoryList
                                     onEdit={setEditingOrder}
                                     filters={trashFilters}
+                                    visibilitySettings={visibilitySettings}
+                                    onToggleColumn={toggleVisibility}
+                                    onSort={handleSort}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Drafts Modal */}
+            {isDraftsOpen && (
+                <div
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6 bg-slate-900/50 backdrop-blur-md animate-fade-in"
+                    onClick={() => setIsDraftsOpen(false)}
+                >
+                    <div
+                        className="bg-white dark:bg-slate-950 w-full h-full md:w-[95vw] md:h-[95vh] rounded-none md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up border-0 md:border border-white/20 dark:border-slate-800/50"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="px-8 md:px-10 py-6 md:py-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50 transition-colors duration-300">
+                            <div className="flex items-center gap-5">
+                                <div className="bg-orange-600 p-3 rounded-2xl shadow-xl shadow-orange-100 dark:shadow-orange-900/20">
+                                    <i className="bi bi-pencil-square text-white text-xl" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Meus Rascunhos</h2>
+                                    <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">
+                                        Pedidos salvos automaticamente ou marcados para finalizar depois.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsDraftsOpen(false)}
+                                className="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-orange-50 dark:hover:bg-orange-900/20 text-slate-400 dark:text-slate-500 hover:text-orange-500 dark:hover:text-orange-400 rounded-2xl transition-all shadow-sm border border-slate-100 dark:border-slate-800 active:scale-95"
+                            >
+                                <i className="bi bi-x-lg text-xl" />
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="flex-1 overflow-y-auto p-4 md:p-10 bg-slate-50 dark:bg-slate-950">
+                            <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
+                                <OrderHistoryList
+                                    onEdit={setEditingOrder}
+                                    filters={draftFilters}
                                     visibilitySettings={visibilitySettings}
                                     onToggleColumn={toggleVisibility}
                                     onSort={handleSort}

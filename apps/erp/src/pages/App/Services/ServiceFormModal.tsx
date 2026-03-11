@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Service from "../../types/service.type";
 import { saveService } from "../../utils/serviceService";
 import { toast } from "react-toastify";
@@ -11,6 +11,9 @@ interface ServiceFormModalProps {
 
 const ServiceFormModal = ({ isOpen, onClose, service }: ServiceFormModalProps) => {
     const [loading, setLoading] = useState(false);
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
+    const autoSaveTimerRef = useRef<any>(null);
+    const isInitialMount = useRef(true);
     
     const initialFormData: Partial<Service> = {
         description: "",
@@ -27,7 +30,39 @@ const ServiceFormModal = ({ isOpen, onClose, service }: ServiceFormModalProps) =
         } else {
             setFormData(initialFormData);
         }
+        isInitialMount.current = true;
     }, [service, isOpen]);
+
+    // AUTOSAVE LOGIC
+    useEffect(() => {
+        if (!isOpen) return;
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
+        if (formData.description && (!service || service.isDraft)) {
+            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+            autoSaveTimerRef.current = setTimeout(async () => {
+                setIsSavingDraft(true);
+                try {
+                    const dataToSave = { ...formData, isDraft: true } as Service;
+                    const saved = await saveService(dataToSave);
+                    if (saved && saved.id && !formData.id) {
+                        setFormData(prev => ({ ...prev, id: saved.id }));
+                    }
+                } catch (e) {
+                    console.error("Erro no autosave do serviço:", e);
+                } finally {
+                    setIsSavingDraft(false);
+                }
+            }, 3000);
+        }
+
+        return () => {
+             if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        };
+    }, [formData, isOpen, service]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,7 +73,8 @@ const ServiceFormModal = ({ isOpen, onClose, service }: ServiceFormModalProps) =
 
         setLoading(true);
         try {
-            await saveService(formData as Service);
+            const dataToSave = { ...formData, isDraft: false } as Service;
+            await saveService(dataToSave);
             toast.success(service ? "Serviço atualizado!" : "Serviço criado com sucesso!");
             onClose();
         } catch (error) {
@@ -65,7 +101,13 @@ const ServiceFormModal = ({ isOpen, onClose, service }: ServiceFormModalProps) =
                             {service ? `Editando ID: ${service.id}` : "Configure as informações detalhadas do serviço"}
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                    {isSavingDraft && (
+                        <div className="ml-4 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center gap-2">
+                            <i className="bi bi-cloud-arrow-up text-blue-500 animate-pulse text-xs" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Salvando rascunho...</span>
+                        </div>
+                    )}
+                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 transition-colors ml-auto">
                         <i className="bi bi-x-lg text-xl"></i>
                     </button>
                 </div>

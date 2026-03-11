@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Person from "../../../types/person.type";
 import { savePerson } from "../../../utils/personService";
 import { toast } from "react-toastify";
@@ -36,6 +36,9 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
     });
 
     const [loading, setLoading] = useState(false);
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
+    const autoSaveTimerRef = useRef<any>(null);
+    const isInitialMount = useRef(true);
 
     useEffect(() => {
         if (person) {
@@ -64,7 +67,39 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                 position: ""
             });
         }
+        isInitialMount.current = true;
     }, [person, isOpen]);
+
+    // AUTOSAVE LOGIC
+    useEffect(() => {
+        if (!isOpen) return;
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
+        if (formData.fullName && (!person || person.isDraft)) {
+            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+            autoSaveTimerRef.current = setTimeout(async () => {
+                setIsSavingDraft(true);
+                try {
+                    const dataToSave = { ...formData, isDraft: true } as Person;
+                    const savedPerson = await savePerson(collectionName, capitalizePerson(dataToSave));
+                    if (savedPerson && savedPerson.id && !formData.id) {
+                        setFormData(prev => ({ ...prev, id: savedPerson.id }));
+                    }
+                } catch (e) {
+                    console.error("Erro no autosave:", e);
+                } finally {
+                    setIsSavingDraft(false);
+                }
+            }, 3000);
+        }
+
+        return () => {
+             if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        };
+    }, [formData, isOpen, person, collectionName]);
 
     const handleAddressChange = (field: string, value: string) => {
         setFormData((prev: Partial<Person>) => ({
@@ -90,7 +125,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
 
         setLoading(true);
         try {
-            const dataToSave = capitalizePerson(formData as Person);
+            const dataToSave = capitalizePerson({ ...formData, isDraft: false } as Person);
             const savedPerson = await savePerson(collectionName, dataToSave);
             toast.success(person ? "Atualizado com sucesso!" : "Criado com sucesso!");
             if (onSuccess) onSuccess(savedPerson);
@@ -118,7 +153,13 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                             {person ? `Editando ID: ${person.id}` : `Preencha as informações do novo ${title.toLowerCase()}`}
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                    {isSavingDraft && (
+                        <div className="ml-4 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center gap-2">
+                            <i className="bi bi-cloud-arrow-up text-blue-500 animate-pulse text-xs" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Salvando rascunho...</span>
+                        </div>
+                    )}
+                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 transition-colors ml-auto">
                         <i className="bi bi-x-lg"></i>
                     </button>
                 </div>

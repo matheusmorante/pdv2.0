@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../pages/utils/supabaseConfig';
 import { toast } from 'react-toastify';
+import { translateAuthError } from '../../pages/utils/authErrors';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -22,10 +23,10 @@ const Login = () => {
 
             if (error) throw error;
 
-            toast.success('Bem-vindo de volta!');
+            toast.success('Bem-vindo de volta! Sincronizando dados...');
             navigate('/');
         } catch (error: any) {
-            toast.error(error.message || 'Erro ao entrar. Verifique suas credenciais.');
+            toast.error(translateAuthError(error.message));
             setIsSubmitting(false);
         }
     };

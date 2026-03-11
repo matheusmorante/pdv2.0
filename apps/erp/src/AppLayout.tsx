@@ -6,6 +6,7 @@ import { useAuth } from "./context/AuthContext";
 import DesktopNav from "./components/layout/DesktopNav";
 import MobileNav from "./components/layout/MobileNav";
 import AIChatAssistant from "./components/shared/AIChatAssistant";
+import AttendanceVoiceInput from "./components/shared/AttendanceVoiceInput";
 import GlobalAutoScroll from "./components/shared/GlobalAutoScroll";
 import NotificationBell from "./components/shared/NotificationBell";
 
@@ -133,6 +134,7 @@ export default function AppLayout() {
       </main>
 
       <AIChatAssistant />
+      <AttendanceVoiceInput />
 
       <style dangerouslySetInnerHTML={{
         __html: `

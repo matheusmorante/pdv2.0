@@ -27,14 +27,17 @@ export const useProducts = (filters?: any) => {
 
     const filteredProducts = useMemo(() => {
         const showTrash = filters?.showTrash || false;
+        const isDraft = filters?.isDraft || false;
 
         return products
             .filter(product => {
-                // Filter by Deleted status first
+                // Filter by Deleted or Draft status
                 if (showTrash) {
                     if (!product.deleted) return false;
+                } else if (isDraft) {
+                    if (!product.isDraft || product.deleted) return false;
                 } else {
-                    if (product.deleted) return false;
+                    if (product.deleted || product.isDraft) return false;
                 }
 
                 if (!filters) return true;

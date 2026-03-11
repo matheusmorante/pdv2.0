@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../utils/supabaseConfig';
-import Product from '../../../types/product.type';
+import Product, { ComboItem } from '../../../types/product.type';
 import { toast } from 'react-toastify';
-
-interface ComboItem {
-    productId: string;
-    variationId?: string;
-    quantity: number;
-    description: string;
-    unitPrice: number;
-    stock: number;
-}
 
 interface ComboItemSelectorProps {
     currentItems: ComboItem[];
@@ -139,7 +130,7 @@ const ComboItemSelector = ({ currentItems, onAdd, onRemove, onUpdateQuantity }: 
                         <div className="flex-1">
                             <p className="text-xs font-black text-slate-800 dark:text-slate-200">{item.description}</p>
                             <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
-                                Unit: R$ {item.unitPrice.toFixed(2)} | Est: {item.stock}
+                                Unit: R$ {(item.unitPrice || 0).toFixed(2)} | Est: {item.stock || 0}
                             </p>
                         </div>
 

@@ -43,6 +43,7 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 {activeMenu === 'products' && (
                     <div className={dropdownClass}>
                         <Link to="/registrations/products" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Lista</Link>
+                        <Link to="/registrations/whatsapp-marketplace" onClick={() => setActiveMenu(null)} className={dropdownItemClass}><i className="bi bi-whatsapp mr-1 text-green-500"></i> Marketplace WhatsApp</Link>
                         <Link to="/registrations/product-categories" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Categorias e Ambientes</Link>
                     </div>
                 )}
@@ -102,6 +103,7 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                     <div className={dropdownClass}>
                         <Link to="/sales-order" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Lista de Pedidos</Link>
                         <Link to="/delivery-schedule" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Cronograma Logístico</Link>
+                        <Link to="/attendance-dashboard" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>BI de Atendimento</Link>
                     </div>
                 )}
             </div>

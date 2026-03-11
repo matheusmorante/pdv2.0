@@ -24,6 +24,7 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.minStock !== undefined) data.min_stock = product.minStock;
     if (product.unit !== undefined) data.unit = product.unit;
     if (product.active !== undefined) data.active = product.active;
+    if (product.isDraft !== undefined) data.is_draft = product.isDraft;
     if (product.deleted !== undefined) data.deleted = product.deleted;
     if (product.supplierId !== undefined) data.supplier_id = product.supplierId;
     if (product.images !== undefined) data.images = product.images;
@@ -33,6 +34,22 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.itemType !== undefined) data.item_type = product.itemType;
     if (product.fiscal !== undefined) data.fiscal = product.fiscal;
     if (product.notificationConfig !== undefined) data.notification_config = product.notificationConfig;
+    
+    // New fields
+    if (product.width !== undefined) data.width = product.width;
+    if (product.height !== undefined) data.height = product.height;
+    if (product.depth !== undefined) data.depth = product.depth;
+    if (product.extraDimensions !== undefined) data.extra_dimensions = product.extraDimensions;
+    if (product.line !== undefined) data.line = product.line;
+    if (product.mainDifferential !== undefined) data.main_differential = product.mainDifferential;
+    if (product.material !== undefined) data.material = product.material;
+    if (product.colors !== undefined) data.colors = product.colors;
+    if (product.notIncluded !== undefined) data.not_included = product.notIncluded;
+    if (product.isCombo !== undefined) data.is_combo = product.isCombo;
+    if (product.comboItems !== undefined) data.combo_items = product.comboItems;
+    if (product.ecommerceTemplate !== undefined) data.ecommerce_template = product.ecommerceTemplate;
+    if (product.whatsappDescription !== undefined) data.whatsapp_description = product.whatsappDescription;
+    if (product.whatsappTemplate !== undefined) data.whatsapp_template = product.whatsappTemplate;
 
     return data;
 };
@@ -56,6 +73,7 @@ const mapFromDB = (data: any): Product => {
         minStock: Number(data.min_stock),
         unit: data.unit,
         active: data.active,
+        isDraft: data.is_draft,
         deleted: data.deleted,
         supplierId: data.supplier_id,
         images: data.images,
@@ -67,7 +85,23 @@ const mapFromDB = (data: any): Product => {
         notificationConfig: data.notification_config,
         categoryIds: data.product_categories?.map((pc: any) => pc.category_id) || [],
         createdAt: data.created_at,
-        updatedAt: data.updated_at
+        updatedAt: data.updated_at,
+        
+        // New fields
+        width: data.width,
+        height: data.height,
+        depth: data.depth,
+        extraDimensions: data.extra_dimensions || [],
+        line: data.line,
+        mainDifferential: data.main_differential,
+        material: data.material,
+        colors: data.colors,
+        notIncluded: data.not_included,
+        isCombo: data.is_combo,
+        comboItems: data.combo_items || [],
+        ecommerceTemplate: data.ecommerce_template,
+        whatsappDescription: data.whatsapp_description,
+        whatsappTemplate: data.whatsapp_template
     };
 };
 
@@ -102,10 +136,10 @@ export const subscribeToProducts = (callback: (products: Product[]) => void) => 
     };
 };
 
-export const saveProduct = async (product: Product): Promise<void> => {
+export const saveProduct = async (product: Product): Promise<string> => {
     if (product.id) {
         await updateProduct(product.id, product);
-        return;
+        return product.id;
     }
 
     try {
@@ -118,11 +152,15 @@ export const saveProduct = async (product: Product): Promise<void> => {
 
         if (error) throw error;
 
-        if (data && data[0] && product.categoryIds && product.categoryIds.length > 0) {
+        if (data && data[0]) {
             const newId = data[0].id;
-            const links = product.categoryIds.map(cid => ({ product_id: newId, category_id: cid }));
-            await supabase.from('product_categories').insert(links);
+            if (product.categoryIds && product.categoryIds.length > 0) {
+                const links = product.categoryIds.map(cid => ({ product_id: newId, category_id: cid }));
+                await supabase.from('product_categories').insert(links);
+            }
+            return String(newId);
         }
+        return "";
     } catch (error) {
         console.error("Erro ao salvar o produto: ", error);
         throw error;
@@ -269,6 +307,93 @@ export const saveVariation = async (productId: string, variation: any): Promise<
         if (updateError) throw updateError;
     } catch (error) {
         console.error("Erro ao salvar variação: ", error);
+        throw error;
+    }
+};
+
+/**
+ * Sincroniza fotos e descrições do catálogo do WhatsApp para um produto existente no ERP
+ */
+export const syncFromWhatsApp = async (whatsappProduct: any): Promise<string> => {
+    try {
+        let existingProduct = null;
+
+        // 1. Tentar encontrar pelo Código correspondente ao Retailer ID
+        if (whatsappProduct.retailer_id) {
+            const { data } = await supabase
+                .from(TABLE_NAME)
+                .select('*')
+                .eq('code', whatsappProduct.retailer_id)
+                .eq('deleted', false)
+                .limit(1);
+            if (data && data.length > 0) existingProduct = data[0];
+        }
+
+        // 2. Tentar encontrar pelo Nome (Description) - Busca Flexível
+        if (!existingProduct && whatsappProduct.name) {
+            // Tenta achar contenha o nome inteiro
+            let { data } = await supabase
+                .from(TABLE_NAME)
+                .select('*')
+                .ilike('description', `%${whatsappProduct.name}%`)
+                .eq('deleted', false)
+                .limit(1);
+                
+            if (data && data.length > 0) {
+                existingProduct = data[0];
+            } else {
+                // Se não achou exato/inteiro, pega as 2 primeiras palavras-chave (ex: "Guarda Roupa") para achar semelhante
+                const words = whatsappProduct.name.split(' ').filter((w: string) => w.length > 2);
+                if (words.length >= 2) {
+                    const partialPattern = `%${words[0]}%${words[1]}%`;
+                    const { data: partialData } = await supabase
+                        .from(TABLE_NAME)
+                        .select('*')
+                        .ilike('description', partialPattern)
+                        .eq('deleted', false)
+                        .limit(1);
+                        
+                    if (partialData && partialData.length > 0) existingProduct = partialData[0];
+                }
+            }
+        }
+
+        if (existingProduct) {
+            // Produto encontrado! Vamos mesclar as imagens
+            let currentImages = existingProduct.images || [];
+            
+            // Adiciona a imagem do WhatsApp no topo, caso ela exista e já não esteja na lista
+            if (whatsappProduct.image_url && !currentImages.includes(whatsappProduct.image_url)) {
+                currentImages = [whatsappProduct.image_url, ...currentImages];
+            }
+
+            // Atualiza o produto com a nova imagem e descrição do WhatsApp
+            await updateProduct(existingProduct.id, {
+                images: currentImages,
+                whatsappDescription: whatsappProduct.description || existingProduct.whatsapp_description,
+            });
+            
+            return String(existingProduct.id);
+        } else {
+            // Produto NÃO encontrado! Vamos criar um novo e importar os dados do WhatsApp
+            const newProduct: Partial<Product> = {
+                description: whatsappProduct.name,
+                unitPrice: Number(whatsappProduct.price.replace(/[^0-9.-]+/g, "")),
+                images: whatsappProduct.image_url ? [whatsappProduct.image_url] : [],
+                whatsappDescription: whatsappProduct.description,
+                isDraft: true, // Sempre como rascunho para o usuário revisar depois
+                active: true,
+                itemType: 'product',
+                brand: 'Móveis Morante',
+                condition: 'novo',
+                code: whatsappProduct.retailer_id
+            };
+            
+            return await saveProduct(newProduct as Product);
+        }
+        
+    } catch (error) {
+        console.error("Erro ao sincronizar do WhatsApp:", error);
         throw error;
     }
 };

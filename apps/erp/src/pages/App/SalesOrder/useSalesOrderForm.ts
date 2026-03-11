@@ -67,6 +67,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
     const [isSaving, setIsSaving] = useState(false);
     const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
     const [errors, setErrors] = useState<ValidationErrors>({});
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
     const lastCalculatedAddressRef = useRef<string>("");
 
     // Auto-save control
@@ -78,14 +79,14 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
 
     // Stable state ref for callbacks
     const latestState = useRef({
-        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving
+        currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving, isSavingDraft
     });
 
     useEffect(() => {
         latestState.current = {
-            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving
+            currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving, isSavingDraft
         };
-    }, [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving]);
+    }, [currentOrderId, status, items, itemsSummary, shipping, payments, paymentsSummary, customerData, observation, seller, marketingOrigin, orderDate, isSaving, isSavingDraft]);
 
     const getOrderData = useCallback((newStatus?: 'draft' | 'scheduled' | 'fulfilled' | 'cancelled'): Order => {
         const s = latestState.current;
@@ -136,8 +137,9 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         if (isDefaultState) return;
 
         autoSaveTimerRef.current = setTimeout(async () => {
-            const draft = getOrderData();
+            const draft = getOrderData('draft'); // Forçar status draft no rascunho
             try {
+                setIsSavingDraft(true);
                 const savedId = await saveOrder(draft);
                 // After first auto-save, update currentOrderId so all subsequent
                 // saves update the same doc instead of creating new ones.
@@ -146,8 +148,10 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
                 }
             } catch (error) {
                 console.error("Erro no salvamento automático:", error);
+            } finally {
+                setTimeout(() => setIsSavingDraft(false), 1000);
             }
-        }, 2000);
+        }, 3000);
 
         return () => {
             if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
@@ -315,6 +319,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
         currentOrderId,
         status,
         isSaving,
+        isSavingDraft,
         isCalculatingDistance,
         itemsSummary,
         paymentsSummary,

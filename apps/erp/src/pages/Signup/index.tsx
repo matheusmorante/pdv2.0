@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../pages/utils/supabaseConfig';
 import { toast } from 'react-toastify';
+import { translateAuthError } from '../../pages/utils/authErrors';
 
 const Signup = () => {
     const [email, setEmail] = useState('');
@@ -16,35 +17,37 @@ const Signup = () => {
         e.preventDefault();
 
         if (password !== confirmPassword) {
-            toast.error('As senhas não coincidem!');
+            toast.warning('As senhas não coincidem!');
             return;
         }
 
-        // Using any cast due to environment missing global types for string
-        if ((password as any).length < 6) {
-            toast.error('A senha deve ter pelo menos 6 caracteres.');
+        if (password.length < 6) {
+            toast.warning('A senha deve ter pelo menos 6 caracteres.');
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            const { error } = await (supabase.auth as any).signUp({
+            const { error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     data: {
                         full_name: fullName,
+                        role: 'pending' // Default role
                     },
                 },
             });
 
             if (error) throw error;
 
-            toast.success('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
+            toast.info('Conta criada! Verifique seu e-mail para confirmar o acesso.', {
+                autoClose: 10000
+            });
             navigate('/login');
         } catch (error: any) {
-            toast.error(error.message || 'Erro ao criar conta.');
+            toast.error(translateAuthError(error.message));
             setIsSubmitting(false);
         }
     };

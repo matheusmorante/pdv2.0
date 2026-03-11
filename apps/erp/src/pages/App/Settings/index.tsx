@@ -15,6 +15,7 @@ import AutoScrollSection from './components/AutoScrollSection';
 import AppearanceSection from './components/AppearanceSection';
 import AIPromptsSection from './components/AIPromptsSection';
 import OrderAutomationSection from './components/OrderAutomationSection';
+import WhatsAppConfigSection from './components/WhatsAppConfigSection';
 import InventoryNotificationsSection from './components/InventoryNotificationsSection';
 import SaveButton from './components/SaveButton';
 
@@ -27,6 +28,7 @@ const categories: any[] = [
     { id: 'aparencia', label: 'Aparência', icon: 'bi-palette', group: 'user', keywords: ['tema', 'escuro', 'claro', 'modo'] },
     { id: 'ia', label: 'Inteligência Artificial', icon: 'bi-robot', group: 'system', keywords: ['ia', 'ai', 'robot', 'prompt', 'descrição', 'chat', 'assistente'] },
     { id: 'automacao', label: 'Automação de Pedidos', icon: 'bi-magic', group: 'system', keywords: ['automação', 'imprimir', 'recibo', 'whatsapp', 'entrega', 'cliente'] },
+    { id: 'whatsapp', label: 'WhatsApp & Catálogo', icon: 'bi-whatsapp', group: 'system', keywords: ['whatsapp', 'api', 'token', 'catálogo', 'marketplace', 'vendas'] },
     { id: 'notificacoes', label: 'Notificações', icon: 'bi-bell-fill', group: 'system', keywords: ['notificação', 'alerta', 'estoque', 'novo', 'usado', 'salvado'] },
 ];
 
@@ -201,6 +203,10 @@ export default function Settings(): any {
 
                     <SettingsSection id="automacao" title="Automação de Pedidos" icon="bi-magic" isVisible={isVisible('automacao')}>
                         <OrderAutomationSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="whatsapp" title="Integração WhatsApp" icon="bi-whatsapp" isVisible={isVisible('whatsapp')}>
+                        <WhatsAppConfigSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
 
                     <SettingsSection id="notificacoes" title="Notificações de Inventário" icon="bi-bell-fill" isVisible={isVisible('notificacoes')}>

@@ -56,6 +56,7 @@ export const useOrderHistory = (filters?: any) => {
 
     const filteredOrders = useMemo(() => {
         const showTrash = filters?.showTrash || false;
+        const isDraft = filters?.isDraft || false;
 
         const toComparableDate = (dateStr: string) => {
             if (!dateStr || !dateStr.includes('/')) return dateStr;
@@ -65,11 +66,13 @@ export const useOrderHistory = (filters?: any) => {
 
         return orders
             .filter(order => {
-                // Filter by Deleted status first
+                // Filter by Deleted or Draft status
                 if (showTrash) {
                     if (!order.deleted) return false;
+                } else if (isDraft) {
+                    if (order.status !== 'draft' || order.deleted) return false;
                 } else {
-                    if (order.deleted) return false;
+                    if (order.deleted || order.status === 'draft') return false;
                 }
 
                 if (!filters) return true;

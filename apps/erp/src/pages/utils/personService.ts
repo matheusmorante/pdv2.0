@@ -28,6 +28,7 @@ const mapToDB = (collectionName: string, person: Partial<Person>) => {
         observation: p.observation,
         position: p.position,
         active: p.active,
+        is_draft: p.isDraft ?? false,
         deleted: p.deleted,
         deleted_at: person.deletedAt ? new Date().toISOString() : null, // Simplification
         updated_at: new Date().toISOString()
@@ -56,6 +57,7 @@ const mapFromDB = (data: any): Person => {
         fullAddress: typeof parsedAddress === 'object' && parsedAddress !== null ? parsedAddress : { street: parsedAddress || '' },
         observation: data.observation,
         active: data.active,
+        isDraft: data.is_draft,
         deleted: data.deleted,
         deletedAt: data.deleted_at,
         position: data.position,
@@ -73,6 +75,7 @@ const mapProfileToPerson = (prof: any): Person => {
         email: prof.email || '',
         position: prof.position || '',
         active: true,
+        isDraft: false,
         fullAddress: { street: '' },
         deleted: false
     } as any;
@@ -80,7 +83,7 @@ const mapProfileToPerson = (prof: any): Person => {
 
 export const subscribeToPeople = (collectionName: string, callback: (people: Person[]) => void) => {
     const fetchAll = async () => {
-        let peopleQuery = supabase.from(TABLE_NAME).select('*');
+        let peopleQuery = supabase.from(TABLE_NAME).select('*').eq('is_draft', false);
         if (collectionName === 'employees') {
             peopleQuery = peopleQuery.or(`person_type.eq.employees,position.not.is.null`);
         } else if (collectionName === 'customers') {

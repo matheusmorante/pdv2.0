@@ -35,7 +35,7 @@ const BodyRow = ({ item, onChange, onToggleDiscountType, onDelete, idx, delivery
         let finalDescription = product.description;
         if (variation) {
             finalDescription += ` (${variation.name})`;
-            onChange(idx, 'variationId' as any, variation.id); // Assuming Item type will have variationId
+            onChange(idx, 'variationId', variation.id);
         }
 
         onChange(idx, 'description', finalDescription);

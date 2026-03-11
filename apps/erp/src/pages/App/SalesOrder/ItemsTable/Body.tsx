@@ -53,6 +53,7 @@ const Body = ({ items, setItems, deliveryMethod, errors }: Props) => {
             {
                 items.map((item, idx) => (
                     <BodyRow
+                        key={idx}
                         item={item}
                         idx={idx}
                         onChange={changeItems}

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import PersonFilters from "./PersonFilters";
 import PersonList from "./PersonList";
 import PersonFormModal from "./PersonFormModal";
-import BlingImportModal from "../../Products/BlingImportModal";
 import PersonPurchaseHistoryModal from "./PersonPurchaseHistoryModal";
 import Person, { PersonVisibilitySettings } from "../../../types/person.type";
 
@@ -14,6 +13,7 @@ export interface PersonFiltersData {
     sortBy: PersonSortBy;
     sortOrder: "asc" | "desc";
     showTrash?: boolean;
+    isDraft?: boolean;
 }
 
 const DEFAULT_FILTERS: PersonFiltersData = {
@@ -61,10 +61,10 @@ const PersonPage = ({
 }: PersonPageProps) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isTrashOpen, setIsTrashOpen] = useState(false);
+    const [isDraftsOpen, setIsDraftsOpen] = useState(false);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingPerson, setEditingPerson] = useState<Person | null>(null);
     const [showSettings, setShowSettings] = useState(false);
-    const [isBlingModalOpen, setIsBlingModalOpen] = useState(false);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [historyPerson, setHistoryPerson] = useState<Person | null>(null);
     const [filters, setFilters] = useState<PersonFiltersData>(DEFAULT_FILTERS);
@@ -94,8 +94,9 @@ const PersonPage = ({
         setEditingPerson(null);
     };
 
-    const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false }), [filters]);
-    const trashFilters = React.useMemo(() => ({ ...filters, showTrash: true }), [filters]);
+    const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false, isDraft: false }), [filters]);
+    const trashFilters = React.useMemo(() => ({ ...filters, showTrash: true, isDraft: false }), [filters]);
+    const draftFilters = React.useMemo(() => ({ ...filters, showTrash: false, isDraft: true }), [filters]);
 
     const sidebarBtnClass = `flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-sm font-bold text-xs uppercase tracking-widest border ${
         isSidebarOpen
@@ -179,6 +180,14 @@ const PersonPage = ({
                             >
                                 <i className="bi bi-trash3" />
                                 Lixeira
+                            </button>
+
+                            <button
+                                onClick={() => setIsDraftsOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-sm font-bold text-xs uppercase tracking-widest border bg-white text-orange-600 border-orange-200 dark:bg-slate-900 dark:border-orange-900/30 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                            >
+                                <i className="bi bi-pencil-square"></i>
+                                Rascunhos
                             </button>
                         </div>
 
@@ -305,6 +314,50 @@ const PersonPage = ({
                 </div>
             )}
 
+            {/* Drafts Modal */}
+            {isDraftsOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        onClick={() => setIsDraftsOpen(false)}
+                    />
+                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-6xl h-[80vh] rounded-2xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800">
+                        <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
+                                    <i className="bi bi-pencil-square text-orange-500" />
+                                    Rascunhos de {title}
+                                </h2>
+                                <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">
+                                    Itens salvos automaticamente com edições pendentes
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setIsDraftsOpen(false)}
+                                className="p-2 text-slate-400 hover:text-orange-500 transition-colors"
+                            >
+                                <i className="bi bi-x-lg text-xl" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar">
+                            <PersonList
+                                onEdit={openEdit}
+                                filters={draftFilters}
+                                visibilitySettings={visibilitySettings}
+                                onToggleColumn={toggleVisibility}
+                                onSort={handleSort}
+                                collectionName={collectionName}
+                                storageKey={storageKey}
+                                onViewPurchaseHistory={(p) => {
+                                    setHistoryPerson(p);
+                                    setIsHistoryModalOpen(true);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Form Modal */}
             <PersonFormModal
                 isOpen={isFormModalOpen}
@@ -312,16 +365,6 @@ const PersonPage = ({
                 person={editingPerson}
                 collectionName={collectionName}
                 title={title}
-            />
-
-            <BlingImportModal
-                isOpen={isBlingModalOpen}
-                onClose={() => setIsBlingModalOpen(false)}
-                onSuccess={() => {
-                    // Refresh current page if needed
-                    window.location.reload();
-                }}
-                type={collectionName === 'suppliers' ? 'suppliers' : 'products'}
             />
 
             {historyPerson && (

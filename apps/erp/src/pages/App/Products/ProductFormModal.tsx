@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Product, { Variation, FiscalInfo } from "../../types/product.type";
 import Person from "../../types/person.type";
 import { saveProduct } from "../../utils/productService";
@@ -147,6 +147,10 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
     const [suppliers, setSuppliers] = useState<Person[]>([]);
     const [availableCategories, setAvailableCategories] = useState<{ id: string, name: string, parent_id?: string | null }[]>([]);
 
+    const [isSavingDraft, setIsSavingDraft] = useState(false);
+    const autoSaveTimerRef = useRef<any>(null);
+    const isInitialMount = useRef(true);
+
     useEffect(() => {
         const unsubscribe = subscribeToPeople('suppliers', (data: Person[]) => setSuppliers(data.filter((s: Person) => !s.deleted)));
         const loadCats = async () => {
@@ -224,7 +228,41 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             setFormData(initialFormData); // Use clean initial form data
         }
         setActiveTab('geral');
+        isInitialMount.current = true;
     }, [product, initialData, isOpen]);
+
+    // AUTOSAVE LOGIC
+    useEffect(() => {
+        if (!isOpen) return;
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
+        // Se for um produto novo ou já for um rascunho
+        if (formData.description && (!product || product.isDraft)) {
+            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+            autoSaveTimerRef.current = setTimeout(async () => {
+                setIsSavingDraft(true);
+                try {
+                    const savedProduct = { ...formData, itemType: formData.itemType || 'product', isDraft: true } as Product;
+                    const draftId = await saveProduct(savedProduct);
+                    if (draftId && !formData.id) {
+                        setFormData(prev => ({ ...prev, id: draftId }));
+                    }
+                } catch (e) {
+                    console.error("Erro no autosave:", e);
+                } finally {
+                    setIsSavingDraft(false);
+                }
+            }, 3000);
+        }
+
+        return () => {
+            if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        };
+    }, [formData, isOpen, product]);
+    
 
     // Sync variations with parent
     useEffect(() => {
@@ -618,7 +656,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
 
         setLoading(true);
         try {
-            const savedProduct = { ...formData, itemType: formData.itemType || 'product' } as Product;
+            const savedProduct = { ...formData, itemType: formData.itemType || 'product', isDraft: false } as Product;
             await saveProduct(savedProduct);
             toast.success(product ? "Atualizado com sucesso!" : "Criado com sucesso!");
             if (onSuccess) onSuccess(savedProduct);
@@ -646,6 +684,12 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                             </h2>
                             <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">Preencha as informações abaixo</p>
                         </div>
+                        {isSavingDraft && (
+                            <div className="ml-4 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center gap-2">
+                                <i className="bi bi-cloud-arrow-up text-blue-500 animate-pulse text-xs" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Salvando rascunho...</span>
+                            </div>
+                        )}
                     </div>
 
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
@@ -831,7 +875,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                const total = formData.comboItems?.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0) || 0;
+                                                const total = formData.comboItems?.reduce((acc: number, item) => acc + ((item.unitPrice || 0) * item.quantity), 0) || 0;
                                                 setFormData({ ...formData, unitPrice: Number(total.toFixed(2)) });
                                                 toast.info(`Preço calculado: R$ ${total.toFixed(2)}`);
                                             }}
@@ -1206,7 +1250,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                                         <span className="text-xl font-black text-blue-700 dark:text-blue-300">
                                             {formData.isCombo
                                                 ? (formData.comboItems?.length
-                                                    ? Math.min(...formData.comboItems.map(i => Math.floor(i.stock / i.quantity)))
+                                                    ? Math.min(...formData.comboItems.map((i: any) => Math.floor((i.stock || 0) / i.quantity)))
                                                     : 0)
                                                 : (formData.stock || 0)}
                                         </span>
@@ -1467,7 +1511,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                                                     type="button"
                                                     onClick={() => {
                                                         const currentVar = formData.variations?.find(v => v.id === editingVariationComboId);
-                                                        const total = currentVar?.comboItems?.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0) || 0;
+                                                        const total = currentVar?.comboItems?.reduce((acc: number, item) => acc + ((item.unitPrice || 0) * item.quantity), 0) || 0;
 
                                                         setFormData(prev => ({
                                                             ...prev,

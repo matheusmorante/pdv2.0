@@ -26,6 +26,7 @@ export const usePeople = (collectionName: string, filters?: any) => {
 
     const filteredPeople = useMemo(() => {
         const showTrash = filters?.showTrash || false;
+        const isDraft = filters?.isDraft || false;
 
         return people
             .filter(person => {
@@ -33,6 +34,14 @@ export const usePeople = (collectionName: string, filters?: any) => {
                     if (!person.deleted) return false;
                 } else {
                     if (person.deleted) return false;
+                }
+
+                // Draft logic: if we are viewing drafts, only show drafts.
+                // If we are NOT viewing drafts, hide them.
+                if (isDraft) {
+                    if (!person.isDraft) return false;
+                } else if (!showTrash) { // Don't hide drafts in trash if they are already deleted (though usually drafts aren't in trash)
+                    if (person.isDraft) return false;
                 }
 
                 if (!filters) return true;

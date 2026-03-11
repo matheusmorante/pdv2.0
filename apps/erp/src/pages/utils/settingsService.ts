@@ -67,6 +67,14 @@ export interface AppSettings {
         taskDetection: string;
         aiName: string;
         aiAvatar: string;
+        ecommerceTemplate?: string;
+        whatsappTemplate?: string;
+    };
+    whatsappConfig?: {
+        accessToken: string;
+        phoneNumberId: string;
+        wabaId: string;
+        catalogId: string;
     };
     orderAutomation: {
         autoPrintReceipt: boolean;
@@ -77,11 +85,15 @@ export interface AppSettings {
     };
     stockNotificationConditions?: ('novo' | 'usado' | 'salvado')[];
     rolePermissions?: {
-        manualStockMovement: string[]; // Roles that can do manual withdrawal/reversal
-        productConfig: string[]; // Roles that can edit product notification settings
-        viewFinancials: string[]; // Roles that can see financial summaries
-        deleteOrders: string[]; // Roles that can send orders to trash
-        manageSettings: string[]; // Roles that can access settings page
+        manualStockMovement: string[];
+        productConfig: string[];
+        viewFinancials: string[];
+        deleteOrders: string[];
+        manageSettings: string[];
+    };
+    channelBaseDescriptions?: {
+        whatsapp: string;
+        ecommerce: string;
     };
 }
 
@@ -194,6 +206,12 @@ RESPOSTA NO FORMATO JSON:
 `,
         aiName: 'Lisandro',
         aiAvatar: ''
+    },
+    whatsappConfig: {
+        accessToken: '',
+        phoneNumberId: '',
+        wabaId: '',
+        catalogId: '',
     },
     orderAutomation: {
         autoPrintReceipt: true,

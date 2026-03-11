@@ -8,12 +8,12 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run erp:dev\" \"npm run ecommerce:dev\" \"npm run server:start\" --prefix name --kill-others --names \"ERP,ECOMM,SERVER\" -c \"magenta,cyan,yellow\"",
-    "erp:dev": "vite apps/erp --config apps/erp/vite.config.ts",
+    "dev": "concurrently -n \"ERP,ECOMM,SERVER\" -c \"blue,green,yellow\" \"npm run erp\" \"npm run ecomm\" \"npm run server\"",
+    "erp": "npm run dev -w apps/erp",
+    "ecomm": "npm run dev -w apps/ecommerce",
+    "server": "npm run start -w apps/server",
     "erp:build": "npm run build -w apps/erp",
-    "ecommerce:dev": "npm run dev -w apps/ecommerce",
     "ecommerce:build": "npm run build -w apps/ecommerce",
-    "server:start": "npm run start -w apps/server",
     "test": "npm test --workspaces"
   },
   "dependencies": {

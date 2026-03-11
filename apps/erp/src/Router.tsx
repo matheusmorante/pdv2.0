@@ -23,6 +23,8 @@ import Signup from './pages/Signup';
 import UsersManagementPage from './pages/App/Users/Index';
 import ProfilePage from './pages/App/Profile/Index';
 import PurchasesPage from './pages/App/Stock/Purchases/Index';
+import AttendanceDashboard from './pages/App/Attendance/Dashboard';
+import WhatsAppMarketplace from './pages/App/Products/WhatsAppMarketplace';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading, isPending } = useAuth();
@@ -80,10 +82,12 @@ function Router() {
             <Route path='/sales-order' element={<SalesOrder />} />
             <Route path='/warranty-term' element={<WarrantyTermPage />} />
             <Route path='/delivery-schedule' element={<DeliverySchedule />} />
+            <Route path='/attendance-dashboard' element={<AttendanceDashboard />} />
             <Route path='/settings' element={<AdminRoute><Settings /></AdminRoute>} />
 
             {/* Registrations */}
             <Route path='/registrations/products' element={<Products />} />
+            <Route path='/registrations/whatsapp-marketplace' element={<WhatsAppMarketplace />} />
             <Route path='/registrations/product-categories' element={<Categories />} />
             <Route path='/stock' element={<Stock />} />
             <Route path='/stock/purchases' element={<PurchasesPage />} />

@@ -5,9 +5,10 @@ interface FormHeaderProps {
     onClearForm: () => void;
     orderDate: string;
     setOrderDate: (date: string) => void;
+    isSavingDraft?: boolean;
 }
 
-const FormHeader = ({ currentOrderId, onClearForm, orderDate, setOrderDate }: FormHeaderProps) => (
+const FormHeader = ({ currentOrderId, onClearForm, orderDate, setOrderDate, isSavingDraft }: FormHeaderProps) => (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-8 border-b border-slate-100 dark:border-slate-800 mb-10 pt-8">
         <div className="flex flex-wrap items-end gap-6 w-full md:w-auto order-2 md:order-1">
             {currentOrderId && (
@@ -34,6 +35,10 @@ const FormHeader = ({ currentOrderId, onClearForm, orderDate, setOrderDate }: Fo
                         <p className="text-xs uppercase font-black text-slate-400 dark:text-slate-500 tracking-[0.2em]">
                             Pedido #{currentOrderId}
                         </p>
+                        <p className={`text-[10px] uppercase font-black tracking-widest mt-1 transition-all duration-300 ${isSavingDraft ? 'text-blue-500 opacity-100' : 'text-slate-400 dark:text-slate-500 opacity-0'}`}>
+                            <i className="bi bi-cloud-arrow-up-fill mr-1.5 animate-bounce" />
+                            Salvando rascunho...
+                        </p>
                         <div className="flex items-center gap-2 mt-2">
                             <i className="bi bi-calendar-event text-slate-400 dark:text-slate-500"></i>
                             <input
@@ -51,15 +56,21 @@ const FormHeader = ({ currentOrderId, onClearForm, orderDate, setOrderDate }: Fo
                     <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
                         Novo Pedido
                     </h3>
-                    <div className="flex items-center gap-2 mt-2 w-full md:justify-end">
-                        <i className="bi bi-calendar-event text-slate-400 dark:text-slate-500"></i>
-                        <input
-                            type="datetime-local"
-                            value={orderDate}
-                            onChange={(e) => setOrderDate(e.target.value)}
-                            className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 w-fit"
-                            title="Data e Hora da Venda"
-                        />
+                    <div className="flex flex-col md:items-end gap-1">
+                        <p className={`text-[10px] uppercase font-black tracking-widest mt-1 transition-all duration-300 ${isSavingDraft ? 'text-blue-500 opacity-100' : 'text-slate-400 dark:text-slate-500 opacity-0'}`}>
+                            <i className="bi bi-cloud-arrow-up-fill mr-1.5 animate-bounce" />
+                            Salvando rascunho...
+                        </p>
+                        <div className="flex items-center gap-2 mt-2 w-full md:justify-end">
+                            <i className="bi bi-calendar-event text-slate-400 dark:text-slate-500"></i>
+                            <input
+                                type="datetime-local"
+                                value={orderDate}
+                                onChange={(e) => setOrderDate(e.target.value)}
+                                className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 w-fit"
+                                title="Data e Hora da Venda"
+                            />
+                        </div>
                     </div>
                 </>
             )}

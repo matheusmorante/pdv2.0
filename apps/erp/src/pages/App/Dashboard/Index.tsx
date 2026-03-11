@@ -4,6 +4,7 @@ import { StatsCard } from './components/StatsCard';
 import { ChartContainer, SimpleAreaChart, SimplePieChart } from './components/DashboardCharts';
 import { useDashboardData, Period } from './useDashboardData';
 import AlertsPanel from './components/AlertsPanel';
+import { runDraftCleanup } from '../../utils/draftCleanupService';
 
 interface VisibilityConfig {
     stats: boolean;
@@ -52,6 +53,11 @@ export default function Dashboard() {
     useEffect(() => {
         localStorage.setItem('dashboard_visibility', JSON.stringify(visibility));
     }, [visibility]);
+
+    useEffect(() => {
+        // Run cleanup on mount
+        runDraftCleanup();
+    }, []);
 
     if (loading) {
         return (

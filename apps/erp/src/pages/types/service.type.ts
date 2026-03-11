@@ -4,6 +4,7 @@ export type Service = {
     unitPrice: number;
     costPrice?: number;
     active: boolean;
+    isDraft?: boolean;
     deleted?: boolean;
     createdAt?: string;
     updatedAt?: string;

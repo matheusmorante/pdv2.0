@@ -8,7 +8,6 @@ import PriceHistoryModal from "./PriceHistoryModal";
 import VariationFormModal from "./VariationFormModal";
 import { fetchGroupsAndCategories } from "../../utils/categoryService";
 import { Variation } from "../../types/product.type";
-import BlingImportModal from "./BlingImportModal";
 
 interface ProductFiltersData {
     search: string;
@@ -22,18 +21,20 @@ interface ProductFiltersData {
 const Products = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isTrashOpen, setIsTrashOpen] = useState(false);
+    const [isDraftsOpen, setIsDraftsOpen] = useState(false);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [historyProduct, setHistoryProduct] = useState<Product | null>(null);
     const [categoryTree, setCategoryTree] = useState<any>(null);
-    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [isNewMenuOpen, setIsNewMenuOpen] = useState(false);
 
     // Variation Modal State
     const [isVariationModalOpen, setIsVariationModalOpen] = useState(false);
     const [editingVariation, setEditingVariation] = useState<Variation | null>(null);
     const [variationParentProduct, setVariationParentProduct] = useState<Product | null>(null);
+    const [initialFormData, setInitialFormData] = useState<Partial<Product> | null>(null);
 
     React.useEffect(() => {
         const loadCategoryData = async () => {
@@ -77,8 +78,9 @@ const Products = () => {
         }));
     };
 
-    const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false }), [filters]);
-    const trashFilters = React.useMemo(() => ({ ...filters, showTrash: true }), [filters]);
+    const activeFilters = React.useMemo(() => ({ ...filters, showTrash: false, isDraft: false }), [filters]);
+    const trashFilters = React.useMemo(() => ({ ...filters, showTrash: true, isDraft: false }), [filters]);
+    const draftFilters = React.useMemo(() => ({ ...filters, showTrash: false, isDraft: true }), [filters]);
 
     return (
         <div className="flex -m-4 xl:-m-8 h-[calc(100vh-64px)] xl:h-[calc(100vh-80px)] overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300 relative">
@@ -108,16 +110,64 @@ const Products = () => {
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
-
+                    <div className="flex gap-4 relative">
                         <button
-                            onClick={() => { setEditingProduct(null); setIsFormModalOpen(true); }}
+                            onClick={() => setIsNewMenuOpen(!isNewMenuOpen)}
                             className="flex items-center justify-center gap-2 xl:gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 xl:px-8 xl:py-4 rounded-xl xl:rounded-xl font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-200 dark:shadow-none transition-all active:scale-95 w-full sm:w-auto mt-2 xl:mt-0"
-                            title="Cadastrar novo produto ou serviço"
+                            title="Opções de Novo Item"
                         >
                             <i className="bi bi-plus-lg text-lg xl:text-xl" />
                             Novo Item
+                            <i className={`bi bi-chevron-down ml-1 transition-transform ${isNewMenuOpen ? 'rotate-180' : ''}`}></i>
                         </button>
+
+                        {isNewMenuOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setIsNewMenuOpen(false)} />
+                                <div className="absolute top-[calc(100%+8px)] right-0 w-52 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl py-2 shadow-2xl flex flex-col z-50 animate-slide-up">
+                                    <h4 className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Escolha o Tipo</h4>
+                                    
+                                    <button
+                                        onClick={() => { setIsNewMenuOpen(false); setEditingProduct(null); setInitialFormData({ itemType: 'product' }); setIsFormModalOpen(true); }}
+                                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors text-left outline-none group"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <i className="bi bi-box-seam" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest">Produto</span>
+                                            <span className="text-[10px] text-slate-500 dark:text-slate-400">Item físico padrão</span>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => { setIsNewMenuOpen(false); setEditingProduct(null); setInitialFormData({ itemType: 'service' }); setIsFormModalOpen(true); }}
+                                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors text-left outline-none group"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <i className="bi bi-tools" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest">Serviço</span>
+                                            <span className="text-[10px] text-slate-500 dark:text-slate-400">Sem controle de estoque</span>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => { setIsNewMenuOpen(false); setEditingProduct(null); setInitialFormData({ itemType: 'product', isCombo: true }); setIsFormModalOpen(true); }}
+                                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-950 transition-colors text-left outline-none group border-t border-slate-100 dark:border-slate-800 mt-1"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <i className="bi bi-layers-fill" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest">Combo</span>
+                                            <span className="text-[10px] text-slate-500 dark:text-slate-400">Kit de vários produtos</span>
+                                        </div>
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -142,6 +192,14 @@ const Products = () => {
                             >
                                 <i className="bi bi-trash3"></i>
                                 Lixeira
+                            </button>
+                            
+                            <button
+                                onClick={() => setIsDraftsOpen(true)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-sm font-bold text-xs uppercase tracking-widest border bg-white text-orange-600 border-orange-200 dark:bg-slate-900 dark:border-orange-900/30 hover:bg-orange-50 dark:hover:bg-orange-900/20`}
+                            >
+                                <i className="bi bi-pencil-square"></i>
+                                Rascunhos
                             </button>
 
                             <Link
@@ -279,17 +337,53 @@ const Products = () => {
                 </div>
             )}
 
+            {/* Drafts Modal */}
+            {isDraftsOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsDraftsOpen(false)} />
+                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-6xl h-[80vh] rounded-2xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800">
+                        <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
+                                    Meus Rascunhos
+                                </h2>
+                                <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">Produtos salvos automaticamente com edições pendentes</p>
+                            </div>
+                            <button onClick={() => setIsDraftsOpen(false)} className="p-2 text-slate-400 hover:text-orange-500 transition-colors">
+                                <i className="bi bi-x-lg text-xl"></i>
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto custom-scrollbar">
+                            <ProductList
+                                onEdit={(p: any) => {
+                                    if (p.isVariation) {
+                                        setVariationParentProduct(p);
+                                        const actualVariation = p.variations?.find((v: Variation) => v.sku === p.sku);
+                                        setEditingVariation(actualVariation || p);
+                                        setIsVariationModalOpen(true);
+                                    } else {
+                                        setEditingProduct(p);
+                                        setIsFormModalOpen(true);
+                                    }
+                                }}
+                                onShowHistory={(p) => { setHistoryProduct(p); setIsHistoryModalOpen(true); }}
+                                filters={draftFilters}
+                                visibilitySettings={visibilitySettings}
+                                onToggleColumn={toggleVisibility}
+                                onSort={handleSort}
+                                categoryTree={categoryTree}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Form Modal */}
             <ProductFormModal
                 isOpen={isFormModalOpen}
-                onClose={() => { setIsFormModalOpen(false); setEditingProduct(null); }}
+                onClose={() => { setIsFormModalOpen(false); setEditingProduct(null); setInitialFormData(null); }}
                 product={editingProduct}
-            />
-
-            <BlingImportModal
-                isOpen={isImportModalOpen}
-                onClose={() => setIsImportModalOpen(false)}
-                onSuccess={() => {/* Page will reflect changes via subscription */ }}
+                initialData={initialFormData}
             />
 
             <PriceHistoryModal

@@ -14,6 +14,7 @@ export type Person = {
     type: 'customers' | 'suppliers' | 'employees';
     marketingOrigin?: 'organic' | 'paid' | ''; // Origem de marketing (organic = loja física, paid = tráfego pago)
     active: boolean;
+    isDraft?: boolean;
     leadTime?: number;
     position?: string; // Cargo do funcionário
     deleted?: boolean;

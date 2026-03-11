@@ -6,6 +6,7 @@ const TABLE_NAME = "services";
 const mapFromDB = (data: any): Service => ({
     id: String(data.id),
     ...data.service_data,
+    isDraft: data.is_draft,
     createdAt: data.created_at,
     updatedAt: data.updated_at
 });
@@ -14,6 +15,7 @@ export const subscribeToServices = (callback: (services: Service[]) => void) => 
     // Initial fetch
     supabase.from(TABLE_NAME)
         .select('*')
+        .eq('is_draft', false)
         .order('id', { ascending: false })
         .then(({ data, error }: { data: any, error: any }) => {
             if (data && !error) {
@@ -28,6 +30,7 @@ export const subscribeToServices = (callback: (services: Service[]) => void) => 
         .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, () => {
             supabase.from(TABLE_NAME)
                 .select('*')
+                .eq('is_draft', false)
                 .order('id', { ascending: false })
                 .then(({ data }: { data: any }) => {
                     if (data) callback(data.map(mapFromDB));
@@ -40,31 +43,34 @@ export const subscribeToServices = (callback: (services: Service[]) => void) => 
     };
 };
 
-export const saveService = async (service: Service): Promise<void> => {
+export const saveService = async (service: Service): Promise<Service> => {
     if (service.id) {
-        await updateService(service.id, service);
-        return;
+        return await updateService(service.id, service);
     }
 
     try {
         const serviceToSave = { ...service };
-        delete serviceToSave.id;
+        delete serviceToSave.isDraft;
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from(TABLE_NAME)
             .insert([{
                 service_data: serviceToSave,
+                is_draft: service.isDraft ?? false,
                 updated_at: new Date().toISOString()
-            }]);
+            }])
+            .select()
+            .single();
 
         if (error) throw error;
+        return mapFromDB(data);
     } catch (error) {
         console.error("Erro ao salvar o serviço: ", error);
         throw error;
     }
 };
 
-export const updateService = async (id: string, serviceToUpdate: Partial<Service>): Promise<void> => {
+export const updateService = async (id: string, serviceToUpdate: Partial<Service>): Promise<Service> => {
     try {
         const { data: current } = await supabase
             .from(TABLE_NAME)
@@ -73,17 +79,25 @@ export const updateService = async (id: string, serviceToUpdate: Partial<Service
             .single();
 
         const merged = { ...(current?.service_data || {}), ...serviceToUpdate };
+        const isDraftVal = serviceToUpdate.isDraft;
         delete merged.id;
+        delete merged.isDraft;
 
-        const { error } = await supabase
+        const updateData: any = {
+            service_data: merged,
+            updated_at: new Date().toISOString()
+        };
+        if (isDraftVal !== undefined) updateData.is_draft = isDraftVal;
+
+        const { data, error } = await supabase
             .from(TABLE_NAME)
-            .update({
-                service_data: merged,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', id);
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
 
         if (error) throw error;
+        return mapFromDB(data);
     } catch (error) {
         console.error("Erro ao atualizar o serviço: ", error);
         throw error;

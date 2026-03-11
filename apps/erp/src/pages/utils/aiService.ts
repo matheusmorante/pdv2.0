@@ -11,7 +11,7 @@ export interface AIChatResponse {
     answer: string;
 }
 
-const AI_BACKEND_URL = "http://localhost:3001/api";
+const AI_BACKEND_URL = "http://localhost:3003/api";
 
 async function callAIBackend(endpoint: string, body: any) {
     try {
