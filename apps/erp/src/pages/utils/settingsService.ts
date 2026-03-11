@@ -58,9 +58,10 @@ export interface AppSettings {
         orderTable: boolean;
         scheduleCards: boolean;
         scheduleTable: boolean;
-        speed: number;
-        threshold: number;
     };
+    showScheduleNoticeLabels: boolean; // Se deve exibir rótulos de aviso/tags no cronograma por padrão
+    speed: number;
+    threshold: number;
     aiPrompts: {
         productDescription: string;
         ecommerceTemplate: string;
@@ -99,6 +100,7 @@ export interface AppSettings {
         reviewRequest: string;
         orderConfirmation: string;
         deliveryInfo: string;
+        assistanceConfirmation: string;  // Template para confirmar assistência ao cliente
     };
     receiptConfig: {
         footerText: string;
@@ -187,9 +189,10 @@ export const getDefaultSettings = (): AppSettings => ({
         orderTable: true,
         scheduleCards: true,
         scheduleTable: true,
-        speed: 20,
-        threshold: 100
     },
+    showScheduleNoticeLabels: false, // Por padrão não precisa de rótulos de aviso
+    speed: 20,
+    threshold: 100,
     aiPrompts: {
         productDescription: `Você é um copywriter de marketing especialista em e-commerce da Móveis Morante.
 Sua tarefa é criar uma descrição de produto incrivelmente persuasiva, focada em vendas.
@@ -359,7 +362,8 @@ RESPOSTA NO FORMATO JSON:
     whatsappTemplates: {
         reviewRequest: 'Olá! Sua entrega correu bem? 🚚\n\nPoderia avaliar sua última compra e nosso atendimento? É rapidinho e nos ajuda muito! Clique aqui:\n{{reviewUrl}}',
         orderConfirmation: '*Olá {{customerName}}, seu pedido foi confirmado!* 📦\n\n*Anote aí, a sua entrega está agendada para:* \n{{deliveryDate}} | {{deliveryTime}}\n\n*Endereço:* \n{{address}}\n\n*Itens:* \n{{items}}\n\n*Valor Total:* R$ {{totalValue}}\n\n*Pagamento:* \n{{payments}}',
-        deliveryInfo: '____________________\n\n*Novo Pedido para {{customerName}}* 📦\n\n𝐈𝐌𝐏𝐎𝐑𝐓𝐀𝐍𝐓𝐄:\n{{observation}}\n\n🗓️ *Agendamento:*\n{{deliveryDate}} | {{deliveryTime}}\n\n📞 *Contato:*\n{{phone}}\n\n🏠 *Endereço:*\n{{address}}\n\n🛒 *Itens:*\n{{items}}\n\n💰 *Total:* R$ {{totalValue}}\n\n📍🗺️ *Google Maps Rota:*\n{{routeUrl}}'
+        deliveryInfo: '____________________\n\n*Novo Pedido para {{customerName}}* 📦\n\n𝐈𝐌𝐏𝐎𝐑𝐓𝐀𝐍𝐓𝐄:\n{{observation}}\n\n🗓️ *Agendamento:*\n{{deliveryDate}} | {{deliveryTime}}\n\n📞 *Contato:*\n{{phone}}\n\n🏠 *Endereço:*\n{{address}}\n\n🛒 *Itens:*\n{{items}}\n\n💰 *Total:* R$ {{totalValue}}\n\n📍🗺️ *Google Maps Rota:*\n{{routeUrl}}',
+        assistanceConfirmation: '*Olá {{customerName}}!* 🔧\n\nSeu atendimento de assistência técnica foi confirmado! \n\n🗓️ *Data:* {{assistanceDate}}\n🕒 *Horário:* {{assistanceTime}}\n\n📋 *Descrição do serviço:*\n{{assistanceDescription}}\n\n📞 *Nosso contato:* {{companyPhone}}\n\nEm caso de dúvidas, entre em contato!'
     },
     receiptConfig: {
         footerText: 'Obrigado pela preferência! Guarde este recibo para sua garantia.',

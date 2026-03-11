@@ -5,8 +5,10 @@ import {
     stringifyPayments, stringifyItemsWithValues, formatDate
 } from "./formatters";
 import { getShippingRouteUrl } from "./maps";
+import { whatsappGraphService } from "./whatsappGraphService";
+import { toast } from "react-toastify";
 
-export const shippingOrderWhatsappUrl = (order: Order) => {
+const buildDeliveryMessage = (order: Order) => {
     const settings = getSettings();
     const date = formatDate(order.shipping.scheduling.date);
     const time = order.shipping.scheduling.time || "Não informado";
@@ -15,11 +17,10 @@ export const shippingOrderWhatsappUrl = (order: Order) => {
     let message = settings.whatsappTemplates?.deliveryInfo || "";
     
     if (!message) {
-        // Fallback to hardcoded if template is empty
         message = `Novo Pedido para ${customer.fullName || "Cliente"}...`; 
     }
 
-    message = message
+    return message
         .replace(/{{customerName}}/g, customer.fullName || "Cliente")
         .replace(/{{deliveryDate}}/g, date)
         .replace(/{{deliveryTime}}/g, time)
@@ -29,20 +30,17 @@ export const shippingOrderWhatsappUrl = (order: Order) => {
         .replace(/{{totalValue}}/g, (order.paymentsSummary.totalOrderValue || 0).toString())
         .replace(/{{observation}}/g, order.observation || "Sem observações")
         .replace(/{{routeUrl}}/g, customer.fullAddress ? getShippingRouteUrl(customer.fullAddress) : "Endereço não informado");
+};
 
-    return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-}
-
-export const customerOrderWhatsappUrl = (order: Order) => {
+const buildCustomerOrderMessage = (order: Order) => {
     const settings = getSettings();
     const date = formatDate(order.shipping.scheduling.date);
     const time = order.shipping.scheduling.time || "Não informado";
     const customer = order.customerData;
-    const phone = customer.phone ? customer.phone.replace(/[^0-9]/g, '') : '';
     
     let message = settings.whatsappTemplates?.orderConfirmation || "";
     
-    message = message
+    return message
         .replace(/{{customerName}}/g, customer.fullName || "Cliente")
         .replace(/{{deliveryDate}}/g, date)
         .replace(/{{deliveryTime}}/g, time)
@@ -50,12 +48,62 @@ export const customerOrderWhatsappUrl = (order: Order) => {
         .replace(/{{items}}/g, stringifyItemsWithValues(order.items || []))
         .replace(/{{totalValue}}/g, (order.paymentsSummary.totalOrderValue || 0).toString())
         .replace(/{{payments}}/g, stringifyPayments(order.payments || []));
+};
 
+export const shippingOrderWhatsappUrl = (order: Order) => {
+    const message = buildDeliveryMessage(order);
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+}
+
+export const customerOrderWhatsappUrl = (order: Order) => {
+    const message = buildCustomerOrderMessage(order);
+    const customer = order.customerData;
+    const phone = customer.phone ? customer.phone.replace(/[^0-9]/g, '') : '';
+    
     if (phone) {
         return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     }
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
 }
+
+export const sendDirectShippingMessage = async (order: Order) => {
+    const settings = getSettings();
+    const deliveryPhone = settings.orderAutomation?.deliveryPhone;
+    
+    if (!deliveryPhone) {
+        toast.info("Telefone da equipe de entrega não configurado. Abrindo link manual...");
+        window.open(shippingOrderWhatsappUrl(order), "_blank");
+        return;
+    }
+
+    try {
+        const message = buildDeliveryMessage(order);
+        await whatsappGraphService.sendTextMessage(deliveryPhone, message);
+        toast.success("Detalhes da entrega enviados para a equipe!");
+    } catch (error) {
+        console.error("Erro ao enviar mensagem direta:", error);
+        toast.error("Erro na API do WhatsApp. Abrindo link manual...");
+        window.open(shippingOrderWhatsappUrl(order), "_blank");
+    }
+};
+
+export const sendDirectCustomerMessage = async (order: Order) => {
+    const customer = order.customerData;
+    if (!customer?.phone) {
+        toast.error("Cliente sem telefone cadastrado.");
+        return;
+    }
+
+    try {
+        const message = buildCustomerOrderMessage(order);
+        await whatsappGraphService.sendTextMessage(customer.phone, message);
+        toast.success("Confirmação enviada para o cliente!");
+    } catch (error) {
+        console.error("Erro ao enviar mensagem direta:", error);
+        toast.error("Erro na API. Abrindo link manual...");
+        window.open(customerOrderWhatsappUrl(order), "_blank");
+    }
+};
 
 export const customerReviewsWhatsappUrl = (order: Order) => {
     const customer = order.customerData;
@@ -70,4 +118,39 @@ export const customerReviewsWhatsappUrl = (order: Order) => {
         .replace(/{{reviewUrl}}/g, reviewUrl);
 
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
+
+export const assistanceCustomerWhatsappUrl = (order: Order) => {
+    const customer = order.customerData;
+    const phone = customer.phone?.replace(/[^0-9]/g, '') || '';
+    const settings = getSettings();
+
+    const scheduledDate = (order as any).scheduledDate || '';
+    const scheduledTime = (order as any).scheduledTime || '';
+    const assistanceDescription = (order as any).assistanceDescription || 'Serviço técnico';
+
+    // Format date to BR format
+    let formattedDate = scheduledDate;
+    if (scheduledDate) {
+        try {
+            const [year, month, day] = scheduledDate.split('-');
+            formattedDate = `${day}/${month}/${year}`;
+        } catch { /* keep raw */ }
+    }
+
+    let message = settings.whatsappTemplates?.assistanceConfirmation || 
+        `*Olá ${customer.fullName}!* 🔧\n\nSeu atendimento de assistência técnica foi confirmado!\n\n🗓️ *Data:* ${formattedDate || 'A confirmar'}\n🕒 *Horário:* ${scheduledTime || 'A confirmar'}\n\n📋 *Serviço:*\n${assistanceDescription}\n\nEm caso de dúvidas, entre em contato!`;
+
+    message = message
+        .replace(/{{customerName}}/g, customer.fullName || 'Cliente')
+        .replace(/{{assistanceDate}}/g, formattedDate || 'A confirmar')
+        .replace(/{{assistanceTime}}/g, scheduledTime || 'A confirmar')
+        .replace(/{{assistanceDescription}}/g, assistanceDescription)
+        .replace(/{{companyPhone}}/g, settings.companyPhone || '')
+        .replace(/{{observation}}/g, order.observation || '');
+
+    if (phone) {
+        return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    }
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
 }

@@ -178,5 +178,5 @@ export const useDashboardData = (period: Period, customStartDate?: string, custo
         }));
     }, [filteredOrders]);
 
-    return { loading, stats, salesOverTime, statusData };
+    return { loading, stats, salesOverTime, statusData, filteredOrders };
 };

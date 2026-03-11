@@ -6,16 +6,19 @@ import NewSaleOrder from "./NewSaleOrder";
 import AssistanceOrderModal from "./AssistanceOrderModal";
 import NewOrderDropdown from "./NewOrderDropdown";
 import Order, { VisibilitySettings } from "../../types/order.type";
-import OrderFilters from "./OrderFilters";
+import OrderFilters, { Filters } from "./OrderFilters";
 
 const SalesOrder = () => {
     const [orderModalType, setOrderModalType] = useState<'sale' | 'pickup' | 'assistance' | null>(null);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
-    const [filters, setFilters] = useState({
+    const [filters, setFilters] = useState<Filters>({
         dateRange: { start: "", end: "" },
         dateType: "personalizado" as "personalizado" | "hoje" | "esse_mes" | "mes_passado" | "ultimo_semestre" | "esse_ano",
         customerName: "",
         productName: "",
+        status: "",
+        orderType: "",
+        seller: "",
         valueRange: { min: 0, max: 1000000 },
         sortBy: "date" as any, // Legacy field
         sortOrder: "desc" as any, // Legacy field

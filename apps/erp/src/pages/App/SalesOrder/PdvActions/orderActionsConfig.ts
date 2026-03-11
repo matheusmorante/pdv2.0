@@ -1,4 +1,5 @@
 import Order, { OrderAction, IsButtonsClicked } from "../../../types/order.type";
+import { assistanceCustomerWhatsappUrl } from "../../../utils/whatsapp";
 
 export const actionsMap: Record<OrderAction, (order: Order) => void> = {
     'PRINT_RECEIPT': (order) => {
@@ -82,6 +83,9 @@ export const actionsMap: Record<OrderAction, (order: Order) => void> = {
             }%0A%0AStatus: Em Preparação.`;
         window.open(`https://wa.me/?text=${message}`, "_blank");
     },
+    'SEND_ASSISTANCE_CUSTOMER': (order) => {
+        window.open(assistanceCustomerWhatsappUrl(order), "_blank");
+    },
     'SEND_CUSTOMER_REVIEWS': (order) => {
         const message = `*Avaliação do Pedido*%0A%0AOlá! Poderia nos avaliar?`;
         window.open(`https://wa.me/?text=${message}`, "_blank");
@@ -100,6 +104,7 @@ export interface OrderButton {
     action: OrderAction;
     label: string;
     color: string;
+    orderTypes?: string[];
 }
 
 export const buttons: OrderButton[] = [
@@ -108,20 +113,32 @@ export const buttons: OrderButton[] = [
         icon: "bi-printer-fill",
         action: "PRINT_SHIPPING_ORDER",
         label: "Imprimir Pedido",
-        color: "bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all font-bold text-xs uppercase tracking-widest px-6 py-3"
+        color: "bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all font-bold text-xs uppercase tracking-widest px-6 py-3",
+        orderTypes: ['sale']
     },
     {
         key: "sendShippingOrder",
         icon: "bi-truck",
         action: "SEND_SHIPPING_ORDER",
         label: "Enviar Entrega",
-        color: "bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-200 transition-all font-bold text-xs uppercase tracking-widest px-6 py-3"
+        color: "bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-200 transition-all font-bold text-xs uppercase tracking-widest px-6 py-3",
+        orderTypes: ['sale']
     },
     {
         key: "sendCustomerOrder",
         icon: "bi-whatsapp",
         action: "SEND_CUSTOMER_ORDER",
         label: "WhatsApp Cliente",
-        color: "bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-200 transition-all font-bold text-xs uppercase tracking-widest px-6 py-3"
+        color: "bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-200 transition-all font-bold text-xs uppercase tracking-widest px-6 py-3",
+        orderTypes: ['sale']
+    },
+    {
+        key: "sendCustomerOrder",
+        icon: "bi-whatsapp",
+        action: "SEND_ASSISTANCE_CUSTOMER",
+        label: "Confirmar Assistência",
+        color: "bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-200 transition-all font-bold text-xs uppercase tracking-widest px-6 py-3",
+        orderTypes: ['assistance']
     },
 ];
+

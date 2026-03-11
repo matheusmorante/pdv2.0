@@ -9,6 +9,7 @@ interface SmartInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     patterns?: string[];
     onValueChange: (value: string) => void;
     icon?: string;
+    error?: boolean;
 }
 
 const SmartInput: React.FC<SmartInputProps> = ({
@@ -21,6 +22,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
     onValueChange,
     icon,
     className,
+    error,
     ...props
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -39,14 +41,14 @@ const SmartInput: React.FC<SmartInputProps> = ({
 
         const fetchRecent = async () => {
             try {
-                const { data, error } = await supabase
+                const { data, error: fetchError } = await supabase
                     .from(tableName)
                     .select(columnName)
                     .not(columnName, 'is', null)
                     .order('created_at', { ascending: false })
                     .limit(30);
 
-                if (error) throw error;
+                if (fetchError) throw fetchError;
 
                 if (data) {
                     const uniqueValues = Array.from(new Set(data.map((item: any) => String(item[columnName]))))
@@ -133,13 +135,13 @@ const SmartInput: React.FC<SmartInputProps> = ({
     return (
         <div className="flex flex-col gap-2 relative w-full" ref={containerRef}>
             {label && (
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                    {label}
+                <label className={`text-[10px] font-black uppercase tracking-widest ${error ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
+                    {label} {props.required && <span className="text-red-500">*</span>}
                 </label>
             )}
             <div className="relative">
                 {icon && (
-                    <i className={`bi ${icon} absolute left-4 top-1/2 -translate-y-1/2 text-slate-400`} />
+                    <i className={`bi ${icon} absolute left-4 top-1/2 -translate-y-1/2 ${error ? 'text-red-500' : 'text-slate-400'}`} />
                 )}
                 <input
                     {...props}
@@ -151,7 +153,11 @@ const SmartInput: React.FC<SmartInputProps> = ({
                     }}
                     onFocus={() => setIsOpen(true)}
                     onKeyDown={handleKeyDown}
-                    className={`w-full ${icon ? 'pl-11' : 'px-4'} py-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold dark:text-slate-100 ${className}`}
+                    className={`w-full ${icon ? 'pl-11' : 'px-4'} py-4 bg-slate-50 dark:bg-slate-950 rounded-2xl outline-none transition-all text-sm font-bold dark:text-slate-100 
+                        ${error 
+                          ? 'border-2 border-red-500 ring-4 ring-red-500/10' 
+                          : 'border border-slate-100 dark:border-slate-800 focus:ring-2 focus:ring-blue-500'} 
+                        ${className}`}
                 />
 
                 {isOpen && filteredSuggestions.length > 0 && (

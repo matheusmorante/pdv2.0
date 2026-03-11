@@ -194,16 +194,6 @@ const OrderHistoryRow = ({
                     <td key="customer" className="px-6 py-4 text-left">
                         <div className="flex flex-col gap-1">
                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{order.customerData?.fullName || "Não informado"}</span>
-                            {order.orderType === 'assistance' && (() => {
-                                const assistColors = settings.orderTypeColors ?? { delivery: 'green', pickup: 'purple', assistance: 'orange' };
-                                const assistCls = getOrderTypeClasses(assistColors.assistance);
-                                return (
-                                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest w-fit ${assistCls.badge}`}>
-                                        <i className="bi bi-tools text-[8px]" />
-                                        {settings.orderTypeLabels.assistance}
-                                    </span>
-                                );
-                            })()}
                         </div>
                     </td>
                 );

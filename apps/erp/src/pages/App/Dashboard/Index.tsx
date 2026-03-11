@@ -4,6 +4,7 @@ import { StatsCard } from './components/StatsCard';
 import { ChartContainer, SimpleAreaChart, SimplePieChart } from './components/DashboardCharts';
 import { useDashboardData, Period } from './useDashboardData';
 import AlertsPanel from './components/AlertsPanel';
+import RegionalHeatmap from './components/RegionalHeatmap';
 import { runDraftCleanup } from '../../utils/draftCleanupService';
 
 interface VisibilityConfig {
@@ -12,6 +13,7 @@ interface VisibilityConfig {
     statusChart: boolean;
     reports: boolean;
     quickAction: boolean;
+    heatmap: boolean;
 }
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -36,7 +38,7 @@ export default function Dashboard() {
         const d = new Date();
         return d.toISOString().split('T')[0];
     });
-    const { loading, stats, salesOverTime, statusData } = useDashboardData(period, customStartDate, customEndDate);
+    const { loading, stats, salesOverTime, statusData, filteredOrders } = useDashboardData(period, customStartDate, customEndDate);
     const [showConfig, setShowConfig] = useState(false);
 
     const [visibility, setVisibility] = useState<VisibilityConfig>(() => {
@@ -46,7 +48,8 @@ export default function Dashboard() {
             revenueChart: true,
             statusChart: true,
             reports: true,
-            quickAction: true
+            quickAction: true,
+            heatmap: true
         };
     });
 
@@ -111,7 +114,8 @@ export default function Dashboard() {
                                                         {key === 'revenueChart' ? 'Receita' :
                                                             key === 'statusChart' ? 'Status' :
                                                                 key === 'quickAction' ? 'Ação Rápida' :
-                                                                    key === 'reports' ? 'Relatórios' : 'Métricas'}
+                                                                    key === 'reports' ? 'Relatórios' : 
+                                                                        key === 'heatmap' ? 'Mapa de Regiões' : 'Métricas'}
                                                     </span>
                                                     <div className={`w-10 h-6 rounded-full p-1 transition-all ${val ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
                                                         <div className={`w-4 h-4 bg-white rounded-full transition-all ${val ? 'translate-x-4' : 'translate-x-0'}`}></div>
@@ -226,6 +230,13 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
+
+            {/* Regional Analysis */}
+            {visibility.heatmap && (
+                <div className="animate-fade-in">
+                    <RegionalHeatmap orders={filteredOrders} />
+                </div>
+            )}
 
             {/* Bottom Actions */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 pb-10">

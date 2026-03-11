@@ -32,7 +32,7 @@ const OrderActions = ({ order }: { order: Order }) => {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-6">
-      {buttons.map((btn) => {
+      {buttons.filter(btn => !btn.orderTypes || btn.orderTypes.includes(order.orderType || 'sale')).map((btn, idx) => {
         const isPrintAction = btn.action === 'PRINT_RECEIPT' || btn.action === 'PRINT_SHIPPING_ORDER';
         const orderErrors = isPrintAction ? validateOrder(order) : {};
         const hasErrors = Object.keys(orderErrors).length > 0;
@@ -49,7 +49,7 @@ const OrderActions = ({ order }: { order: Order }) => {
 
         return (
         <button
-          key={btn.key}
+          key={`${btn.key}-${idx}`}
             disabled={isDisabled}
             className={`${isDisabled ? 'opacity-50 cursor-not-allowed bg-slate-300 text-slate-500 rounded-xl px-6 py-3 shadow-sm' : btn.color} flex items-center gap-3 whitespace-nowrap active:scale-95`}
             title={disabledReason}

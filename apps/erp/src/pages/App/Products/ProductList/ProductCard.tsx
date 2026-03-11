@@ -38,14 +38,17 @@ const ProductCard = ({
         <div
             className={`border rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all
                 ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 
-                  isParent ? 'border-blue-200 dark:border-blue-800/50' :
-                  isVariation ? 'border-indigo-100 dark:border-indigo-900/30' :
+                  isParent ? 'border-blue-300 dark:border-blue-800' :
+                  isVariation ? 'border-indigo-100 dark:border-indigo-900 ml-4' :
                   'border-slate-100 dark:border-slate-800'}
                 ${isParent ? 'bg-blue-50/50 dark:bg-blue-900/10' : 
-                  isVariation ? 'bg-slate-50/80 dark:bg-slate-900/50' :
+                  isVariation ? 'bg-slate-50/50 dark:bg-slate-900/40 relative' :
                   'bg-white dark:bg-slate-900'}`}
             onClick={() => onEdit(product)}
         >
+            {isVariation && (
+                <div className="absolute left-[-1rem] top-1/2 -translate-y-1/2 w-4 h-0.5 bg-indigo-200 dark:bg-indigo-900/50" />
+            )}
             <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
                     <input

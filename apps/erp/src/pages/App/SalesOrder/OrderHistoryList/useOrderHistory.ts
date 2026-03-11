@@ -118,11 +118,15 @@ export const useOrderHistory = (filters?: any) => {
                     (order.items?.some(item => item.description.toLowerCase().includes(filters.productName.toLowerCase()))) ||
                     (order.assistanceDescription?.toLowerCase().includes(filters.productName.toLowerCase()));
 
+                const statusMatch = !filters.status || order.status === filters.status;
+                const typeMatch = !filters.orderType || order.orderType === filters.orderType;
+                const sellerMatch = !filters.seller || order.seller?.toLowerCase().includes(filters.seller.toLowerCase());
+
                 const totalOrderValue = order.paymentsSummary?.totalOrderValue || 0;
                 const valueMatch = totalOrderValue >= filters.valueRange.min &&
                     totalOrderValue <= filters.valueRange.max;
 
-                return dateMatch && customerMatch && productMatch && valueMatch;
+                return dateMatch && customerMatch && productMatch && statusMatch && typeMatch && sellerMatch && valueMatch;
             })
             .sort((a, b) => {
                 // Multi-column sorting logic

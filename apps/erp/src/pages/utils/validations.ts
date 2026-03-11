@@ -183,12 +183,24 @@ export const validateAssistanceOrder = (order: Order): ValidationErrors => {
     if (!order.customerData?.fullName && requiredFields.assistanceOrder?.customer) {
         errors['customer_fullName'] = "Nome do cliente é obrigatório.";
     }
+
+    if (requiredFields.customer?.phone && (!order.customerData?.phone || !order.customerData.phone.trim())) {
+        errors['customer_phone'] = "Telefone é obrigatório.";
+    }
+
     if (!order.assistanceDescription) {
         errors['assistanceDescription'] = "Descrição do serviço é obrigatória.";
     }
+
     if (!order.seller && requiredFields.assistanceOrder?.seller) {
         errors['seller'] = "Vendedor é obrigatório.";
     }
+
+    if (order.scheduledDate || order.scheduledTime) {
+        if (!order.scheduledDate) errors['shipping_date'] = "Data é obrigatória.";
+        if (!order.scheduledTime) errors['shipping_time'] = "Horário é obrigatório.";
+    }
+
     return errors;
 };
 

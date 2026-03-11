@@ -123,5 +123,41 @@ export const whatsappGraphService = {
         );
 
         return response.json();
+    },
+
+    /**
+     * Sends a direct text message via Cloud API
+     * Note: For the first message, a template is usually required by Meta rules.
+     * This is a generic implementation.
+     */
+    sendTextMessage: async (to: string, text: string) => {
+        const { whatsappConfig } = getSettings();
+        if (!whatsappConfig?.phoneNumberId) throw new Error("Phone Number ID não configurado.");
+
+        const cleanPhone = to.replace(/\D/g, '');
+        // Ensure format: 55419...
+        const formattedPhone = cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
+
+        const response = await fetch(
+            `${FACEBOOK_GRAPH_URL}/${GRAPH_API_VERSION}/${whatsappConfig.phoneNumberId}/messages`,
+            {
+                method: 'POST',
+                headers: whatsappGraphService.getHeaders(),
+                body: JSON.stringify({
+                    messaging_product: 'whatsapp',
+                    recipient_type: 'individual',
+                    to: formattedPhone,
+                    type: 'text',
+                    text: { body: text }
+                })
+            }
+        );
+
+        const data = await response.json();
+        if (data.error) {
+            console.error("Erro API WhatsApp:", data.error);
+            throw new Error(data.error.message);
+        }
+        return data;
     }
 };

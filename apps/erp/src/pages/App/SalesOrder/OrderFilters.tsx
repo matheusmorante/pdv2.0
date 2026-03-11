@@ -1,10 +1,13 @@
 import React from "react";
 
-interface Filters {
+export interface Filters {
     dateRange: { start: string; end: string };
     dateType: "personalizado" | "hoje" | "esse_mes" | "mes_passado" | "ultimo_semestre" | "esse_ano";
     customerName: string;
     productName: string;
+    status: string;
+    orderType: string;
+    seller: string;
     valueRange: { min: number; max: number };
     sortBy: string;
     sortOrder: "asc" | "desc";
@@ -85,6 +88,9 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
             dateType: "personalizado",
             customerName: "",
             productName: "",
+            status: "",
+            orderType: "",
+            seller: "",
             valueRange: { min: 0, max: 1000000 },
             sortBy: "date",
             sortOrder: "desc",
@@ -130,6 +136,53 @@ const OrderFilters = ({ filters, setFilters }: OrderFiltersProps) => {
                                 value={filters.productName}
                                 onChange={handleChange}
                                 placeholder="Título do produto..."
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700 min-w-[160px]"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Status</label>
+                        <select
+                            name="status"
+                            value={filters.status}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300 min-w-[140px]"
+                        >
+                            <option value="">Todos os Status</option>
+                            <option value="draft">Rascunho</option>
+                            <option value="waiting">Aguardando</option>
+                            <option value="scheduled">Agendado</option>
+                            <option value="in_transit">Em Trânsito</option>
+                            <option value="delivered">Atendido / Entregue</option>
+                            <option value="canceled">Cancelado</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Tipo de Pedido</label>
+                        <select
+                            name="orderType"
+                            value={filters.orderType}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm appearance-none cursor-pointer dark:text-slate-300 min-w-[140px]"
+                        >
+                            <option value="">Todos os Tipos</option>
+                            <option value="sale">Venda</option>
+                            <option value="assistance">Assistência</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Vendedor</label>
+                        <div className="relative">
+                            <i className="bi bi-person-badge absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600"></i>
+                            <input
+                                type="text"
+                                name="seller"
+                                value={filters.seller}
+                                onChange={handleChange}
+                                placeholder="Nome do vendedor..."
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm dark:text-slate-300 placeholder:text-slate-300 dark:placeholder:text-slate-700 min-w-[160px]"
                             />
                         </div>

@@ -27,6 +27,8 @@ export type Order = {
     date: string,
     // Assistance-specific fields
     assistanceDescription?: string,
+    assistanceCost?: number,        // Custo interno de mão de obra (interno)
+    assistanceServiceValue?: number, // Valor cobrado ao cliente pelo serviço
     scheduledDate?: string,
     scheduledTime?: string,
     linkedOrderId?: string | null,
@@ -36,7 +38,8 @@ export type Order = {
     orderIndex?: number,
     reviewRequested?: boolean,
     marketingOrigin?: string,
-    stockProcessed?: boolean
+    stockProcessed?: boolean,
+    isButtonsClicked?: IsButtonsClicked
 }
 
 export type OrderAction =
@@ -45,6 +48,7 @@ export type OrderAction =
     'PRINT_WARRANTY_TERM' |
     'SEND_SHIPPING_ORDER' |
     'SEND_CUSTOMER_ORDER' |
+    'SEND_ASSISTANCE_CUSTOMER' |
     'SEND_CUSTOMER_REVIEWS' |
     'STOCK_WITHDRAWAL' |
     'STOCK_REVERSAL'

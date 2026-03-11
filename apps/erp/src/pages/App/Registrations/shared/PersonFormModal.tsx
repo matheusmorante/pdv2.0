@@ -142,8 +142,8 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
             return;
         }
 
-        if (requiredFields.customer?.position && (!formData.position || formData.position.trim() === '')) {
-            toast.error("O Cargo/Ocupação é obrigatório.");
+        if (collectionName === 'employees' && requiredFields.customer?.position && (!formData.position || formData.position.trim() === '')) {
+            toast.error("O Cargo Principal é obrigatório.");
             return;
         }
 
@@ -262,16 +262,16 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                             </div>
                         )}
 
-                        {(collectionName === 'customers' || collectionName === 'employees') && (
+                        {collectionName === 'employees' && (
                             <div className="md:col-span-2">
                                 <SmartInput
-                                    label={collectionName === 'customers' ? "Cargo ou Profissão" : "Cargo Principal"}
+                                    label="Cargo Principal"
                                     value={formData.position || ""}
                                     onValueChange={(val) => setFormData({ ...formData, position: val })}
-                                    patterns={['Vendedor', 'Gerente', 'Entregador', 'Montador', 'Auxiliar', 'Empresário', 'Autônomo', 'Aposentado']}
+                                    patterns={['Vendedor', 'Gerente', 'Entregador', 'Montador', 'Auxiliar']}
                                     tableName="people"
                                     columnName="position"
-                                    placeholder={collectionName === 'customers' ? "Ex: Empresário, Autônomo..." : "Ex: Vendedor, Gerente..."}
+                                    placeholder="Ex: Vendedor, Gerente..."
                                     icon="bi-person-badge"
                                 />
                             </div>

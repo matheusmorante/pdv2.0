@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useDeliverySchedule, ScheduleFilter, OrderTypeFilter } from "./useDeliverySchedule";
 import OrderDetailsModal from "./OrderDetailsModal";
 import ScheduleCardView from "./ScheduleCardView/Index";
@@ -186,18 +186,27 @@ const DeliverySchedule = () => {
                 </div>
 
                 {/* Mobile: Filter button */}
-                <button
-                    onClick={() => setSidebarOpen(true)}
-                    className="lg:hidden relative flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95"
-                >
-                    <i className="bi bi-sliders text-blue-500" />
-                    <span className="hidden sm:inline text-[11px] uppercase tracking-widest">Filtros</span>
-                    {hasActiveFilters && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 rounded-full text-white text-[8px] font-black flex items-center justify-center">
-                            !
-                        </span>
-                    )}
-                </button>
+                <div className="flex items-center gap-2 lg:hidden">
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="relative flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-black text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95"
+                    >
+                        <i className="bi bi-sliders text-blue-500" />
+                        <span className="hidden sm:inline text-[11px] uppercase tracking-widest">Filtros</span>
+                        {hasActiveFilters && (
+                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 rounded-full text-white text-[8px] font-black flex items-center justify-center">
+                                !
+                            </span>
+                        )}
+                    </button>
+                    <Link
+                        to="/settings"
+                        className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 hover:text-blue-600 transition-all shadow-sm"
+                        title="Configurações do Cronograma"
+                    >
+                        <i className="bi bi-gear-fill" />
+                    </Link>
+                </div>
             </div>
 
             {/* Desktop: FILTERS TOOLBAR */}
@@ -268,13 +277,22 @@ const DeliverySchedule = () => {
                 </div>
 
                 {!isStandalone && (
-                    <button
-                        onClick={handleShare}
-                        className="bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-2xl shadow-xl shadow-emerald-100 dark:shadow-emerald-900/20 flex items-center justify-center transition-all active:scale-95 group"
-                    >
-                        <i className="bi bi-whatsapp mr-2 text-lg group-hover:rotate-12 transition-transform" />
-                        Compartilhar
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleShare}
+                            className="bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-2xl shadow-xl shadow-emerald-100 dark:shadow-emerald-900/20 flex items-center justify-center transition-all active:scale-95 group"
+                        >
+                            <i className="bi bi-whatsapp mr-2 text-lg group-hover:rotate-12 transition-transform" />
+                            Compartilhar
+                        </button>
+                        <Link
+                            to="/settings"
+                            className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group"
+                            title="Configurações do Cronograma"
+                        >
+                            <i className="bi bi-gear-fill text-xl group-hover:rotate-90 transition-transform duration-500" />
+                        </Link>
+                    </div>
                 )}
             </div>
 

@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 
 const OrderActions = ({ order }: { order: Order }) => {
-  const [isButtonsClicked, setIsButtonsClicked] = useState<IsButtonsClicked>({
+  const [localClicked, setLocalClicked] = useState<IsButtonsClicked>(order.isButtonsClicked || {
     printReceipt: false,
     printShippingOrder: false,
     printWarrantyTerm: false,
@@ -18,21 +18,39 @@ const OrderActions = ({ order }: { order: Order }) => {
     stockReversal: false
   });
 
-  function markClicked(key: keyof IsButtonsClicked) {
-    setIsButtonsClicked((prev) => ({ ...prev, [key]: true }));
+  async function markClicked(key: keyof IsButtonsClicked) {
+    const next = { ...localClicked, [key]: true };
+    setLocalClicked(next);
+    
+    // Persist to DB
+    try {
+        const { updateOrder } = await import("../../../utils/orderHistoryService");
+        if (order.id) {
+            await updateOrder(order.id, { isButtonsClicked: next });
+        }
+    } catch (e) {
+        console.error("Erro ao salvar estado do botão:", e);
+    }
   }
 
   function handleAction(action: OrderAction) {
-    const updated = { ...order, date: dateNow() };
+    const updated = { ...order, date: dateNow(), isButtonsClicked: localClicked };
     sessionStorage.setItem("order", JSON.stringify(updated));
     if (actionsMap[action]) {
       actionsMap[action](updated);
     }
   }
 
+  const orderType = order.orderType || 'sale';
+
+  // Filter buttons: show only buttons that match orderType (or no orderTypes restriction)
+  const visibleButtons = buttons.filter(btn => 
+    !btn.orderTypes || btn.orderTypes.includes(orderType)
+  );
+
   return (
     <div className="flex flex-wrap items-center justify-center gap-6">
-      {buttons.map((btn: any) => {
+      {visibleButtons.map((btn: any, idx: number) => {
         const isPrintAction = btn.action === 'PRINT_RECEIPT' || btn.action === 'PRINT_SHIPPING_ORDER';
         const orderErrors = isPrintAction ? validateOrder(order) : {};
         const hasErrors = Object.keys(orderErrors).length > 0;
@@ -65,7 +83,7 @@ const OrderActions = ({ order }: { order: Order }) => {
         >
           <i className={`bi ${btn.icon} text-lg`} />
           <span className="font-black">{btn.label}</span>
-          {isButtonsClicked[btn.key as keyof IsButtonsClicked] && <i className="bi bi-check-circle-fill text-white ml-1" />}
+          {localClicked[btn.key as keyof IsButtonsClicked] && <i className="bi bi-check-circle-fill text-white ml-1" />}
         </button>
         )
       })}

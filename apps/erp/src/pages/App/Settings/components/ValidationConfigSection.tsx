@@ -60,11 +60,6 @@ const ValidationConfigSection = ({ settings, onChange }: ValidationConfigSection
                             onChange={(checked) => handleToggle('customer', 'email', checked)} 
                         />
                         <ToggleRow 
-                            label="Cargo / Ocupação" 
-                            checked={settings.requiredFields?.customer?.position ?? false} 
-                            onChange={(checked) => handleToggle('customer', 'position', checked)} 
-                        />
-                        <ToggleRow 
                             label="Endereço Completo" 
                             checked={settings.requiredFields?.customer?.address ?? false} 
                             onChange={(checked) => handleToggle('customer', 'address', checked)} 

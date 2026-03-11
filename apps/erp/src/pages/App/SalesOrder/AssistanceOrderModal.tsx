@@ -13,6 +13,8 @@ import NoticeInput from "../../../components/NoticeInput";
 import SmartInput from "../../../components/SmartInput";
 import CustomerSearchModal from "./CustomerSearchModal";
 
+import { validateAssistanceOrder } from "../../utils/validations";
+
 interface AssistanceOrderModalProps {
     onClose: () => void;
     onSaveSuccess: () => void;
@@ -56,12 +58,15 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
     const [linkedOrderId, setLinkedOrderId] = useState(order?.linkedOrderId || "");
     const [selectedAssistanceItems, setSelectedAssistanceItems] = useState<AssistanceItem[]>(order?.assistanceItems || []);
     const [extraItems, setExtraItems] = useState<Item[]>(order?.items || []);
+    const [assistanceCost, setAssistanceCost] = useState(order?.assistanceCost || 0); 
+    const [assistanceServiceValue, setAssistanceServiceValue] = useState(order?.assistanceServiceValue || 0); 
     const [saleOrders, setSaleOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
     const [loadingOrders, setLoadingOrders] = useState(true);
     const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
     const [isProductSearchOpen, setIsProductSearchOpen] = useState(false);
     const [isCustomerSearchOpen, setIsCustomerSearchOpen] = useState(false);
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const isEditing = !!order;
 
@@ -115,16 +120,10 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!customerName.trim()) {
-            toast.warning("Informe o nome do cliente.");
-            return;
-        }
-        if (!description.trim()) {
-            toast.warning("Descreva o serviço de assistência.");
-            return;
-        }
-
+        
         setLoading(true);
+        setValidationErrors({});
+
         try {
             const assistanceOrder: Order = {
                 ...(order || {}),
@@ -136,14 +135,8 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                     phone: customerPhone.trim(),
                 },
                 assistanceDescription: description.trim(),
-                scheduledDate,
-                scheduledTime,
-                observation,
-                ...(isLinked ? {
-                    linkedOrderId,
-                    assistanceItems: selectedAssistanceItems
-                } : {}),
-                date: order?.date || new Date().toISOString(),
+                observation: observation.trim(),
+                assistanceItems: selectedAssistanceItems,
                 items: extraItems,
                 itemsSummary: {
                     totalQuantity: extraItems.reduce((acc, i) => acc + i.quantity, 0),
@@ -152,25 +145,43 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                     itemsTotalValue: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0),
                     totalItemsCost: extraItems.reduce((acc, i) => acc + (i.quantity * (i.costPrice || 0)), 0),
                 },
+                assistanceCost,
+                assistanceServiceValue,
                 payments: order?.payments || [],
                 paymentsSummary: order?.paymentsSummary || {
                     totalPaymentsFee: 0,
-                    totalOrderValue: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0),
+                    totalOrderValue: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0) + assistanceServiceValue,
                     totalAmountPaid: 0,
-                    amountRemaining: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0)
+                    amountRemaining: extraItems.reduce((acc, i) => acc + (i.quantity * i.unitPrice), 0) + assistanceServiceValue
                 },
                 shipping: order?.shipping || DEFAULT_SHIPPING,
                 seller: order?.seller || "",
+                date: order?.date || new Date().toISOString(),
+                scheduledDate,
+                scheduledTime
             };
 
+            if (isLinked) {
+                assistanceOrder.linkedOrderId = linkedOrderId;
+                assistanceOrder.assistanceItems = selectedAssistanceItems;
+            }
+
+            const errors = validateAssistanceOrder(assistanceOrder);
+            if (Object.keys(errors).length > 0) {
+                setValidationErrors(errors);
+                const firstError = Object.values(errors)[0];
+                toast.warning(`Campos obrigatórios: ${firstError}`);
+                setLoading(false);
+                return;
+            }
+
             await saveOrder(assistanceOrder);
-            toast.success(isEditing ? "Assistência atualizada com sucesso!" : "Pedido de assistência criado com sucesso!");
+            toast.success(isEditing ? "Assistência atualizada!" : "Assistência criada!");
             onSaveSuccess();
             onClose();
         } catch (error: any) {
             console.error("Erro ao salvar assistência:", error);
-            toast.error(`${isEditing ? "Erro ao atualizar" : "Erro ao criar"} assistência: ${error?.message || "Erro desconhecido"}`);
-        } finally {
+            toast.error(`Erro: ${error?.message || "Erro desconhecido"}`);
             setLoading(false);
         }
     };
@@ -227,6 +238,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 columnName="fullName"
                                 placeholder="Ex: João da Silva"
                                 icon="bi-person"
+                                error={!!validationErrors.customer_fullName}
                             />
                             <button
                                 type="button"
@@ -249,7 +261,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                     value={customerPhone}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerPhone(e.target.value)}
                                     placeholder="(00) 00000-0000"
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
+                                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none transition-all ${validationErrors.customer_phone ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-100 dark:border-slate-800 focus:ring-2 focus:ring-amber-400'}`}
                                 />
                                 <button type="button"
                                     onClick={() => {
@@ -399,6 +411,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 columnName="assistanceDescription"
                                 placeholder="Descreva o problema ou solicitação..."
                                 icon="bi-wrench"
+                                error={!!validationErrors.assistanceDescription}
                             />
                         </div>
                         <div className="flex flex-col gap-2 mt-4 px-1">
@@ -408,6 +421,45 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                 onChange={setObservation}
                                 placeholder="Alertas de entrega, observações críticas ou raridade..."
                             />
+                        </div>
+
+                        {/* Values */}
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                    Valor do Serviço (Cliente)
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-emerald-600">R$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={assistanceServiceValue}
+                                        onChange={(e) => setAssistanceServiceValue(Number(e.target.value))}
+                                        className="w-full pl-10 pr-4 py-3 bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 rounded-2xl text-sm font-black text-emerald-700 dark:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 transition-all"
+                                        placeholder="0,00"
+                                    />
+                                </div>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter px-1">Valor cobrado do cliente pela mão de obra</p>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                    Custo de Mão de Obra (Interno)
+                                </label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">R$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={assistanceCost}
+                                        onChange={(e) => setAssistanceCost(Number(e.target.value))}
+                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-500 dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition-all"
+                                        placeholder="0,00"
+                                    />
+                                </div>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter px-1">Custo interno (não aparece pro cliente)</p>
+                            </div>
                         </div>
                     </div>
 
@@ -485,7 +537,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                     type="date"
                                     value={scheduledDate}
                                     onChange={(e) => setScheduledDate(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
+                                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none transition-all ${validationErrors.shipping_date ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-100 dark:border-slate-800 focus:ring-2 focus:ring-amber-400'}`}
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
@@ -494,7 +546,7 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrder
                                     type="time"
                                     value={scheduledTime}
                                     onChange={(e) => setScheduledTime(e.target.value)}
-                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400 transition-all"
+                                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-300 focus:outline-none transition-all ${validationErrors.shipping_time ? 'border-red-500 ring-2 ring-red-500/10' : 'border-slate-100 dark:border-slate-800 focus:ring-2 focus:ring-amber-400'}`}
                                 />
                             </div>
                         </div>

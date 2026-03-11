@@ -160,7 +160,7 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                         </div>
                         )}
 
-                        {order.observation && (
+                        {settings.showScheduleNoticeLabels && order.observation && (
                             <div className="text-amber-800 dark:text-amber-200/70 bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-xl text-xs border border-amber-100/50 dark:border-amber-900/30 flex items-start gap-3 transition-colors">
                                 <i className="bi bi-info-circle-fill text-amber-500 mt-0.5" />
                                 <div className="flex flex-col gap-1.5 w-full">
