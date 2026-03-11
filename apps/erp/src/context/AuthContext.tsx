@@ -37,13 +37,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const fetchProfile = async (userId: string) => {
         try {
+            console.log('[Auth] Fetching profile for:', userId);
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    console.log('[Auth] No profile found, user might be new.');
+                }
+                throw error;
+            }
             setProfile(data as Profile);
         } catch (err) {
             console.error('[Auth] Error fetching profile:', err);
@@ -62,25 +68,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         }, 5000);
 
-        // onAuthStateChange fires immediately with the current session (INITIAL_SESSION or SIGNED_IN/OUT)
-        // This is the ONLY source of truth we need - no need to call getSession() separately
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const handleSession = async (session: any) => {
             if (!active) return;
-            console.log('[Auth] State Change:', event);
-
-            clearTimeout(failsafe);
-
+            
             if (session?.user) {
                 setUser(session.user);
-                // Fetch profile without blocking the loading state
-                fetchProfile(session.user.id).finally(() => {
+                
+                // Cleanup URL hash if it contains auth tokens
+                if (window.location.hash.includes('access_token=')) {
+                    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                }
+
+                try {
+                    await fetchProfile(session.user.id);
+                } finally {
                     if (active) setLoading(false);
-                });
+                }
             } else {
                 setUser(null);
                 setProfile(null);
                 setLoading(false);
             }
+        };
+
+        // 1. Explicitly check for initial session (especially for OAuth redirects)
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (active && session) {
+                console.log('[Auth] Initial session found');
+                handleSession(session);
+            }
+        });
+
+        // 2. Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (!active) return;
+            console.log('[Auth] State Change:', event);
+
+            clearTimeout(failsafe);
+            handleSession(session);
         });
 
         return () => {
