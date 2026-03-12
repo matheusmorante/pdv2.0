@@ -6,7 +6,8 @@ import { ValidationErrors } from "../../utils/validations";
 import CustomerSearchModal from "./CustomerSearchModal";
 import PersonFormModal from "../Registrations/shared/PersonFormModal";
 import { getAddressByCep, searchAddressSuggestions } from "../../utils/maps";
-import { PatternFormat } from "react-number-format";
+import { PatternFormat as PatternFormatBase } from "react-number-format";
+const PatternFormat = PatternFormatBase as any;
 
 interface Props {
     customerData: CustomerData;

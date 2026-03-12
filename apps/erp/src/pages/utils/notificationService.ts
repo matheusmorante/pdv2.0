@@ -4,7 +4,7 @@ import Order from "../types/order.type";
 import { getSettings } from "./settingsService";
 
 export type NotificationSeverity = 'critical' | 'warning' | 'info';
-export type NotificationCategory = 'stock' | 'order' | 'system';
+export type NotificationCategory = 'stock' | 'order' | 'system' | 'match';
 
 export interface AppNotification {
     id: string;
@@ -132,6 +132,41 @@ const buildProductNotifications = (products: Product[]): AppNotification[] => {
     return notifications;
 };
 
+const buildMatchNotifications = async (products: Product[]): Promise<AppNotification[]> => {
+    const readIds = getReadIds();
+    const notifications: AppNotification[] = [];
+
+    // Busca matches pendentes de notificação
+    const { data: matches, error } = await supabase
+        .from('desire_matches')
+        .select('*, customer_desires(*)')
+        .eq('notified', false);
+
+    if (error || !matches) return [];
+
+    matches.forEach(m => {
+        const desire = m.customer_desires;
+        const product = products.find(p => p.id === String(m.product_id));
+        
+        if (desire && product) {
+            const id = `match_alert_${m.id}`;
+            notifications.push({
+                id,
+                title: 'Oportunidade de Venda!',
+                description: `"${product.description}" (Salvado) coincide com o desejo de ${desire.customer_name || 'um cliente'}.`,
+                severity: 'info',
+                category: 'match',
+                icon: 'bi-stars',
+                link: '/customers/desires',
+                createdAt: new Date(m.created_at || new Date()),
+                read: readIds.has(id)
+            });
+        }
+    });
+
+    return notifications;
+};
+
 const buildOrderNotifications = (orders: Order[]): AppNotification[] => {
     const readIds = getReadIds();
     const notifications: AppNotification[] = [];
@@ -204,13 +239,14 @@ export const subscribeToNotifications = (callback: (notifications: AppNotificati
 
         const productNotifs = buildProductNotifications(products);
         const orderNotifs = buildOrderNotifications(orders);
+        const matchNotifs = await buildMatchNotifications(products);
 
-        const allNotifications = [...productNotifs, ...orderNotifs];
+        const allNotifications = [...productNotifs, ...orderNotifs, ...matchNotifs];
 
-        // Sort: critical first, then warning, then info
+        // Sort: critical first, then warning, then match/info
         allNotifications.sort((a, b) => {
-            const order = { critical: 0, warning: 1, info: 2 };
-            return order[a.severity] - order[b.severity];
+            const order = { critical: 0, warning: 1, info: 2, match: 2 };
+            return (order[a.severity] || 3) - (order[b.severity] || 3);
         });
 
         callback(allNotifications);

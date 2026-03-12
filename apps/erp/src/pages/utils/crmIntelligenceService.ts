@@ -13,6 +13,14 @@ export interface CustomerDesire {
     created_at?: string;
 }
 
+export interface DesireMatch {
+    id?: string;
+    desire_id: string;
+    product_id: string;
+    created_at?: string;
+    notified?: boolean;
+}
+
 export const crmIntelligenceService = {
     /**
      * Busca o histórico de compras de um cliente pelo telefone
@@ -68,11 +76,36 @@ export const crmIntelligenceService = {
 
         if (error) return [];
 
-        // Filtro simples por nome (pode ser melhorado com IA)
-        return data.filter(desire => 
-            productName.toLowerCase().includes(desire.product_name.toLowerCase()) ||
-            desire.product_name.toLowerCase().includes(productName.toLowerCase())
-        );
+        const normalizedProduct = productName.toLowerCase();
+
+        // Filtro aprimorado: Busca por palavras-chave significantes
+        return data.filter(desire => {
+            const normalizedDesire = desire.product_name.toLowerCase();
+            
+            // 1. Match exato ou contido
+            if (normalizedProduct.includes(normalizedDesire) || normalizedDesire.includes(normalizedProduct)) return true;
+
+            // 2. Match por palavras-chave (mínimo 2 palavras em comum se forem nomes longos)
+            const productWords = normalizedProduct.split(' ').filter((w: string) => w.length > 3);
+            const desireWords = normalizedDesire.split(' ').filter((w: string) => w.length > 3);
+            
+            const intersection = productWords.filter((w: string) => desireWords.includes(w));
+            return intersection.length >= 2;
+        });
+    },
+
+    /**
+     * Registra que um produto deu match com um desejo
+     */
+    async registerMatch(desireId: string, productId: string) {
+        const { error } = await supabase
+            .from('desire_matches')
+            .upsert([{
+                desire_id: desireId,
+                product_id: productId
+            }]);
+
+        if (error) console.error("Erro ao registrar match de desejo:", error);
     },
 
     /**

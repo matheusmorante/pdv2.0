@@ -46,13 +46,22 @@ const AttendanceDashboard = () => {
                         Insights estratégicos extraídos de atendimentos presenciais
                     </p>
                 </div>
-                <button 
-                    onClick={fetchLogs} 
-                    className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all font-bold text-xs uppercase tracking-widest text-slate-600 dark:text-slate-300"
-                >
-                    <i className="bi bi-arrow-clockwise"></i>
-                    Atualizar Dados
-                </button>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={() => attendanceService.exportLogsToCSV()} 
+                        className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 rounded-2xl shadow-sm hover:shadow-md transition-all font-bold text-xs uppercase tracking-widest text-white"
+                    >
+                        <i className="bi bi-file-earmark-spreadsheet"></i>
+                        Exportar NotebookLM
+                    </button>
+                    <button 
+                        onClick={fetchLogs} 
+                        className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all font-bold text-xs uppercase tracking-widest text-slate-600 dark:text-slate-300"
+                    >
+                        <i className="bi bi-arrow-clockwise"></i>
+                        Atualizar Dados
+                    </button>
+                </div>
             </header>
 
             {loading ? (
@@ -92,9 +101,20 @@ const AttendanceDashboard = () => {
 
                                 <div className="space-y-4">
                                     <div className="p-4 bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                        <p className="text-[11px] text-slate-600 dark:text-slate-300 italic leading-relaxed">
+                                        <p className="text-[11px] text-slate-600 dark:text-slate-300 italic leading-relaxed mb-4">
                                             "{log.transcript}"
                                         </p>
+                                        
+                                        {log.audio_url && (
+                                            <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                <i className="bi bi-mic text-blue-500"></i>
+                                                <audio 
+                                                    src={log.audio_url} 
+                                                    controls 
+                                                    className="h-8 flex-1 custom-audio"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">

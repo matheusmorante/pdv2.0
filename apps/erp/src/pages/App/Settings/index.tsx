@@ -3,7 +3,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getSettings, saveSettings, AppSettings, subscribeToSettings } from '../../utils/settingsService';
 import { useTheme } from '../../../context/ThemeContext';
 import { toast } from 'react-toastify';
-import { PatternFormat } from 'react-number-format';
+import { PatternFormat as PatternFormatBase } from "react-number-format";
+const PatternFormat = PatternFormatBase as any;
 
 // Modular Components
 import SettingsSidebar from './components/SettingsSidebar';

@@ -1,5 +1,6 @@
 import { supabase } from "./supabaseConfig";
 import Product from "../types/product.type";
+import { crmIntelligenceService } from "./crmIntelligenceService";
 
 const TABLE_NAME = "products";
 
@@ -153,12 +154,28 @@ export const saveProduct = async (product: Product): Promise<string> => {
         if (error) throw error;
 
         if (data && data[0]) {
-            const newId = data[0].id;
+            const newId = String(data[0].id);
             if (product.categoryIds && product.categoryIds.length > 0) {
                 const links = product.categoryIds.map(cid => ({ product_id: newId, category_id: cid }));
                 await supabase.from('product_categories').insert(links);
             }
-            return String(newId);
+
+            // Lógica de CRM: Se o produto for 'salvado' ou 'usado', busca interessados
+            const condition = product.condition?.toLowerCase();
+            if (condition === 'salvado' || condition === 'usado') {
+                try {
+                    const matches = await crmIntelligenceService.findMatchingDesires(product.description);
+                    for (const match of matches) {
+                        if (match.id) {
+                            await crmIntelligenceService.registerMatch(match.id, newId);
+                        }
+                    }
+                } catch (crmError) {
+                    console.error("Erro ao processar inteligência de CRM no build do produto:", crmError);
+                }
+            }
+
+            return newId;
         }
         return "";
     } catch (error: any) {

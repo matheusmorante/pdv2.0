@@ -1,4 +1,5 @@
-import { NumericFormat } from "react-number-format"
+import { NumericFormat as NumericFormatBase } from "react-number-format"
+const NumericFormat = NumericFormatBase as any;
 
 interface Props {
     value: number

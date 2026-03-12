@@ -4,7 +4,8 @@ import { savePerson, isPersonRegisteredAs } from "../../../utils/personService";
 import { toast } from "react-toastify";
 import { capitalizePerson, toTitleCase } from "../../../utils/formatters";
 import SmartInput from "../../../../components/SmartInput";
-import { PatternFormat } from "react-number-format";
+import { PatternFormat as PatternFormatBase } from "react-number-format";
+const PatternFormat = PatternFormatBase as any;
 
 interface PersonFormModalProps {
     isOpen: boolean;

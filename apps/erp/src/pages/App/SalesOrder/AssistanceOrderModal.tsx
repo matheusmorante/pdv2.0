@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { formatToBRDate, formatCurrency } from "../../utils/formatters";
-import { PatternFormat } from "react-number-format";
+import { PatternFormat as PatternFormatBase } from "react-number-format";
+const PatternFormat = PatternFormatBase as any;
 import { saveOrder, subscribeToOrders } from "../../utils/orderHistoryService";
 import { toast } from "react-toastify";
 import Order, { AssistanceItem } from "../../types/order.type";
@@ -19,6 +20,12 @@ interface AssistanceOrderModalProps {
     onClose: () => void;
     onSaveSuccess: () => void;
     order?: Order | null;
+    initialData?: {
+        customerName?: string;
+        customerPhone?: string;
+        description?: string;
+        matchedProductId?: string;
+    };
 }
 
 const EMPTY_CUSTOMER: CustomerData = {
@@ -47,10 +54,10 @@ const DEFAULT_SHIPPING: any = {
     }
 };
 
-const AssistanceOrderModal = ({ onClose, onSaveSuccess, order }: AssistanceOrderModalProps) => {
-    const [customerName, setCustomerName] = useState(order?.customerData?.fullName || "");
-    const [customerPhone, setCustomerPhone] = useState(order?.customerData?.phone || "");
-    const [description, setDescription] = useState(order?.assistanceDescription || "");
+const AssistanceOrderModal = ({ onClose, onSaveSuccess, order, initialData }: AssistanceOrderModalProps) => {
+    const [customerName, setCustomerName] = useState(order?.customerData?.fullName || initialData?.customerName || "");
+    const [customerPhone, setCustomerPhone] = useState(order?.customerData?.phone || initialData?.customerPhone || "");
+    const [description, setDescription] = useState(order?.assistanceDescription || initialData?.description || "");
     const [observation, setObservation] = useState(order?.observation || "");
     const [scheduledDate, setScheduledDate] = useState(order?.scheduledDate || "");
     const [scheduledTime, setScheduledTime] = useState(order?.scheduledTime || "");

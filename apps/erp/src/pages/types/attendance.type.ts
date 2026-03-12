@@ -5,6 +5,7 @@ export interface AttendanceLog {
     customer_phone?: string;
     customer_id?: string;
     transcript: string;
+    audio_url?: string;
     structured_data: {
         customer_name?: string;
         product?: string;

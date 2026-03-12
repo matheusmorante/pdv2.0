@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppSettings } from '../../../utils/settingsService';
-import { PatternFormat } from 'react-number-format';
+import { PatternFormat as PatternFormatBase } from "react-number-format";
+const PatternFormat = PatternFormatBase as any;
 
 interface OrderAutomationSectionProps {
     settings: AppSettings;
@@ -87,7 +88,7 @@ const OrderAutomationSection = ({ settings, onChange }: OrderAutomationSectionPr
                         format="(##) #####-####"
                         mask="_"
                         value={settings.orderAutomation.deliveryPhone}
-                        onValueChange={(values) => onChange('orderAutomation.deliveryPhone', values.value)}
+                        onValueChange={(values: any) => onChange('orderAutomation.deliveryPhone', values.value)}
                         placeholder="(00) 00000-0000"
                         className="w-full bg-white dark:bg-slate-900 px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm outline-none focus:ring-2 focus:ring-emerald-100 font-bold"
                     />

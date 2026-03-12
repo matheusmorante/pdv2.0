@@ -1,4 +1,5 @@
-import { NumericFormat, NumberFormatValues } from "react-number-format"
+import { NumericFormat as NumericFormatBase, NumberFormatValues } from "react-number-format"
+const NumericFormat = NumericFormatBase as any;
 
 interface Props {
     value: number
@@ -17,7 +18,7 @@ const CurrencyInput = ({ value, onChange }: Props) => {
             decimalScale={2}
             decimalSeparator=","
             fixedDecimalScale
-            onFocus={(e) => e.target.select()}
+            onFocus={(e: any) => e.target.select()}
             onValueChange={(values: NumberFormatValues) => {
                 onChange(values.floatValue ?? 0)
             }}

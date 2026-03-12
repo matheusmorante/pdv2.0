@@ -1,5 +1,6 @@
 import React from "react";
-import { NumericFormat } from "react-number-format";
+import { NumericFormat as NumericFormatBase } from "react-number-format";
+const NumericFormat = NumericFormatBase as any;
 import { ValidationErrors } from "../../../utils/validations";
 
 interface FreteDistanciaProps {
@@ -46,8 +47,8 @@ const FreteDistancia = ({ value, distance, routeUrl, onChangeValue, onChangeDist
                     prefix={"R$ "}
                     decimalScale={2}
                     decimalSeparator=","
-                    onFocus={(e) => e.target.select()}
-                    onValueChange={(values) => onChangeValue(values.floatValue || 0)}
+                    onFocus={(e: any) => e.target.select()}
+                    onValueChange={(values: any) => onChangeValue(values.floatValue || 0)}
                 />
                 {errors['shipping_value'] && (
                     <div className="absolute left-0 -top-8 hidden group-hover:flex items-center px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-lg z-50 whitespace-nowrap">

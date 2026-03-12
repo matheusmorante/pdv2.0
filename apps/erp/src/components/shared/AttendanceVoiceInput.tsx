@@ -5,7 +5,8 @@ import { attendanceService } from "../../pages/utils/attendanceService";
 import { useAuth } from "../../context/AuthContext";
 import { AttendanceLog } from "../../pages/types/attendance.type";
 import { crmIntelligenceService } from "../../pages/utils/crmIntelligenceService";
-import { PatternFormat } from "react-number-format";
+import { PatternFormat as PatternFormatBase } from "react-number-format";
+const PatternFormat = PatternFormatBase as any;
 
 const AttendanceVoiceInput = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +17,8 @@ const AttendanceVoiceInput = () => {
     const [suggestedAction, setSuggestedAction] = useState<{ type: string, data: any, label: string } | null>(null);
     const { profile } = useAuth();
     const recognitionRef = useRef<any>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
 
     useEffect(() => {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -49,22 +52,41 @@ const AttendanceVoiceInput = () => {
         }
     }, []);
 
-    const startRecording = () => {
+    const startRecording = async () => {
         if (!recognitionRef.current) {
             toast.error("Reconhecimento de voz não suportado neste navegador.");
             return;
         }
-        setIsRecording(true);
-        recognitionRef.current.start();
-        toast.info("Gravando... Fale agora.");
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            audioChunksRef.current = [];
+
+            mediaRecorderRef.current.ondataavailable = (event) => {
+                if (event.data.size > 0) audioChunksRef.current.push(event.data);
+            };
+
+            mediaRecorderRef.current.start();
+            setIsRecording(true);
+            recognitionRef.current.start();
+            toast.info("Gravando... Fale agora.");
+        } catch (err) {
+            console.error("Erro ao acessar microfone:", err);
+            toast.error("Erro ao acessar microfone.");
+        }
     };
 
     const pauseRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
-            setIsRecording(false);
-            toast.info("Gravação pausada.");
         }
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
+        setIsRecording(false);
+        toast.info("Gravação pausada.");
     };
 
     const clearTranscript = () => {
@@ -140,12 +162,24 @@ const AttendanceVoiceInput = () => {
             toast.warn("IA falhou, mas salvando o relato bruto para análise posterior.");
         }
 
+        let audioUrl = "";
+        try {
+            if (audioChunksRef.current.length > 0) {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const uploadedUrl = await attendanceService.uploadAudio(audioBlob);
+                if (uploadedUrl) audioUrl = uploadedUrl;
+            }
+        } catch (audioErr) {
+            console.error("Erro ao fazer upload do áudio físico:", audioErr);
+        }
+
         try {
             const log: AttendanceLog = {
                 date: new Date().toISOString(),
                 salesperson_name: profile?.full_name || "Vendedor",
                 customer_phone: customerPhone || undefined,
                 transcript: transcript,
+                audio_url: audioUrl || undefined,
                 structured_data: structuredData as any
             };
 
@@ -196,7 +230,7 @@ const AttendanceVoiceInput = () => {
                             <PatternFormat
                                 format="(##) #####-####"
                                 value={customerPhone}
-                                onValueChange={(values) => setCustomerPhone(values.value)}
+                                onValueChange={(values: any) => setCustomerPhone(values.value)}
                                 placeholder="(00) 00000-0000"
                                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-[11px] font-bold text-slate-800 dark:text-slate-100 placeholder:text-slate-300 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
                             />
@@ -207,7 +241,26 @@ const AttendanceVoiceInput = () => {
                                 <p className="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 mb-2 ml-1">Lisandro Sugere:</p>
                                 <button
                                     onClick={async () => {
-                                        toast.info(`Executando: ${suggestedAction.label}`);
+                                        if (suggestedAction.type === 'ASSISTANCE') {
+                                            window.dispatchEvent(new CustomEvent('OPEN_ASSISTANCE_MODAL', {
+                                                detail: {
+                                                    customerName: suggestedAction.data.extracted_data?.customer_name,
+                                                    customerPhone: customerPhone,
+                                                    description: suggestedAction.data.extracted_data?.problem_description,
+                                                    matchedProductId: suggestedAction.data.matched_product?.id
+                                                }
+                                            }));
+                                        } else if (suggestedAction.type === 'DESIRE') {
+                                            window.dispatchEvent(new CustomEvent('REGISTER_CUSTOMER_DESIRE', {
+                                                detail: {
+                                                    customer_phone: customerPhone,
+                                                    customer_name: suggestedAction.data.customer_name,
+                                                    product_name: suggestedAction.data.product_name,
+                                                    details: suggestedAction.data.details,
+                                                    status: 'pending'
+                                                }
+                                            }));
+                                        }
                                         setSuggestedAction(null);
                                         setTranscript("");
                                         setCustomerPhone("");

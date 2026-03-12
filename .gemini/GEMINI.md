@@ -74,3 +74,24 @@
 ### 🏁 Final Checklist Protocol
 **Trigger:** "final checks", "çalıştır tüm testleri", etc.
 **Order:** 1. Security → 2. Lint → 3. Schema → 4. Tests → 5. UX → 6. Seo → 7. Lighthouse/E2E.
+
+---
+
+## 🚀 VERCEL DEPLOYMENT DEBUGGING PROTOCOL
+
+To resolve complex Vercel deployment issues (which often work locally but fail in the cloud), follow this technical roadmap:
+
+1. **Analyze Build and Runtime Logs:** Vercel doesn't show the full error on the site; it's hidden in the logs. Always ask the user for the full error log from the Vercel Dashboard (Deployments > Click failed deploy > Logs).
+   - *Prompt Fragment:* "Analyze this Vercel deploy error log. My project is a monorepo with Vite and Node. The error happened at [build/runtime]. What is missing in my production environment?"
+
+2. **Environment Variable Validation (.env):** Many bugs persist because keys like `PHONE_NUMBER_ID` or `API_KEY` are undefined in Vercel.
+   - *Action:* Suggest or create a Validation Schema script (using Zod or dotenv). Ensure the build fails immediately if critical keys are missing.
+
+3. **Case-Sensitivity (Windows vs. Linux):** Windows is case-insensitive, but Vercel (Linux) is case-sensitive. `import Botao from './botao'` works on Windows but fails on Vercel if the file is `Botao.tsx`.
+   - *Action:* Check all imports in `src/components` and other directories for case discrepancies between the disk and the import statement.
+
+4. **Agentic Debugging Mode (DevOps):** For persistent issues, act as a DevOps Engineer. Analyze `vercel.json` and `package.json`.
+   - *Check:* Dependencies like `whatsapp-web.js` (Puppeteer) require extra libraries not natively supported by Vercel Serverless Functions. Suggest strategies like Remote Browser or Meta's Official Cloud API.
+
+5. **`vercel.json` Optimization:** Generate optimized `vercel.json` files to handle routing issues (e.g., 404 on F5 in Vite apps).
+

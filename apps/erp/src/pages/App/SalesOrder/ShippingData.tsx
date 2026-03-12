@@ -7,7 +7,8 @@ import { getSettings } from "../../utils/settingsService";
 import FreteDistancia from "./ShippingComponents/FreteDistancia";
 import Agendamento from "./ShippingComponents/Agendamento";
 import MapRoute from "./ShippingComponents/MapRoute";
-import { PatternFormat } from "react-number-format";
+import { PatternFormat as PatternFormatBase } from "react-number-format";
+const PatternFormat = PatternFormatBase as any;
 import SmartInput from "../../../components/SmartInput";
 
 interface Props {

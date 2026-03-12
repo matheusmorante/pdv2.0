@@ -12,6 +12,7 @@
     "erp": "npm run dev -w apps/erp",
     "ecomm": "npm run dev -w apps/ecommerce",
     "server": "npm run start -w apps/server",
+    "build": "npm run erp:build",
     "erp:build": "npm run build -w apps/erp",
     "ecommerce:build": "npm run build -w apps/ecommerce",
     "test": "npm test --workspaces"
@@ -20,7 +21,7 @@
     "@supabase/supabase-js": "^2.98.0",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.577.0",
-    "react": "^19.1.1",
+    "react": "^18.3.1",
     "recharts": "^3.8.0"
   },
   "type": "module",

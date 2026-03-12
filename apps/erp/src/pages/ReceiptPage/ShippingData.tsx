@@ -1,6 +1,7 @@
 import Shipping from "../types/Shipping.type";
 import { formatDate } from "../utils/formatters";
-import { NumericFormat } from "react-number-format";
+import { NumericFormat as NumericFormatBase } from "react-number-format";
+const NumericFormat = NumericFormatBase as any;
 
 interface Props {
     shipping: Shipping

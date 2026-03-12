@@ -25,6 +25,7 @@ import ProfilePage from './pages/App/Profile/Index';
 import PurchasesPage from './pages/App/Stock/Purchases/Index';
 import OrderRouteMap from './pages/App/SalesOrder/OrderRouteMap';
 import AttendanceDashboard from './pages/App/Attendance/Dashboard';
+import CustomerDesiresPage from './pages/App/Customers/CustomerDesiresPage';
 import WhatsAppMarketplace from './pages/App/Products/WhatsAppMarketplace';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -99,6 +100,7 @@ function Router() {
             <Route path='/registrations/services' element={<Services />} />
             <Route path='/registrations/variations' element={<Variations />} />
             <Route path='/registrations/customers' element={<Customers />} />
+            <Route path='/customers/desires' element={<CustomerDesiresPage />} />
             <Route path='/registrations/suppliers' element={<Suppliers />} />
             <Route path='/registrations/employees' element={<Employees />} />
             <Route path='/users' element={<AdminRoute><UsersManagementPage /></AdminRoute>} />

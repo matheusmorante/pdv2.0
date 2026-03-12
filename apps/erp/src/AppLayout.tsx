@@ -9,6 +9,10 @@ import AIChatAssistant from "./components/shared/AIChatAssistant";
 import AttendanceVoiceInput from "./components/shared/AttendanceVoiceInput";
 import GlobalAutoScroll from "./components/shared/GlobalAutoScroll";
 import NotificationBell from "./components/shared/NotificationBell";
+import AssistanceOrderModal from "./pages/App/SalesOrder/AssistanceOrderModal";
+import { toast } from "react-toastify";
+import { crmIntelligenceService } from "./pages/utils/crmIntelligenceService";
+import { useEffect } from "react";
 
 type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
 
@@ -17,6 +21,32 @@ export default function AppLayout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, profile, logout, isAdmin } = useAuth();
+  const [isAssistanceModalOpen, setIsAssistanceModalOpen] = useState(false);
+  const [assistanceInitialData, setAssistanceInitialData] = useState<any>(null);
+
+  useEffect(() => {
+    const handleOpenAssistance = (e: any) => {
+      setAssistanceInitialData(e.detail);
+      setIsAssistanceModalOpen(true);
+    };
+
+    const handleRegisterDesire = async (e: any) => {
+      try {
+        await crmIntelligenceService.registerProductDesire(e.detail);
+        toast.success(`Desejo registrado: ${e.detail.product_name} ✨`);
+      } catch (err) {
+        toast.error("Erro ao registrar desejo.");
+      }
+    };
+
+    window.addEventListener('OPEN_ASSISTANCE_MODAL', handleOpenAssistance);
+    window.addEventListener('REGISTER_CUSTOMER_DESIRE', handleRegisterDesire);
+    
+    return () => {
+      window.removeEventListener('OPEN_ASSISTANCE_MODAL', handleOpenAssistance);
+      window.removeEventListener('REGISTER_CUSTOMER_DESIRE', handleRegisterDesire);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-screen font-['Inter',_sans-serif] transition-colors duration-300">
@@ -135,6 +165,16 @@ export default function AppLayout() {
 
       <AIChatAssistant />
       <AttendanceVoiceInput />
+
+      {isAssistanceModalOpen && (
+        <AssistanceOrderModal 
+          onClose={() => setIsAssistanceModalOpen(false)}
+          onSaveSuccess={() => {
+            setIsAssistanceModalOpen(false);
+          }}
+          initialData={assistanceInitialData}
+        />
+      )}
 
       <style dangerouslySetInnerHTML={{
         __html: `
