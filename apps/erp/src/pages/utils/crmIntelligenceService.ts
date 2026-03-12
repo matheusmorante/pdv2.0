@@ -22,7 +22,7 @@ export const crmIntelligenceService = {
         
         const { data: orders, error } = await supabase
             .from('orders')
-            .select('items, customerData')
+            .select('items, customerData, created_at')
             .or(`customerData->>phone.eq.${phone},customerData->>phone.eq.${cleanPhone}`);
 
         if (error || !orders) {
