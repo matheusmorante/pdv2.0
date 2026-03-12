@@ -11,6 +11,7 @@ export const attendanceService = {
                 .insert([{
                     date: log.date || new Date().toISOString(),
                     salesperson_name: log.salesperson_name,
+                    customer_phone: log.customer_phone,
                     transcript: log.transcript,
                     structured_data: log.structured_data,
                     created_at: new Date().toISOString()

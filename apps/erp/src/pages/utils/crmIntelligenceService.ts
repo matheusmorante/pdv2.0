@@ -25,17 +25,17 @@ export const crmIntelligenceService = {
             .select('items, customerData')
             .or(`customerData->>phone.eq.${phone},customerData->>phone.eq.${cleanPhone}`);
 
-        if (error) {
+        if (error || !orders) {
             console.error("Erro ao buscar histórico do cliente:", error);
             return [];
         }
 
         // Extrai todos os itens de todos os pedidos
         const items = orders.flatMap(order => 
-            (order.items || []).map((item: any) => ({
+            ((order.items as any[]) || []).map((item: any) => ({
                 ...item,
                 order_date: (order as any).created_at,
-                customer_name: order.customerData?.fullName
+                customer_name: (order.customerData as any)?.fullName
             }))
         );
 

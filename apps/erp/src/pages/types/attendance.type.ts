@@ -6,15 +6,23 @@ export interface AttendanceLog {
     customer_id?: string;
     transcript: string;
     structured_data: {
+        customer_name?: string;
         product?: string;
+        closed_sale?: boolean;
+        lost_reason?: string;
+        positive_points?: string[];
+        negative_points?: string[];
+        main_objection?: string;
+        sentiment?: string;
+        priority?: string;
+        next_step?: string;
+        
+        // Mantendo compatibilidade com campos anteriores se necessário
         reason?: string;
         objections?: string[];
-        sentiment?: string;
         customer_profile?: string;
-        priority?: string;
         value_estimate?: number;
         suggestions?: string[];
-        next_step?: string;
     };
     created_at?: string;
 }

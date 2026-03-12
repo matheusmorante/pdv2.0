@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.attendance_logs (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     date TIMESTAMPTZ DEFAULT now(),
     salesperson_name TEXT,
+    customer_phone TEXT,
     transcript TEXT,
     structured_data JSONB, -- Contém produto, motivo, sentimentos, etc.
     created_at TIMESTAMPTZ DEFAULT now()
