@@ -2,6 +2,8 @@ export interface AttendanceLog {
     id?: string;
     date: string;
     salesperson_name?: string;
+    customer_phone?: string;
+    customer_id?: string;
     transcript: string;
     structured_data: {
         product?: string;

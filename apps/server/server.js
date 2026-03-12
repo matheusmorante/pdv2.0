@@ -9,11 +9,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const logs = [];
+function addLog(type, message, data = null) {
+    const log = {
+        timestamp: new Date().toISOString(),
+        type,
+        message,
+        data
+    };
+    logs.unshift(log);
+    if (logs.length > 50) logs.pop();
+    console.log(`[${type}] ${message}`);
+}
+
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDSieSZV89ERk-V5L5M1RWMDsrqN-emt7Q");
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 app.get('/', (req, res) => res.send("AI Server is running (v5 - Gemini Stable)"));
+
+app.get('/api/logs', (req, res) => {
+    res.json(logs);
+});
 
 async function safePrompt(prompt, systemPrompt = null) {
     try {
@@ -24,32 +41,28 @@ async function safePrompt(prompt, systemPrompt = null) {
     } catch (error) {
         console.error("Gemini Error:", error.message);
         
-        // MOCK FALLBACK for testing if API Key is leaked or offline
-        if (error.message.includes("leaked") || error.message.includes("API key")) {
-            console.log("Using MOCK AI Answer for testing...");
-            if (prompt.includes("JSON")) {
-                return JSON.stringify({
-                    product: "Produto Exemplo",
-                    reason: "Preço",
-                    objections: ["Estava um pouco caro", "Prazo longo"],
-                    sentiment: "Neutro",
-                    customer_profile: "Cliente de Teste",
-                    priority: "Morno",
-                    value_estimate: 1500,
-                    suggestions: ["Oferecer desconto avista"],
-                    next_step: "Seguir com follow-up em 2 dias"
-                });
-            }
-            return "Esta é uma resposta de TESTE do Lizandro (Mock). Para respostas reais, atualize a GEMINI_API_KEY no servidor.";
+        // MOCK FALLBACK for BI processing
+        if (prompt.includes("JSON")) {
+            return JSON.stringify({
+                product: "Desconhecido",
+                reason: "Erro de Conexão",
+                objections: ["O sistema não conseguiu processar os detalhes no momento"],
+                sentiment: "Neutro",
+                customer_profile: "Não identificado",
+                priority: "Morno",
+                value_estimate: 0,
+                suggestions: ["Tente enviar o relato novamente mais tarde"],
+                next_step: "Salvar relato bruto"
+            });
         }
-        throw error;
+        return JSON.stringify({ error: "Serviço de IA temporariamente indisponível." });
     }
 }
 
 app.post('/api/generate-description', async (req, res) => {
     try {
         const { productName, category, unitPrice, promptTemplate } = req.body;
-        console.log(`Gerando descrição: ${productName}`);
+        addLog("DESCRIPTION", `Gerando descrição para: ${productName}`);
 
         let prompt = promptTemplate || `Crie uma descrição persuasiva para o produto ${productName}.`;
         prompt = prompt
@@ -67,9 +80,11 @@ app.post('/api/generate-description', async (req, res) => {
 app.post('/api/ai-chat', async (req, res) => {
     try {
         const { message, systemPrompt } = req.body;
+        addLog("CHAT", `Nova mensagem recebida`);
         const answer = await safePrompt(message, systemPrompt);
         res.json({ answer });
     } catch (error) {
+        addLog("ERROR", `Erro no Chat: ${error.message}`);
         res.status(500).json({ error: error.message });
     }
 });
@@ -77,16 +92,18 @@ app.post('/api/ai-chat', async (req, res) => {
 app.post('/api/ai-detect-intent', async (req, res) => {
     try {
         const { message, detectionPrompt } = req.body;
+        addLog("INTENT", `Detectando intenção`);
         let prompt = detectionPrompt || `Analise: {{message}}`;
         prompt = prompt.replace(/{{message}}/g, message);
 
         const answer = await safePrompt(prompt, "Responda APENAS com um objeto JSON válido.");
-        console.log("Resposta Lizandro:", answer);
-
+        
         const jsonMatch = answer.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             try {
-                return res.json(JSON.parse(jsonMatch[0]));
+                const parsed = JSON.parse(jsonMatch[0]);
+                addLog("INTENT_SUCCESS", `Intenção detectada: ${parsed.intent || 'unknown'}`);
+                return res.json(parsed);
             } catch (e) { }
         }
 
@@ -95,7 +112,7 @@ app.post('/api/ai-detect-intent', async (req, res) => {
             data: { message: answer }
         });
     } catch (error) {
-        console.error("ERRO:", error);
+        addLog("ERROR", `Erro na Intenção: ${error.message}`);
         res.status(500).json({ error: error.message });
     }
 });

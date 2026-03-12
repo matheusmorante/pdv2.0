@@ -34,3 +34,10 @@ pnpm-debug.log*
 Thumbs.db
 .vercel
 .env*.local
+
+# Backups and Large Media
+apps/erp/owner/
+apps/erp/owner.zip
+*.mp4
+*.zip
+*.rar

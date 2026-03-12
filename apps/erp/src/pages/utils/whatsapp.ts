@@ -79,7 +79,7 @@ export const sendDirectShippingMessage = async (order: Order) => {
     try {
         const message = buildDeliveryMessage(order);
         await whatsappGraphService.sendTextMessage(deliveryPhone, message);
-        toast.success("Detalhes da entrega enviados para a equipe!");
+        toast.success("Entrega enviada com sucesso!");
     } catch (error) {
         console.error("Erro ao enviar mensagem direta:", error);
         toast.error("Erro na API do WhatsApp. Abrindo link manual...");
@@ -97,11 +97,58 @@ export const sendDirectCustomerMessage = async (order: Order) => {
     try {
         const message = buildCustomerOrderMessage(order);
         await whatsappGraphService.sendTextMessage(customer.phone, message);
-        toast.success("Confirmação enviada para o cliente!");
+        toast.success("Mensagem enviada para o cliente com sucesso!");
     } catch (error) {
         console.error("Erro ao enviar mensagem direta:", error);
         toast.error("Erro na API. Abrindo link manual...");
         window.open(customerOrderWhatsappUrl(order), "_blank");
+    }
+};
+
+const buildAssistanceMessage = (order: Order) => {
+    const customer = order.customerData;
+    const settings = getSettings();
+
+    const scheduledDate = (order as any).scheduledDate || '';
+    const scheduledTime = (order as any).scheduledTime || '';
+    const assistanceDescription = (order as any).assistanceDescription || 'Serviço técnico';
+
+    // Format date to BR format
+    let formattedDate = scheduledDate;
+    if (scheduledDate) {
+        try {
+            const [year, month, day] = scheduledDate.split('-');
+            formattedDate = `${day}/${month}/${year}`;
+        } catch { /* keep raw */ }
+    }
+
+    let message = settings.whatsappTemplates?.assistanceConfirmation || 
+        `*Olá ${customer.fullName}!* 🔧\n\nSeu atendimento de assistência técnica foi confirmado!\n\n🗓️ *Data:* ${formattedDate || 'A confirmar'}\n🕒 *Horário:* ${scheduledTime || 'A confirmar'}\n\n📋 *Serviço:*\n${assistanceDescription}\n\nEm caso de dúvidas, entre em contato!`;
+
+    return message
+        .replace(/{{customerName}}/g, customer.fullName || 'Cliente')
+        .replace(/{{assistanceDate}}/g, formattedDate || 'A confirmar')
+        .replace(/{{assistanceTime}}/g, scheduledTime || 'A confirmar')
+        .replace(/{{assistanceDescription}}/g, assistanceDescription)
+        .replace(/{{companyPhone}}/g, settings.companyPhone || '')
+        .replace(/{{observation}}/g, order.observation || '');
+};
+
+export const sendDirectAssistanceMessage = async (order: Order) => {
+    const customer = order.customerData;
+    if (!customer?.phone) {
+        toast.error("Cliente sem telefone cadastrado.");
+        return;
+    }
+
+    try {
+        const message = buildAssistanceMessage(order);
+        await whatsappGraphService.sendTextMessage(customer.phone, message);
+        toast.success("Mensagem enviada para o cliente com sucesso!");
+    } catch (error) {
+        console.error("Erro ao enviar mensagem direta de assistência:", error);
+        toast.error("Erro na API. Abrindo link manual...");
+        window.open(assistanceCustomerWhatsappUrl(order), "_blank");
     }
 };
 
@@ -123,31 +170,7 @@ export const customerReviewsWhatsappUrl = (order: Order) => {
 export const assistanceCustomerWhatsappUrl = (order: Order) => {
     const customer = order.customerData;
     const phone = customer.phone?.replace(/[^0-9]/g, '') || '';
-    const settings = getSettings();
-
-    const scheduledDate = (order as any).scheduledDate || '';
-    const scheduledTime = (order as any).scheduledTime || '';
-    const assistanceDescription = (order as any).assistanceDescription || 'Serviço técnico';
-
-    // Format date to BR format
-    let formattedDate = scheduledDate;
-    if (scheduledDate) {
-        try {
-            const [year, month, day] = scheduledDate.split('-');
-            formattedDate = `${day}/${month}/${year}`;
-        } catch { /* keep raw */ }
-    }
-
-    let message = settings.whatsappTemplates?.assistanceConfirmation || 
-        `*Olá ${customer.fullName}!* 🔧\n\nSeu atendimento de assistência técnica foi confirmado!\n\n🗓️ *Data:* ${formattedDate || 'A confirmar'}\n🕒 *Horário:* ${scheduledTime || 'A confirmar'}\n\n📋 *Serviço:*\n${assistanceDescription}\n\nEm caso de dúvidas, entre em contato!`;
-
-    message = message
-        .replace(/{{customerName}}/g, customer.fullName || 'Cliente')
-        .replace(/{{assistanceDate}}/g, formattedDate || 'A confirmar')
-        .replace(/{{assistanceTime}}/g, scheduledTime || 'A confirmar')
-        .replace(/{{assistanceDescription}}/g, assistanceDescription)
-        .replace(/{{companyPhone}}/g, settings.companyPhone || '')
-        .replace(/{{observation}}/g, order.observation || '');
+    const message = buildAssistanceMessage(order);
 
     if (phone) {
         return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;

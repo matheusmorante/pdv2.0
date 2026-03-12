@@ -55,7 +55,8 @@ export const aiService = {
             return await callAIBackend("ai-chat", { message, systemPrompt: systemContext });
         } catch (error) {
             console.error("AI Chat Error:", error);
-            return { answer: "Desculpe, falha no processamento da IA no momento." };
+            // Retorna um JSON stringificado que representa um erro, para não quebrar o JSON.parse
+            return { answer: JSON.stringify({ error: "Falha no processamento da IA", next_step: "Salvar relato bruto" }) };
         }
     },
 

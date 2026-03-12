@@ -3,10 +3,11 @@ import Order, { OrderAction, IsButtonsClicked } from "../../../types/order.type"
 import { 
     shippingOrderWhatsappUrl, 
     customerOrderWhatsappUrl, 
-    customerReviewsWhatsappUrl,
+    customerReviewsWhatsappUrl, 
     assistanceCustomerWhatsappUrl,
     sendDirectShippingMessage,
-    sendDirectCustomerMessage
+    sendDirectCustomerMessage,
+    sendDirectAssistanceMessage
 } from "../../../utils/whatsapp";
 
 export const actionsMap: Record<OrderAction, (order: Order) => void> = {
@@ -28,9 +29,7 @@ export const actionsMap: Record<OrderAction, (order: Order) => void> = {
         sendDirectCustomerMessage(order);
     },
     'SEND_ASSISTANCE_CUSTOMER': (order) => {
-        // We could also implement direct assistance message if needed, 
-        // but for now let's stick to the ones requested.
-        window.open(assistanceCustomerWhatsappUrl(order), "_blank");
+        sendDirectAssistanceMessage(order);
     },
     'SEND_CUSTOMER_REVIEWS': (order) => {
         window.open(customerReviewsWhatsappUrl(order), "_blank");

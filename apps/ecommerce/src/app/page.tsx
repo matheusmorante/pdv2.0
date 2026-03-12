@@ -52,14 +52,12 @@ export default async function Home() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-200/60 backdrop-blur-md">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl italic group-hover:scale-105 transition-transform shadow-md shadow-blue-500/20">
-              M
-            </div>
-            <div>
-              <h1 className="font-bold text-xl tracking-tight leading-none">Móveis Morante</h1>
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Design & Conforto</p>
-            </div>
+          <Link href="/" className="flex items-center gap-3">
+            <img 
+              src="/logo.png" 
+              alt="Móveis Morante Logo" 
+              className="h-12 w-auto object-contain"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -162,7 +160,7 @@ export default async function Home() {
                       <img
                         src={product.main_image_url}
                         alt={product.name}
-                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-neutral-300 gap-3 group-hover:scale-105 transition-transform duration-500">
@@ -171,20 +169,29 @@ export default async function Home() {
                       </div>
                     )}
 
-                    {product.promotional_price && (
-                       <div className="absolute top-4 left-4 bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
-                         Oferta
-                       </div>
-                    )}
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                       {product.name.toUpperCase().includes('100% MDF') && (
+                          <div className="bg-neutral-900 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
+                            100% MDF
+                          </div>
+                       )}
+                       {product.promotional_price && (
+                          <div className="bg-emerald-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg">
+                            Oferta
+                          </div>
+                       )}
+                    </div>
                   </div>
 
                   {/* Content Container */}
                   <div className="p-6 flex flex-col flex-1 justify-between gap-4">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-2">
-                        {product.sku ? `REF: ${product.sku}` : 'Cód. não info.'}
-                      </p>
-                      <h4 className="font-bold text-neutral-900 leading-tight line-clamp-2" title={product.name}>
+                      <div className="flex items-center gap-1.5 mb-3">
+                         <div className="w-3 h-3 rounded-full bg-[#D2B48C] border border-neutral-200" title="Amadeirado"></div>
+                         <div className="w-3 h-3 rounded-full bg-[#F5F5F5] border border-neutral-200" title="Off White"></div>
+                         <div className="w-3 h-3 rounded-full bg-[#4A4A4A] border border-neutral-200" title="Cinza"></div>
+                      </div>
+                      <h4 className="font-bold text-neutral-900 leading-tight text-sm line-clamp-2 min-h-[2.5rem]" title={product.name}>
                         {product.name}
                       </h4>
                     </div>
