@@ -13,8 +13,9 @@ import AssistanceOrderModal from "./pages/App/SalesOrder/AssistanceOrderModal";
 import { toast } from "react-toastify";
 import { crmIntelligenceService } from "./pages/utils/crmIntelligenceService";
 import { useEffect } from "react";
+import { redeConciliationService } from "./pages/services/redeConciliationService";
 
-type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
+type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | 'finance' | null;
 
 export default function AppLayout() {
   const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
@@ -46,6 +47,18 @@ export default function AppLayout() {
       window.removeEventListener('OPEN_ASSISTANCE_MODAL', handleOpenAssistance);
       window.removeEventListener('REGISTER_CUSTOMER_DESIRE', handleRegisterDesire);
     };
+  }, []);
+
+  useEffect(() => {
+    // Polling de transações Rede a cada 30 segundos
+    const syncInterval = setInterval(() => {
+      redeConciliationService.syncPendingTransactions();
+    }, 30000);
+
+    // Primeira execução imediata
+    redeConciliationService.syncPendingTransactions();
+
+    return () => clearInterval(syncInterval);
   }, []);
 
   return (
@@ -130,10 +143,16 @@ export default function AppLayout() {
                 </Link>
 
                 {isAdmin && (
-                  <Link to="/settings" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
-                    <i className="bi bi-gear-fill text-lg"></i>
-                    Configurações
-                  </Link>
+                  <>
+                    <Link to="/settings" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                      <i className="bi bi-gear-fill text-lg"></i>
+                      Configurações Geral
+                    </Link>
+                    <Link to="/finance/settings" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                      <i className="bi bi-bank2 text-lg"></i>
+                      Financeiro & Rede
+                    </Link>
+                  </>
                 )}
 
                 <div className="h-px bg-slate-50 dark:bg-slate-800 my-2 mx-2"></div>

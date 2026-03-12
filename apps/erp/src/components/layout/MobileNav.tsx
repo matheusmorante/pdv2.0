@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
+type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | 'finance' | null;
 
 interface MobileNavProps {
     isOpen: boolean;
@@ -120,6 +120,25 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                         )}
                     </div>
 
+
+                    {/* Financeiro */}
+                    <div className="flex flex-col">
+                        <button onClick={() => toggle('finance')} className={menuBtnClass(activeMenu === 'finance')}>
+                            <div className="flex items-center gap-3">
+                                <i className="bi bi-wallet2 text-lg"></i>
+                                Financeiro
+                            </div>
+                            <i className={`bi bi-chevron-down transition-transform ${activeMenu === 'finance' ? 'rotate-180' : ''}`}></i>
+                        </button>
+                        {activeMenu === 'finance' && (
+                            <div className="flex flex-col gap-1 pl-11 pr-4 py-2">
+                                <Link to="/finance/dashboard" onClick={onClose} className={mobileSubLinkClass}>Gestão de Caixa</Link>
+                                <Link to="/finance/payables" onClick={onClose} className={mobileSubLinkClass}>Contas a Pagar</Link>
+                                <Link to="/finance/receivables" onClick={onClose} className={mobileSubLinkClass}>Contas a Receber</Link>
+                                <Link to="/finance/transactions" onClick={onClose} className={mobileSubLinkClass}>Movimentações (Extrato)</Link>
+                            </div>
+                        )}
+                    </div>
 
                     <Link to="/reports" onClick={onClose} className={mobileLinkClass}>
                         <i className="bi bi-bar-chart-fill text-lg"></i>

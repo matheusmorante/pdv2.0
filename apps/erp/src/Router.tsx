@@ -27,6 +27,11 @@ import OrderRouteMap from './pages/App/SalesOrder/OrderRouteMap';
 import AttendanceDashboard from './pages/App/Attendance/Dashboard';
 import CustomerDesiresPage from './pages/App/Customers/CustomerDesiresPage';
 import WhatsAppMarketplace from './pages/App/Products/WhatsAppMarketplace';
+import FinanceDashboard from './pages/App/Finance/Dashboard';
+import Payables from './pages/App/Finance/Payables';
+import Receivables from './pages/App/Finance/Receivables';
+import Transactions from './pages/App/Finance/Transactions';
+import FinanceSettings from './pages/App/Finance/Settings';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading, isPending } = useAuth();
@@ -105,6 +110,13 @@ function Router() {
             <Route path='/registrations/employees' element={<Employees />} />
             <Route path='/users' element={<AdminRoute><UsersManagementPage /></AdminRoute>} />
             <Route path='/profile' element={<ProfilePage />} />
+
+            {/* Módulo Financeiro */}
+            <Route path='/finance/dashboard' element={<AdminRoute><FinanceDashboard /></AdminRoute>} />
+            <Route path='/finance/payables' element={<AdminRoute><Payables /></AdminRoute>} />
+            <Route path='/finance/receivables' element={<AdminRoute><Receivables /></AdminRoute>} />
+            <Route path='/finance/transactions' element={<AdminRoute><Transactions /></AdminRoute>} />
+            <Route path='/finance/settings' element={<AdminRoute><FinanceSettings /></AdminRoute>} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { formatToBRDate, formatCurrency } from "../../utils/formatters";
 import { PatternFormat as PatternFormatBase } from "react-number-format";
 const PatternFormat = PatternFormatBase as any;
@@ -76,15 +76,38 @@ const AssistanceOrderModal = ({ onClose, onSaveSuccess, order, initialData }: As
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     const isEditing = !!order;
+    const initialDataFetched = useRef(false);
 
     // Fetch all sale orders to allow linking
     useEffect(() => {
         const unsubscribe = subscribeToOrders((data) => {
-            setSaleOrders(data.filter(o => o.orderType !== 'assistance' && !o.deleted));
+            const filtered = data.filter(o => o.orderType !== 'assistance' && !o.deleted);
+            setSaleOrders(filtered);
             setLoadingOrders(false);
+
+            // Auto-link if matchedProductId is provided
+            if (initialData?.matchedProductId && !isEditing && !initialDataFetched.current && filtered.length > 0) {
+                const sourceOrder = filtered.find(o => o.items.some(item => item.productId === initialData.matchedProductId));
+                if (sourceOrder) {
+                    setLinkedOrderId(sourceOrder.id || "");
+                    setIsLinked(true);
+                    
+                    const item = sourceOrder.items.find(i => i.productId === initialData.matchedProductId);
+                    if (item) {
+                        setSelectedAssistanceItems([{
+                            id: Math.random().toString(36).substr(2, 9),
+                            description: item.description,
+                            quantity: 1,
+                            originalOrderId: sourceOrder.id || ""
+                        }]);
+                    }
+                    initialDataFetched.current = true;
+                    toast.info(`Vínculo automático: Pedido #${sourceOrder.id} detectado.`);
+                }
+            }
         });
         return () => unsubscribe();
-    }, []);
+    }, [initialData, isEditing]);
 
     const currentLinkedOrder = useMemo(() =>
         saleOrders.find(o => o.id === linkedOrderId),

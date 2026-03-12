@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | null;
+type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | 'finance' | null;
 
 interface DesktopNavProps {
     activeMenu: MenuKey;
@@ -109,6 +109,27 @@ const DesktopNav = ({ activeMenu, setActiveMenu }: DesktopNavProps) => {
                 )}
             </div>
 
+
+            {/* Financeiro */}
+            <div
+                className="relative h-full flex items-center"
+                onMouseEnter={() => setActiveMenu('finance')}
+                onMouseLeave={() => setActiveMenu(null)}
+            >
+                <button onClick={() => toggle('finance')} className={menuBtnClass(activeMenu === 'finance')}>
+                    <i className="bi bi-wallet2"></i>
+                    Financeiro
+                    <i className={chevronClass(activeMenu === 'finance')}></i>
+                </button>
+                {activeMenu === 'finance' && (
+                    <div className={dropdownClass}>
+                        <Link to="/finance/dashboard" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Gestão de Caixa</Link>
+                        <Link to="/finance/payables" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Contas a Pagar</Link>
+                        <Link to="/finance/receivables" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Contas a Receber</Link>
+                        <Link to="/finance/transactions" onClick={() => setActiveMenu(null)} className={dropdownItemClass}>Movimentações (Extrato)</Link>
+                    </div>
+                )}
+            </div>
 
             <Link to="/reports" className={navLinkClass}>
                 <i className="bi bi-bar-chart-fill"></i>

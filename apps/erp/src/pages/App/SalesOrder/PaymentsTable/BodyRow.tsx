@@ -6,6 +6,7 @@ import CurrencyOrPercentInput from '../../../../components/CurrencyOrPercentInpu
 import CurrencyDisplay from '../../../../components/CurrencyDisplay';
 import { calcPaymentTotalValue } from '../../../utils/calculations';
 import { useState } from 'react';
+import { PixPaymentModal } from './PixPaymentModal';
 
 interface Props {
     payment: Payment,
@@ -19,6 +20,7 @@ interface Props {
 
 const BodyRow = ({ payment, summary, onChange, onToggleFeeType, onDelete, idx }: Props) => {
     const [newStatus, setNewStatus] = useState(payment.status);
+    const [isPixModalOpen, setIsPixModalOpen] = useState(false);
 
     const onBlur = () => {
         if (payment.status === newStatus) return;
@@ -49,6 +51,29 @@ const BodyRow = ({ payment, summary, onChange, onToggleFeeType, onDelete, idx }:
                         ))
                     }
                 </select>
+
+                {payment.method === 'PIX' && (
+                    <div className="mt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsPixModalOpen(true)}
+                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all transform active:scale-95"
+                        >
+                            <i className="bi bi-qr-code text-sm"></i>
+                            Gerar QR Code
+                        </button>
+
+                        <PixPaymentModal
+                            isOpen={isPixModalOpen}
+                            onClose={() => setIsPixModalOpen(false)}
+                            amount={payment.amount}
+                            onSuccess={(tx) => {
+                                onChange(idx, 'status', `PAGO [TID: ${tx.tid}]`);
+                                setIsPixModalOpen(false);
+                            }}
+                        />
+                    </div>
+                )}
             </td>
             <td className="px-4 py-2">
                 <div className="flex items-center gap-1 group/input">
