@@ -116,16 +116,14 @@ export const saveOrder = async (order: Order): Promise<string> => {
  */
 async function handleStockAndBusinessRules(orderId: string, order: Order): Promise<Order> {
     const settings = getSettings();
-    const { businessRules } = settings;
+    const { businessRules, inventoryAutomation } = settings;
     const orderToUpdate = { ...order };
 
     // Don't process assistance orders or orders already processed
     if (order.orderType !== 'sale' || order.stockProcessed) return orderToUpdate;
 
-    // Determine if stock should be subtracted:
-    // - If it's NOT a draft
-    // - OR if autoReserveStock is enabled
-    const shouldSubtractStock = order.status !== 'draft' || businessRules.autoReserveStock;
+    // Determine if stock should be subtracted based on new automation settings
+    const shouldSubtractStock = order.status && inventoryAutomation?.autoWithdrawalOnStatus?.includes(order.status);
 
     if (shouldSubtractStock && order.items) {
         // Rule: Negative Stock Check (if disabled)
@@ -162,7 +160,7 @@ async function handleStockAndBusinessRules(orderId: string, order: Order): Promi
                             quantity: comboItem.quantity * item.quantity,
                             date: new Date().toISOString(),
                             label: 'Venda (Combo)',
-                            observation: `Parte do Combo #${item.description} no Pedido #${orderId}`
+                            observation: `Pedido #${orderId}`
                         }, currentPartStock);
                     }
                 }
@@ -231,17 +229,63 @@ export const updateOrder = async (
 
         if (error) throw error;
 
-        // Check if we need to process stock NOW (transition from draft or settings change)
-        if (!merged.stockProcessed) {
-            const updatedOrder = await handleStockAndBusinessRules(id, merged);
-            if (updatedOrder.stockProcessed) {
-                // Secondary update to mark stock as processed to avoid double-dipping
+        // Log status change
+        const oldStatus = currentOrder?.status;
+        const newStatus = orderToUpdate.status;
+
+        if (newStatus && oldStatus !== newStatus) {
+            await supabase.from('order_status_history').insert([{
+                order_id: id,
+                old_status: oldStatus || null,
+                new_status: newStatus,
+                changed_by: (orderToUpdate as any).seller || (merged as any).seller || 'system'
+            }]);
+
+            const { inventoryAutomation } = getSettings();
+
+            // Auto-withdrawal: new status triggers stock deduction and stock wasn't processed yet
+            if (!merged.stockProcessed && inventoryAutomation?.autoWithdrawalOnStatus?.includes(newStatus)) {
+                const updatedOrder = await handleStockAndBusinessRules(id, { ...merged, status: newStatus });
+                if (updatedOrder.stockProcessed) {
+                    await supabase
+                        .from(TABLE_NAME)
+                        .update({ order_data: { ...merged, status: newStatus, stockProcessed: true }, updated_at: new Date().toISOString() })
+                        .eq('id', id);
+                }
+            }
+
+            // Auto-reversal: order is being cancelled and stock was already processed
+            if (newStatus === 'cancelled' && merged.stockProcessed && inventoryAutomation?.autoReverseOnCancel) {
+                const items = merged.items || [];
+                for (const item of items) {
+                    if (item.productId) {
+                        const { data: p } = await supabase.from('products').select('stock').eq('id', item.productId).single();
+                        const currentStock = p?.stock || 0;
+                        await saveInventoryMove({
+                            productId: item.productId,
+                            variationId: item.variationId,
+                            productDescription: item.description,
+                            type: 'entry', // reversal = re-entry
+                            quantity: item.quantity,
+                            date: new Date().toISOString(),
+                            label: 'Estorno',
+                            observation: `Cancelamento do Pedido #${id}`
+                        }, currentStock);
+                    }
+                }
+                // Mark as unprocessed after reversal
                 await supabase
                     .from(TABLE_NAME)
-                    .update({
-                        order_data: { ...merged, stockProcessed: true },
-                        updated_at: new Date().toISOString()
-                    })
+                    .update({ order_data: { ...merged, status: newStatus, stockProcessed: false }, updated_at: new Date().toISOString() })
+                    .eq('id', id);
+            }
+        } else if (!merged.stockProcessed) {
+            // No status change but stock may still need processing (e.g. status was already 'scheduled' on save)
+            const updatedOrder = await handleStockAndBusinessRules(id, merged);
+            if (updatedOrder.stockProcessed) {
+                await supabase
+                    .from(TABLE_NAME)
+                    .update({ order_data: { ...merged, stockProcessed: true }, updated_at: new Date().toISOString() })
                     .eq('id', id);
             }
         }

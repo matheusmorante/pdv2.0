@@ -9,6 +9,7 @@ export type InventoryMove = {
     quantity: number;
     date: string;
     label?: string; // e.g., 'Venda', 'Compra', 'Ajuste Manual'
+    unitCost?: number;
     observation?: string;
     createdAt?: string;
 };

@@ -17,6 +17,7 @@ export type Purchase = {
     observation?: string;
     status: 'pending' | 'completed' | 'cancelled';
     createdAt?: string;
+    stockProcessed?: boolean;
 };
 
 export default Purchase;

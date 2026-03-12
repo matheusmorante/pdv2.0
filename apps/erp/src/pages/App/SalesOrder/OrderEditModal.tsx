@@ -4,6 +4,8 @@ import { useSalesOrderForm } from "./useSalesOrderForm";
 import Order from "../../types/order.type";
 import { updateOrder } from "../../utils/orderHistoryService";
 import { toast } from "react-toastify";
+import OrderStatusTimeline from "./OrderStatusTimeline";
+import { useState } from "react";
 
 interface OrderEditModalProps {
     order: Order;
@@ -13,6 +15,7 @@ interface OrderEditModalProps {
 
 const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) => {
     const form = useSalesOrderForm();
+    const [view, setView] = useState<'form' | 'timeline'>('form');
 
     // Load order data into form on mount
     useEffect(() => {
@@ -72,23 +75,51 @@ const OrderEditModal = ({ order, onClose, onSaveSuccess }: OrderEditModalProps) 
                             </p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 rounded-2xl transition-all shadow-sm border border-slate-100 dark:border-slate-800 active:scale-95"
-                    >
-                        <i className="bi bi-x-lg text-xl" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl mr-4">
+                            <button
+                                onClick={() => setView('form')}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    view === 'form' 
+                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                                    : 'text-slate-400 hover:text-slate-600'
+                                }`}
+                            >
+                                Dados
+                            </button>
+                            <button
+                                onClick={() => setView('timeline')}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    view === 'timeline' 
+                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                                    : 'text-slate-400 hover:text-slate-600'
+                                }`}
+                            >
+                                Linha do Tempo
+                            </button>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 rounded-2xl transition-all shadow-sm border border-slate-100 dark:border-slate-800 active:scale-95"
+                        >
+                            <i className="bi bi-x-lg text-xl" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Modal Content - Internal Scroll handled by PdvFormSection */}
-                <div className="flex-1 overflow-hidden bg-white dark:bg-slate-900">
-                    <SalesOrderFormSection form={{
-                        ...form,
-                        actions: {
-                            ...form.actions,
-                            handleSaveOrder: handleUpdate
-                        }
-                    }} />
+                <div className="flex-1 overflow-auto bg-white dark:bg-slate-900 custom-scrollbar">
+                    {view === 'form' ? (
+                        <SalesOrderFormSection form={{
+                            ...form,
+                            actions: {
+                                ...form.actions,
+                                handleSaveOrder: handleUpdate
+                            }
+                        }} />
+                    ) : (
+                        <OrderStatusTimeline orderId={order.id!} />
+                    )}
                 </div>
             </div>
 

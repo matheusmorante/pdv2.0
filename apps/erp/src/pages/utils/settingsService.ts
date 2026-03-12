@@ -111,6 +111,11 @@ export interface AppSettings {
         allowNegativeStock: boolean;
         autoReserveStock: boolean;
     };
+    inventoryAutomation: {
+        autoWithdrawalOnStatus: string[]; // Statuses that trigger stock withdrawal (e.g., 'scheduled', 'fulfilled')
+        autoEntryOnPurchaseStatus: string[]; // Statuses that trigger stock entry (e.g., 'completed')
+        autoReverseOnCancel: boolean; // Auto-reverse stock if sales order is cancelled
+    };
     requiredFields: {
         customer: {
             cpfCnpj: boolean;
@@ -134,6 +139,23 @@ export interface AppSettings {
             seller: boolean;
             customer: boolean;
         };
+    };
+    
+    // Novas Configurações Globais
+    securityOptions: {
+        sessionTimeoutMinutes: number;
+        requireManagerForDeletion: boolean;
+    };
+    financialOptions: {
+        currencySymbol: string;
+        decimalSeparator: string;
+        thousandSeparator: string;
+        autoRoundPrices: boolean;
+    };
+    operatingHours: {
+        start: string;
+        end: string;
+        timezone: string;
     };
 }
 
@@ -374,6 +396,11 @@ RESPOSTA NO FORMATO JSON:
         allowNegativeStock: false,
         autoReserveStock: true
     },
+    inventoryAutomation: {
+        autoWithdrawalOnStatus: ['scheduled', 'fulfilled'],
+        autoEntryOnPurchaseStatus: ['completed'],
+        autoReverseOnCancel: true
+    },
     requiredFields: {
         customer: {
             cpfCnpj: false,
@@ -397,6 +424,21 @@ RESPOSTA NO FORMATO JSON:
             seller: true,
             customer: false,
         }
+    },
+    securityOptions: {
+        sessionTimeoutMinutes: 120,
+        requireManagerForDeletion: true,
+    },
+    financialOptions: {
+        currencySymbol: 'R$',
+        decimalSeparator: ',',
+        thousandSeparator: '.',
+        autoRoundPrices: false,
+    },
+    operatingHours: {
+        start: '08:00',
+        end: '18:00',
+        timezone: 'America/Sao_Paulo',
     }
 });
 

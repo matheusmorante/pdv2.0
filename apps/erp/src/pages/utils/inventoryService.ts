@@ -98,6 +98,7 @@ const mapToDB = (move: InventoryMove) => ({
     quantity: move.quantity,
     date: move.date,
     label: move.label,
+    unit_cost: move.unitCost,
     observation: move.observation,
     created_at: move.createdAt || new Date().toISOString()
 });
@@ -111,6 +112,7 @@ const mapFromDB = (data: any): InventoryMove => ({
     quantity: Number(data.quantity),
     date: data.date,
     label: data.label,
+    unitCost: data.unit_cost ? Number(data.unit_cost) : undefined,
     observation: data.observation,
     createdAt: data.created_at
 });
