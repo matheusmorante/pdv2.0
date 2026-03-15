@@ -193,6 +193,24 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                         <span className="hidden sm:inline">Buscar</span>
                     </button>
 
+                    {/* Consumidor Final */}
+                    <button type="button"
+                        onClick={() => {
+                            setCustomerData({
+                                fullName: 'Consumidor Final',
+                                phone: '',
+                                noPhone: true,
+                                fullAddress: EMPTY_ADDRESS
+                            });
+                            setSearchTerm('Consumidor Final');
+                            setIsDropdownOpen(false);
+                        }}
+                        title="Consumidor Final / Sem informações do cliente"
+                        className="shrink-0 flex items-center gap-2 px-4 py-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-2xl transition-all active:scale-95 font-black text-[10px] uppercase tracking-widest border border-slate-300 dark:border-slate-700">
+                        <i className="bi bi-person-x-fill text-sm" />
+                        <span className="hidden lg:inline">Consumidor Final / Sem Inf.</span>
+                    </button>
+
                     {/* New customer */}
                     <button type="button"
                         onClick={() => { setIsDropdownOpen(false); setIsNewCustomerModalOpen(true); }}
@@ -266,13 +284,23 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                         </div>
 
                         <div className="flex-1 relative group/field">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 block">
-                                Telefone / Celular <span className="text-red-500">*</span>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 ml-1 flex items-center justify-between pr-2">
+                                <span>
+                                    Telefone / Celular {!customerData.noPhone && <span className="text-red-500">*</span>}
+                                    {customerData.noPhone && <span className="ml-1 opacity-60">(Opcional)</span>}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setCustomerData(prev => ({ ...prev, noPhone: !prev.noPhone }))}
+                                    className={`text-[9px] uppercase font-black px-2 py-0.5 rounded-md transition-all ${customerData.noPhone ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}
+                                >
+                                    {customerData.noPhone ? 'S/ Telefone' : 'C/ Telefone'}
+                                </button>
                             </label>
                             <div className="flex gap-2">
                                 <PatternFormat
                                     format="(##) #####-####"
-                                    className={field(isPhoneError)}
+                                    className={field(isPhoneError && !customerData.noPhone)}
                                     placeholder="(00) 00000-0000"
                                     value={customerData.phone}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}

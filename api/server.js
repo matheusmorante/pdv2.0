@@ -23,7 +23,7 @@ function addLog(type, message, data = null) {
 }
 
 // Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDSieSZV89ERk-V5L5M1RWMDsrqN-emt7Q");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 app.get('/', (req, res) => res.send("AI Server is running (v5 - Gemini Stable)"));

@@ -46,12 +46,18 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.width !== undefined) data.width = product.width;
     if (product.height !== undefined) data.height = product.height;
     if (product.depth !== undefined) data.depth = product.depth;
+    if (product.weight !== undefined) data.weight = product.weight;
+    if (product.pkgWidth !== undefined) data.pkg_width = product.pkgWidth;
+    if (product.pkgHeight !== undefined) data.pkg_height = product.pkgHeight;
+    if (product.pkgDepth !== undefined) data.pkg_depth = product.pkgDepth;
     if (product.extraDimensions !== undefined) data.extra_dimensions = product.extraDimensions;
     if (product.line !== undefined) data.line = product.line;
     if (product.mainDifferential !== undefined) data.main_differential = product.mainDifferential;
     if (product.material !== undefined) data.material = product.material;
     if (product.colors !== undefined) data.colors = product.colors;
     if (product.notIncluded !== undefined) data.not_included = product.notIncluded;
+    if (product.mainSupplierId !== undefined) data.main_supplier_id = product.mainSupplierId;
+    if (product.supplierRef !== undefined) data.supplier_ref = product.supplierRef;
 
     return data;
 };
@@ -98,12 +104,18 @@ const mapFromDB = (data: any): Product => {
         width: data.width,
         height: data.height,
         depth: data.depth,
+        weight: data.weight,
+        pkgWidth: data.pkg_width,
+        pkgHeight: data.pkg_height,
+        pkgDepth: data.pkg_depth,
         extraDimensions: data.extra_dimensions || [],
         line: data.line,
         mainDifferential: data.main_differential,
         material: data.material,
         colors: data.colors,
-        notIncluded: data.not_included
+        notIncluded: data.not_included,
+        mainSupplierId: data.main_supplier_id,
+        supplierRef: data.supplier_ref
     };
 };
 

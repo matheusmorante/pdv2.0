@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 import { crmIntelligenceService } from "./pages/utils/crmIntelligenceService";
 import { useEffect } from "react";
 import { redeConciliationService } from '@/pages/services/redeConciliationService';
-import logoMorante from "./assets/logo_morante.png";
+import logoMorante from "./assets/logo.jpg";
 
 export type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | 'finance' | 'design' | null;
 
@@ -76,7 +76,7 @@ export default function AppLayout() {
       />
 
       {/* Header */}
-      <header className="w-full bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-4 lg:px-8 h-16 lg:h-20 flex items-center justify-between sticky top-0 z-50 shadow-sm transition-colors duration-300">
+      <header className="w-full bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-4 lg:px-8 h-12 lg:h-14 flex items-center justify-between sticky top-0 z-50 shadow-sm transition-colors duration-300">
         <div className="flex items-center gap-4 lg:gap-8 h-full">
           <button
             className="lg:hidden p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
@@ -86,10 +86,10 @@ export default function AppLayout() {
           </button>
 
           <Link to="/" className="flex items-center gap-2 lg:gap-4 flex-shrink-0">
-            <div className="w-8 h-8 lg:w-14 lg:h-14 bg-white rounded-lg lg:rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden flex items-center justify-center">
-              <img src={logoMorante} alt="ERP Móveis Morante" className="w-full h-full object-contain p-1" />
+            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-white rounded-full shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden flex items-center justify-center">
+              <img src={logoMorante} alt="ERP Móveis Morante" className="w-full h-full object-cover" />
             </div>
-            <h3 className="text-2xl lg:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight block uppercase italic whitespace-nowrap">ERP <span className="text-blue-600">Móveis Morante</span></h3>
+            <h3 className="text-sm lg:text-base font-black text-slate-800 dark:text-slate-100 tracking-tight block uppercase italic whitespace-nowrap">ERP <span className="text-blue-600">Móveis Morante</span></h3>
           </Link>
 
           <DesktopNav activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
@@ -99,35 +99,36 @@ export default function AppLayout() {
           <NotificationBell />
           <button
             onClick={toggleTheme}
-            className="p-2 xl:p-3 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-yellow-400 transition-all rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-yellow-400 transition-all rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
             title={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
           >
             {theme === 'light' ? (
-              <i className="bi bi-moon-stars-fill text-lg xl:text-xl"></i>
+              <i className="bi bi-moon-stars-fill text-base"></i>
             ) : (
-              <i className="bi bi-sun-fill text-lg xl:text-xl"></i>
+              <i className="bi bi-sun-fill text-base"></i>
             )}
           </button>
 
           {/* Dropdown de Perfil */}
           <div className="relative group">
-            <button className="flex items-center gap-3 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-              <div className="w-8 h-8 xl:w-10 xl:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center">
+            <button className="flex items-center gap-2 p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+              <div className="w-7 h-7 lg:w-8 lg:h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center">
+
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-blue-600 dark:text-blue-400 font-black text-sm uppercase">
+                  <span className="text-blue-600 dark:text-blue-400 font-black text-xs uppercase">
                     {((profile?.full_name || user?.email || 'U') as any)[0]}
                   </span>
                 )}
               </div>
-              <div className="hidden xl:block text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Bem-vindo</p>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
+              <div className="hidden lg:block text-left">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none mb-0.5">Bem-vindo</p>
+                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
                   {((profile?.full_name || 'Usuário') as any).split(' ')[0]}
                 </p>
               </div>
-              <i className="bi bi-chevron-down text-[10px] text-slate-400 group-hover:rotate-180 transition-transform hidden xl:block"></i>
+              <i className="bi bi-chevron-down text-[10px] text-slate-400 group-hover:rotate-180 transition-transform hidden lg:block"></i>
             </button>
 
             {/* Menu Dropdown - Com ponte de hover invisível */}

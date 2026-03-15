@@ -28,3 +28,27 @@ export const compressImage = async (file: File, options?: { maxMB?: number, maxW
         throw err;
     }
 };
+
+/**
+ * Returns the compressed file directly as a File object (ideal for uploads)
+ */
+export const compressImageToFile = async (file: File, options?: { maxMB?: number, maxWidth?: number }): Promise<File> => {
+    try {
+        const imageCompression = (await import('browser-image-compression')).default;
+        
+        const compressionOptions = {
+            maxSizeMB: options?.maxMB || 0.3,
+            maxWidthOrHeight: options?.maxWidth || 1920,
+            useWebWorker: true,
+            initialQuality: 0.8,
+        };
+
+        const compressedFile = await imageCompression(file, compressionOptions);
+        // Ensure its a File object with original name and type but compressed content
+        return new File([compressedFile], file.name, { type: compressedFile.type });
+    } catch (err) {
+        console.error("Erro ao comprimir imagem para arquivo:", err);
+        toast.error("Falha ao processar imagem.");
+        throw err;
+    }
+};

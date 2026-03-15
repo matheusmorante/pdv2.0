@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Person from "../../../types/person.type";
-import { savePerson, isPersonRegisteredAs } from '@/pages/utils/personService';
+import { savePerson, getPersonByIdentifiers } from '@/pages/utils/personService';
 import { toast } from "react-toastify";
 import { capitalizePerson, toTitleCase } from "../../../utils/formatters";
 import SmartInput from "../../../../components/SmartInput";
@@ -148,15 +148,45 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
             return;
         }
 
-        if (collectionName === 'employees' && !person) {
-            const isRegistered = await isPersonRegisteredAs('customers', {
-                cpfCnpj: formData.cpfCnpj,
-                email: formData.email,
-                phone: formData.phone
+        // Check for duplicates and cross-registration rules according to:
+        // "Clientes não podem ser fornecedores. Fornecedores podem ser clientes."
+        if (!person) { 
+            const existing = await getPersonByIdentifiers({
+                cpfCnpj: formData.cpfCnpj || "",
+                email: formData.email || "",
+                phone: formData.phone || ""
             });
-            if (isRegistered) {
-                toast.error("Clientes registrados não podem ser cadastrados como funcionários.");
-                return;
+
+            if (existing) {
+                if (collectionName === 'suppliers') {
+                    if (existing.type === 'customers') {
+                        toast.error("Este CPF/CNPJ já existe como CLIENTE. Clientes não podem ser cadastrados como fornecedores.");
+                        return;
+                    }
+                    if (existing.type === 'suppliers') {
+                        toast.error("Este fornecedor já está cadastrado.");
+                        return;
+                    }
+                } else if (collectionName === 'customers') {
+                    if (existing.type === 'suppliers') {
+                        toast.info("Este registro já existe como FORNECEDOR e já está disponível na lista de clientes.");
+                        onClose(); // Prevent creation but close modal as if successful since they are already available
+                        return;
+                    }
+                    if (existing.type === 'customers') {
+                        toast.error("Este cliente já está cadastrado.");
+                        return;
+                    }
+                } else if (collectionName === 'employees') {
+                    if (existing.type === 'customers') {
+                        toast.error("Clientes registrados não podem ser cadastrados como funcionários.");
+                        return;
+                    }
+                    if (existing.type === 'employees') {
+                        toast.error("Este funcionário já está cadastrado.");
+                        return;
+                    }
+                }
             }
         }
 

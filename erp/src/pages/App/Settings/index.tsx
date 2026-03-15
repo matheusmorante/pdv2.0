@@ -23,6 +23,7 @@ import WhatsAppTemplatesSection from './components/WhatsAppTemplatesSection';
 import BusinessRulesSection from './components/BusinessRulesSection';
 import ReceiptConfigSection from './components/ReceiptConfigSection';
 import ValidationConfigSection from './components/ValidationConfigSection';
+import ImportMappingSection from './components/ImportMappingSection';
 import SaveButton from './components/SaveButton';
 
 const categories: any[] = [
@@ -41,6 +42,7 @@ const categories: any[] = [
     { id: 'regras', label: 'Regras de Negócio', icon: 'bi-gear-wide-connected', group: 'system', keywords: ['regra', 'estoque', 'negativo', 'reserva', 'venda'] },
     { id: 'obrigatorios', label: 'Campos Obrigatórios', icon: 'bi-shield-check', group: 'system', keywords: ['obrigatório', 'bloqueio', 'venda', 'cadastro', 'cpf', 'cnpj', 'telefone', 'rg', 'endereço', 'estoque', 'email', 'cargo'] },
     { id: 'recibo', label: 'Configuração de Recibo', icon: 'bi-printer-fill', group: 'system', keywords: ['recibo', 'impressão', 'rodapé', 'vendedor', 'garantia'] },
+    { id: 'importMapping', label: 'Conciliação de Colunas', icon: 'bi-shuffle', group: 'system', keywords: ['importação', 'mapeamento', 'csv', 'coluna', 'bling', 'conciliação'] },
 ];
 
 /**
@@ -153,7 +155,7 @@ export default function Settings(): any {
                                         format="##.###.###/####-##"
                                         mask="_"
                                         value={settings.companyCnpj || ''}
-                                        onValueChange={(values) => handleChange('companyCnpj', values.value || "")}
+                                        onValueChange={(values: any) => handleChange('companyCnpj', values.value || "")}
                                         className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 dark:text-slate-200 w-full transition-all font-medium"
                                     />
                                 </div>
@@ -170,7 +172,7 @@ export default function Settings(): any {
                                         format="(##) #####-####"
                                         mask="_"
                                         value={settings.companyPhone || ''}
-                                        onValueChange={(values) => handleChange('companyPhone', values.value || "")}
+                                        onValueChange={(values: any) => handleChange('companyPhone', values.value || "")}
                                         className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 dark:text-slate-200 w-full transition-all font-medium"
                                     />
                                     <button type="button"
@@ -242,6 +244,10 @@ export default function Settings(): any {
 
                     <SettingsSection id="recibo" title="Configuração de Recibo e Impressão" icon="bi-printer-fill" isVisible={isVisible('recibo')}>
                         <ReceiptConfigSection settings={settings} onChange={handleChange} />
+                    </SettingsSection>
+
+                    <SettingsSection id="importMapping" title="Conciliação de Colunas de Importação" icon="bi-shuffle" isVisible={isVisible('importMapping')}>
+                        <ImportMappingSection settings={settings} onChange={handleChange} />
                     </SettingsSection>
                 </div>
             </div>

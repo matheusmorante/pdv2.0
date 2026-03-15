@@ -7,7 +7,7 @@ import { saveInventoryMove } from '../../../../pages/utils/inventoryService';
 import { supabase } from '@/pages/utils/supabaseConfig';
 import LabelGrid from './LabelGrid';
 import { formatCurrency, slugify } from '../../../utils/formatters';
-import logoMorante from '../../../../assets/logo_morante.png';
+import logoMorante from '../../../../assets/logo.jpg';
 import labelMdf from '../../../../assets/label_mdf.png';
 
 export type LabelType = 'round' | 'rect';
@@ -30,6 +30,7 @@ export interface LabelConfig {
     sku: string;
     qrContent: string;
     customText: string;
+    imageScale: number;
 }
 
 const LabelPrinting: React.FC = () => {
@@ -44,7 +45,7 @@ const LabelPrinting: React.FC = () => {
 
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [selectedImage, setSelectedImage] = useState<string | null>(isDesignMode ? labelMdf : null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [stockInput, setStockInput] = useState<string>('');
     const [justificationInput, setJustificationInput] = useState<string>('Entrada via Etiquetas');
@@ -68,7 +69,8 @@ const LabelPrinting: React.FC = () => {
         price: 'R$ 0,00',
         sku: 'SKU-001',
         qrContent: 'https://moveismorante.com.br',
-        customText: 'Qualidade Garantida'
+        customText: 'Qualidade Garantida',
+        imageScale: 1
     });
 
     useEffect(() => {
@@ -147,6 +149,7 @@ const LabelPrinting: React.FC = () => {
                 newConfig.showSKU = false;
                 newConfig.showCustomText = false;
                 setSelectedImage(labelMdf);
+                newConfig.imageScale = 1;
                 break;
             case 'store_logo':
                 newConfig.type = 'round';
@@ -158,7 +161,7 @@ const LabelPrinting: React.FC = () => {
                 newConfig.showStoreName = false;
                 newConfig.showSKU = false;
                 newConfig.showCustomText = false;
-                setSelectedImage(null);
+                if (selectedImage === labelMdf) setSelectedImage(null);
                 break;
             case 'qr_product':
                 newConfig.type = 'rect';
@@ -170,6 +173,7 @@ const LabelPrinting: React.FC = () => {
                 newConfig.showStoreLogo = false;
                 newConfig.showStoreName = false;
                 newConfig.showCustomText = false;
+                if (selectedImage === labelMdf) setSelectedImage(null);
                 break;
             case 'price_only':
                 newConfig.type = 'rect';
@@ -181,6 +185,7 @@ const LabelPrinting: React.FC = () => {
                 newConfig.showStoreLogo = false;
                 newConfig.showStoreName = true;
                 newConfig.showCustomText = false;
+                if (selectedImage === labelMdf) setSelectedImage(null);
                 break;
             case 'custom':
                 newConfig.type = baseConfig.type === 'round' ? 'round' : 'rect';
@@ -192,6 +197,7 @@ const LabelPrinting: React.FC = () => {
                 newConfig.showStoreName = false;
                 newConfig.showSKU = false;
                 newConfig.showCustomText = false;
+                if (selectedImage === labelMdf) setSelectedImage(null);
                 break;
         }
         setConfig(newConfig);
@@ -495,6 +501,29 @@ const LabelPrinting: React.FC = () => {
                                     onChange={e => setConfig({...config, qrContent: e.target.value})}
                                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-[10px] font-mono"
                                 />
+                            </div>
+
+                            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Escala (Imagem ou Logo)</label>
+                                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                                        {Math.round((config.imageScale || 1) * 100)}%
+                                    </span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    min="0.5" 
+                                    max="5" 
+                                    step="0.1"
+                                    value={config.imageScale}
+                                    onChange={e => setConfig({...config, imageScale: parseFloat(e.target.value)})}
+                                    className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-600 mb-2"
+                                />
+                                <div className="flex justify-between text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <span>Menor</span>
+                                    <span>Padrão (100%)</span>
+                                    <span>Maior</span>
+                                </div>
                             </div>
 
                             <div className="space-y-6 pt-4 border-t border-slate-100 dark:border-slate-800">

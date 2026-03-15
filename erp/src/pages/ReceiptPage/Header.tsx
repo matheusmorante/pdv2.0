@@ -1,4 +1,4 @@
-import logo from '../../assets/logo.jpeg';
+import logo from '../../assets/logo.jpg';
 import { getSettings } from '@/pages/utils/settingsService';
 
 interface Props {
@@ -14,8 +14,8 @@ const Header = ({ seller }: Props) => {
 
     return (
         <header className='flex justify-between text-slate-800 transition-colors duration-300'>
-            <div>
-                <img src={logo} alt={`Logo ${companyName}`} className='h-[150px]' />
+            <div className="flex items-center justify-center">
+                <img src={logo} alt={`Logo ${companyName}`} className='w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-slate-100 shadow-xl object-cover' />
             </div>
             <div className='h-full flex flex-col items-end text-right'>
                 <p className="font-black text-xl mb-2">{companyName}</p>

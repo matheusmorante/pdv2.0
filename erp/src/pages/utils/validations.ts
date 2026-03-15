@@ -59,7 +59,7 @@ export const validateCustomerData = (customer: CustomerData): ValidationErrors =
         errors['customer_fullName'] = "Nome completo é obrigatório.";
     }
 
-    if (requiredFields.customer?.phone && (!customer.phone || !customer.phone.trim())) {
+    if (requiredFields.customer?.phone && !customer.noPhone && (!customer.phone || !customer.phone.trim())) {
         errors['customer_phone'] = "Telefone/Celular é obrigatório.";
     }
 

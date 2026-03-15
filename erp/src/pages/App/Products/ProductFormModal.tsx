@@ -5,7 +5,7 @@ import { saveProduct } from '@/pages/utils/productService';
 import { subscribeToPeople } from '@/pages/utils/personService';
 import { getSettings } from '@/pages/utils/settingsService';
 import { toast } from "react-toastify";
-import { compressImage } from '@/pages/utils/imageUtils';
+import { compressImage, compressImageToFile } from '@/pages/utils/imageUtils';
 import { uploadFile } from '@/pages/utils/storageService';
 import { aiService } from '@/pages/utils/aiService';
 import { supabase } from '@/pages/utils/supabaseConfig';
@@ -133,7 +133,7 @@ const VariationRow = React.memo(({ v, updateVariation, removeVariation, setFormD
 
 const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: ProductFormModalProps) => {
     const [activeTab, setActiveTab] = useState<'geral' | 'estoque' | 'variacoes' | 'ecommerce' | 'fiscal'>('geral');
-    const [activeEcommerceSubTab, setActiveEcommerceSubTab] = useState<'photos' | 'descriptions'>('photos');
+    const [activeEcommerceSubTab, setActiveEcommerceSubTab] = useState<'photos' | 'descriptions' | 'logistics'>('photos');
     const [loading, setLoading] = useState(false);
     const [isGeneratingCategory, setIsGeneratingCategory] = useState(false);
     const [isGeneratingComboName, setIsGeneratingComboName] = useState(false);
@@ -209,7 +209,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
         let final = formData.costPrice || 0;
         if (formData.ipiPercent) final += (formData.costPrice || 0) * (formData.ipiPercent / 100);
         if (formData.freightType === 'fixed' && formData.freightCost) final += formData.freightCost;
-        if (formData.freightType === 'percent' && formData.freightCost) final += (formData.costPrice || 0) * (formData.freightCost / 100);
+        if (formData.freightType === 'percentage' && formData.freightCost) final += (formData.costPrice || 0) * (formData.freightCost / 100);
         
         if (final !== formData.finalPurchasePrice) {
             setFormData(prev => ({ ...prev, finalPurchasePrice: final }));
@@ -255,8 +255,11 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
         setLoading(true);
         try {
             const uploadPromises = Array.from(files).map(async (file) => {
-                const compressed = await compressImage(file);
-                return uploadFile(compressed, 'products');
+                const compressed = await compressImageToFile(file as File);
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+                const path = `products/${fileName}`;
+                return uploadFile(compressed, path);
             });
 
             const urls = await Promise.all(uploadPromises);
@@ -372,6 +375,8 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             syncCostPrice: true,
             syncDescription: true,
             images: [],
+            active: true,
+            attributes: [],
             comboItems: []
         };
         setFormData(prev => ({ ...prev, variations: [...(prev.variations || []), newVar], hasVariations: true }));
@@ -419,6 +424,8 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                     syncCostPrice: true,
                     syncDescription: true,
                     images: [],
+                    active: true,
+                    attributes: [],
                     comboItems: []
                 };
             });

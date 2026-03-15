@@ -1,5 +1,5 @@
 import React from 'react';
-import Product, { CostCompositionItem } from '../../../../types/product.type';
+import Product from '../../../../types/product.type';
 import SmartInput from '../../../../../components/SmartInput';
 import { toast } from 'react-toastify';
 
@@ -65,7 +65,7 @@ const ProductInventoryTab: React.FC<ProductInventoryTabProps> = ({
                         >
                             <option value="none">Nenhum</option>
                             <option value="fixed">Valor Fixo</option>
-                            <option value="percent">Percentual (%)</option>
+                            <option value="percentage">Percentual (%)</option>
                         </select>
                     </div>
                 </div>

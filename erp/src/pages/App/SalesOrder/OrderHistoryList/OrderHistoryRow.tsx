@@ -16,7 +16,6 @@ interface OrderHistoryRowProps {
     onPermanentDelete: (id: string) => void;
     onAction: (actionKey: string, order: Order) => void;
     onStatusUpdate: (id: string, newStatus: Order['status']) => void;
-    onViewDetails: (order: Order) => void;
     visibilitySettings: VisibilitySettings;
     showTrash?: boolean;
     orderedColumnKeys?: string[];
@@ -32,7 +31,6 @@ const OrderHistoryRow = ({
     onPermanentDelete,
     onAction,
     onStatusUpdate,
-    onViewDetails,
     visibilitySettings,
     showTrash,
     orderedColumnKeys,

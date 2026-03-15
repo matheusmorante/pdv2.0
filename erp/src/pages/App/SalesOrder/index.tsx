@@ -5,14 +5,12 @@ import OrderEditModal from "./OrderEditModal";
 import NewSaleOrder from "./NewSaleOrder";
 import AssistanceOrderModal from "./AssistanceOrderModal";
 import NewOrderDropdown from "./NewOrderDropdown";
-import OrderDetailsModal from "../DeliverySchedule/OrderDetailsModal";
 import Order, { VisibilitySettings } from "../../types/order.type";
 import OrderFilters, { Filters } from "./OrderFilters";
 
 const SalesOrder = () => {
     const [orderModalType, setOrderModalType] = useState<'sale' | 'pickup' | 'assistance' | null>(null);
     const [editingOrder, setEditingOrder] = useState<Order | null>(null);
-    const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
     const [filters, setFilters] = useState<Filters>({
         dateRange: { start: "", end: "" },
         dateType: "personalizado" as "personalizado" | "hoje" | "esse_mes" | "mes_passado" | "ultimo_semestre" | "esse_ano",
@@ -215,7 +213,6 @@ const SalesOrder = () => {
                     <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none md:shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                         <OrderHistoryList
                             onEdit={setEditingOrder}
-                            onViewDetails={setViewingOrder}
                             filters={activeFilters}
                             visibilitySettings={visibilitySettings}
                             onToggleColumn={toggleVisibility}
@@ -261,7 +258,6 @@ const SalesOrder = () => {
                             <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                                 <OrderHistoryList
                                     onEdit={setEditingOrder}
-                                    onViewDetails={setViewingOrder}
                                     filters={trashFilters}
                                     visibilitySettings={visibilitySettings}
                                     onToggleColumn={toggleVisibility}
@@ -309,7 +305,6 @@ const SalesOrder = () => {
                             <div className="bg-transparent md:bg-white dark:bg-transparent dark:md:bg-slate-900 rounded-none md:rounded-3xl shadow-none overflow-visible md:overflow-hidden md:border border-slate-100 dark:border-slate-800 transition-colors">
                                 <OrderHistoryList
                                     onEdit={setEditingOrder}
-                                    onViewDetails={setViewingOrder}
                                     filters={draftFilters}
                                     visibilitySettings={visibilitySettings}
                                     onToggleColumn={toggleVisibility}
@@ -348,15 +343,6 @@ const SalesOrder = () => {
                     order={editingOrder}
                     onClose={() => setEditingOrder(null)}
                     onSaveSuccess={() => { }}
-                />
-            ) : viewingOrder ? (
-                <OrderDetailsModal
-                    order={viewingOrder}
-                    onClose={() => setViewingOrder(null)}
-                    onEdit={(order) => {
-                        setViewingOrder(null);
-                        setEditingOrder(order);
-                    }}
                 />
             ) : null}
         </div>

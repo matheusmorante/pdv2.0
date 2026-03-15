@@ -34,6 +34,15 @@ const WhatsAppTemplatesSection: React.FC<Props> = ({ settings, onChange }) => {
             icon: 'bi-truck',
             color: 'text-blue-500',
             bg: 'bg-blue-50 dark:bg-blue-900/10'
+        },
+        {
+            id: 'assistanceConfirmation',
+            label: 'Confirmação de Assistência',
+            description: 'Enviado ao cliente para confirmar o agendamento da assistência técnica.',
+            variables: ['{{customerName}}', '{{assistanceDate}}', '{{assistanceTime}}', '{{assistanceDescription}}', '{{companyPhone}}'],
+            icon: 'bi-tools',
+            color: 'text-orange-500',
+            bg: 'bg-orange-50 dark:bg-orange-900/10'
         }
     ];
 
@@ -66,7 +75,7 @@ const WhatsAppTemplatesSection: React.FC<Props> = ({ settings, onChange }) => {
                         <div className="flex flex-col gap-3">
                             <textarea
                                 rows={6}
-                                value={settings.whatsappTemplates[tpl.id as keyof typeof settings.whatsappTemplates] || ''}
+                                value={settings.whatsappTemplates?.[tpl.id as keyof typeof settings.whatsappTemplates] || ''}
                                 onChange={(e) => onChange(`whatsappTemplates.${tpl.id}`, e.target.value)}
                                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl px-6 py-4 text-sm outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 dark:text-slate-200 transition-all font-medium leading-relaxed resize-none"
                                 placeholder="Digite o template da mensagem..."
@@ -78,7 +87,7 @@ const WhatsAppTemplatesSection: React.FC<Props> = ({ settings, onChange }) => {
                                     <button
                                         key={v}
                                         onClick={() => {
-                                            const current = settings.whatsappTemplates[tpl.id as keyof typeof settings.whatsappTemplates] || '';
+                                            const current = settings.whatsappTemplates?.[tpl.id as keyof typeof settings.whatsappTemplates] || '';
                                             onChange(`whatsappTemplates.${tpl.id}`, current + v);
                                         }}
                                         className="px-2 py-0.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-400 hover:border-blue-400 hover:text-blue-500 transition-all active:scale-95"

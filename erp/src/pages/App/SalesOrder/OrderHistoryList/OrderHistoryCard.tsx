@@ -13,7 +13,6 @@ interface OrderHistoryCardProps {
     onPermanentDelete: (id: string) => void;
     onAction: (actionKey: string, order: Order) => void;
     onStatusUpdate: (id: string, newStatus: Order['status']) => void;
-    onViewDetails: (order: Order) => void;
     showTrash?: boolean;
     isSelected?: boolean;
     onToggleSelection?: () => void;
@@ -27,13 +26,13 @@ const OrderHistoryCard = ({
     onPermanentDelete,
     onAction,
     onStatusUpdate,
-    onViewDetails,
     showTrash,
     isSelected,
     onToggleSelection
 }: OrderHistoryCardProps) => {
     const settings = getSettings();
     const [showMenu, setShowMenu] = React.useState(false);
+    const [showPicker, setShowPicker] = React.useState(false);
 
     const statuses = settings.orderStatuses || [
         { id: 'draft', label: 'Rascunho', color: 'slate' },
@@ -52,7 +51,7 @@ const OrderHistoryCard = ({
     return (
         <div 
             className={`${cardBgClass} border ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-100 dark:border-slate-800'} rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all relative`}
-            onClick={() => onViewDetails(order)}
+            onClick={() => onEdit(order)}
         >
             <div className="flex justify-between items-start mb-2.5">
                 <div className="flex items-center gap-2">
@@ -70,12 +69,42 @@ const OrderHistoryCard = ({
                     </span>
                 </div>
                 
-                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-${currentStatus.color}-50 dark:bg-${currentStatus.color}-900/10 border border-${currentStatus.color}-100 dark:border-${currentStatus.color}-900/20`}>
-                    <div className={`w-1 h-1 rounded-full bg-${currentStatus.color}-500 animate-pulse`} />
-                    {currentStatus.id === 'draft' && <i className={`bi bi-clock text-[9px] text-${currentStatus.color}-600 dark:text-${currentStatus.color}-400 animate-pulse`} title="Rascunhos duram apenas 7 dias" />}
-                    <span className={`text-[8px] font-black uppercase tracking-widest text-${currentStatus.color}-600 dark:text-${currentStatus.color}-400`}>
-                        {currentStatus.label}
-                    </span>
+                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setShowPicker(!showPicker); }}
+                        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-${currentStatus.color}-50 dark:bg-${currentStatus.color}-900/10 border border-${currentStatus.color}-100 dark:border-${currentStatus.color}-900/20 active:scale-95 transition-all`}
+                    >
+                        <div className={`w-1 h-1 rounded-full bg-${currentStatus.color}-500 animate-pulse`} />
+                        {currentStatus.id === 'draft' && <i className={`bi bi-clock text-[9px] text-${currentStatus.color}-600 dark:text-${currentStatus.color}-400 animate-pulse`} title="Rascunhos duram apenas 7 dias" />}
+                        <span className={`text-[8px] font-black uppercase tracking-widest text-${currentStatus.color}-600 dark:text-${currentStatus.color}-400`}>
+                            {currentStatus.label}
+                        </span>
+                        <i className={`bi bi-chevron-down text-[7px] text-${currentStatus.color}-400 ml-0.5`} />
+                    </button>
+
+                    {showPicker && (
+                        <>
+                            <div className="fixed inset-0 z-10" onClick={() => setShowPicker(false)} />
+                            <div className="absolute top-full right-0 mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl z-[100] p-1.5 flex flex-col gap-1 animate-slide-up">
+                                {statuses.map((s) => (
+                                    <button
+                                        key={s.id}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onStatusUpdate(order.id!, s.id as any);
+                                            setShowPicker(false);
+                                        }}
+                                        className={`flex items-center gap-2.5 w-full p-2 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 ${order.status === s.id ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
+                                    >
+                                        <div className={`w-1.5 h-1.5 rounded-full bg-${s.color}-500`} />
+                                        <span className={`text-[9px] font-black uppercase tracking-widest ${order.status === s.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                            {s.label}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 

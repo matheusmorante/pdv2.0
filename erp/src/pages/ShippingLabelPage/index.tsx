@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import Order from "../types/order.type";
-import logoMorante from "../../assets/logo_morante.png";
+import logoMorante from "../../assets/logo.jpg";
 
 const ShippingLabelPage = () => {
     const storedOrder = sessionStorage.getItem('order');
@@ -45,12 +45,12 @@ const ShippingLabelPage = () => {
             <div className="w-[10cm] border-4 border-slate-900 p-8 rounded-3xl flex flex-col gap-6 relative overflow-hidden">
                 {/* Decorative Pattern Background */}
                 <div className="absolute top-0 right-0 opacity-5 -mr-8 -mt-8 rotate-12 pointer-events-none">
-                    <img src={logoMorante} alt="" className="w-64 h-64 grayscale" />
+                    <img src={logoMorante} alt="" className="w-64 h-64 grayscale rounded-full object-cover" />
                 </div>
 
                 {/* Header */}
                 <div className="flex justify-between items-start border-b-2 border-slate-100 pb-6 shrink-0 relative z-10">
-                    <img src={logoMorante} alt="Móveis Morante" className="h-10 object-contain" />
+                    <img src={logoMorante} alt="Móveis Morante" className="w-12 h-12 rounded-full object-cover border-2 border-slate-50 shadow-sm" />
                     <div className="text-right">
                         <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">PEDIDO</div>
                         <div className="text-2xl font-black text-slate-900">#{order.id?.slice(-8).toUpperCase()}</div>

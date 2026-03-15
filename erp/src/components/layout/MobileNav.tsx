@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import logoMorante from "../../assets/logo_morante.png";
+import logoMorante from "../../assets/logo.jpg";
 
 import { MenuKey } from "../../AppLayout";
 
@@ -32,8 +32,8 @@ const MobileNav = ({ isOpen, onClose, activeMenu, setActiveMenu }: MobileNavProp
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-2">
                     <Link to="/" onClick={onClose} className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-white rounded-lg shadow-lg flex items-center justify-center overflow-hidden border border-slate-100">
-                            <img src={logoMorante} alt="Logo" className="w-full h-full object-contain" />
+                        <div className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center overflow-hidden border border-slate-100">
+                            <img src={logoMorante} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                         <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight whitespace-nowrap">ERP Móveis Morante</h3>
                     </Link>

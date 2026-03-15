@@ -356,8 +356,8 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
             setStatus('draft');
             toast.success("Pedido salvo como rascunho!");
             return true;
-        } catch (error) {
-            toast.error("Erro ao salvar pedido como rascunho.");
+        } catch (error: any) {
+            toast.error(error?.message || "Erro ao salvar pedido como rascunho.");
             return false;
         } finally {
             setIsSaving(false);
@@ -385,8 +385,8 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
             setStatus('scheduled');
             toast.success("Pedido FINALIZADO com sucesso!");
             return true;
-        } catch (error) {
-            toast.error("Erro ao efetivar pedido.");
+        } catch (error: any) {
+            toast.error(error?.message || "Erro ao efetivar pedido.");
             return false;
         } finally {
             setIsSaving(false);

@@ -1,4 +1,5 @@
 import { supabase } from '@/pages/utils/supabaseConfig';
+import { ImportConfig, BLING_PRODUCT_DEFAULTS, BLING_VARIATION_DEFAULTS, BLING_CUSTOMER_DEFAULTS, BLING_SUPPLIER_DEFAULTS, BLING_ORDER_DEFAULTS, BLING_RECEIVABLE_DEFAULTS } from './importMappingTypes';
 
 export interface OrderStatusConfig {
     id: string;
@@ -157,7 +158,30 @@ export interface AppSettings {
         end: string;
         timezone: string;
     };
+    importMappings: ImportConfig[];
 }
+
+/**
+ * Helper to deep merge objects
+ */
+const deepMerge = (target: any, source: any) => {
+    if (!source) return target;
+    const output = { ...target };
+    
+    Object.keys(source).forEach(key => {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            if (!(key in target)) {
+                output[key] = source[key];
+            } else {
+                output[key] = deepMerge(target[key], source[key]);
+            }
+        } else {
+            output[key] = source[key];
+        }
+    });
+    
+    return output;
+};
 
 const SETTINGS_KEY = 'pdv_app_settings';
 const SUPABASE_SETTINGS_TABLE = 'settings';
@@ -439,7 +463,15 @@ RESPOSTA NO FORMATO JSON:
         start: '08:00',
         end: '18:00',
         timezone: 'America/Sao_Paulo',
-    }
+    },
+    importMappings: [
+        BLING_PRODUCT_DEFAULTS,
+        BLING_VARIATION_DEFAULTS,
+        BLING_CUSTOMER_DEFAULTS,
+        BLING_SUPPLIER_DEFAULTS,
+        BLING_ORDER_DEFAULTS,
+        BLING_RECEIVABLE_DEFAULTS
+    ]
 });
 
 export const getSettings = (): AppSettings => {
@@ -449,7 +481,7 @@ export const getSettings = (): AppSettings => {
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
-            return { ...defaults, ...parsed };
+            return deepMerge(defaults, parsed);
         } catch (e) {
             return defaults;
         }
@@ -459,6 +491,7 @@ export const getSettings = (): AppSettings => {
 
 // Real-time synchronization with Supabase
 export const subscribeToSettings = (callback: (settings: AppSettings) => void) => {
+    const defaults = getDefaultSettings();
     // Initial load from localStorage for speed
     callback(getSettings());
 
@@ -469,9 +502,10 @@ export const subscribeToSettings = (callback: (settings: AppSettings) => void) =
         .single()
         .then(({ data, error }: { data: any, error: any }) => {
             if (data && !error) {
-                const settings = data.data as AppSettings;
-                localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-                callback(settings);
+                const settingsFromCloud = data.data as AppSettings;
+                const mergedSettings = deepMerge(defaults, settingsFromCloud);
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify(mergedSettings));
+                callback(mergedSettings);
             }
         });
 
@@ -480,9 +514,10 @@ export const subscribeToSettings = (callback: (settings: AppSettings) => void) =
             { event: '*', schema: 'public', table: SUPABASE_SETTINGS_TABLE, filter: `id=eq.${SETTINGS_ID}` },
             (payload: any) => {
                 if (payload.new) {
-                    const settings = (payload.new as any).data as AppSettings;
-                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-                    callback(settings);
+                    const settingsFromCloud = (payload.new as any).data as AppSettings;
+                    const mergedSettings = deepMerge(defaults, settingsFromCloud);
+                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(mergedSettings));
+                    callback(mergedSettings);
                 }
             }
         )

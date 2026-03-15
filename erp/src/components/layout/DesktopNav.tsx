@@ -9,11 +9,11 @@ interface DesktopNavProps {
 }
 
 const dropdownClass = "absolute top-[calc(100%-8px)] left-0 w-48 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-xl p-2 flex flex-col gap-1 animate-slide-up";
-const dropdownItemClass = "p-3 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all font-bold text-xs uppercase tracking-widest";
-const navLinkClass = "flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all font-bold text-sm";
+const dropdownItemClass = "p-2.5 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest";
+const navLinkClass = "flex items-center gap-1.5 px-3 py-1.5 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all font-bold text-[11px] whitespace-nowrap";
 
 const menuBtnClass = (isActive: boolean) =>
-    `flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-bold text-sm ${isActive ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`;
+    `flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all font-bold text-[11px] whitespace-nowrap ${isActive ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`;
 
 const chevronClass = (isActive: boolean) =>
     `bi bi-chevron-down transition-transform text-[10px] ${isActive ? 'rotate-180' : ''}`;

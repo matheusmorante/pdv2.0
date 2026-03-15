@@ -98,8 +98,8 @@ export const subscribeToPeople = (collectionName: string, callback: (people: Per
         if (collectionName === 'employees') {
             peopleQuery = peopleQuery.or(`person_type.eq.employees,and(position.not.is.null,position.neq."")`);
         } else if (collectionName === 'customers') {
-            // "fornecedores podem ser clientes" + "funcionarios podem ser clientes"
-            peopleQuery = peopleQuery.or(`person_type.eq.customers,person_type.eq.suppliers,person_type.eq.employees`);
+            // "fornecedores podem ser clientes" - "employees" removed as per "apenas fornecedores podem estar na lista de clientes"
+            peopleQuery = peopleQuery.or(`person_type.eq.customers,person_type.eq.suppliers`);
         } else {
             // "clientes nao podem ser fornecedores" (collectionName === 'suppliers')
             peopleQuery = peopleQuery.eq('person_type', collectionName);
@@ -220,11 +220,14 @@ export const permanentDeletePerson = async (collectionName: string, id: string):
 };
 
 export const isPersonRegisteredAs = async (type: string, identifiers: { cpfCnpj?: string, email?: string, phone?: string }): Promise<boolean> => {
+    const person = await getPersonByIdentifiers(identifiers);
+    return person?.type === type;
+};
+
+export const getPersonByIdentifiers = async (identifiers: { cpfCnpj?: string, email?: string, phone?: string }): Promise<Person | null> => {
     const { cpfCnpj, email, phone } = identifiers;
-
-    let query = supabase.from(TABLE_NAME).select('id').eq('person_type', type);
-
     const conditions = [];
+    
     if (cpfCnpj && cpfCnpj.trim() !== '' && cpfCnpj !== '___.___.___-__' && cpfCnpj !== '__.___.___/____-__') {
         conditions.push(`cpf_cnpj.eq.${cpfCnpj}`);
     }
@@ -235,14 +238,13 @@ export const isPersonRegisteredAs = async (type: string, identifiers: { cpfCnpj?
         conditions.push(`phone.eq.${phone}`);
     }
 
-    if (conditions.length === 0) return false;
+    if (conditions.length === 0) return null;
 
-    const { data, error } = await query.or(conditions.join(','));
+    const { data, error } = await supabase.from(TABLE_NAME).select('*').or(conditions.join(','));
 
-    if (error) {
-        console.error("Erro ao verificar duplicidade:", error);
-        return false;
+    if (error || !data || data.length === 0) {
+        return null;
     }
 
-    return (data && data.length > 0) || false;
+    return mapFromDB(data[0]);
 };

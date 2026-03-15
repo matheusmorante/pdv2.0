@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Product from '../pages/types/product.type';
+import Product, { Variation } from '../pages/types/product.type';
 import { supabase } from '../pages/utils/supabaseConfig';
 import { toast } from 'react-toastify';
 import DropdownPortal from './shared/DropdownPortal';
 
 interface ProductAutocompleteProps {
-    onSelect: (product: Product) => void;
+    onSelect: (product: Product, variation?: Variation) => void;
     onChange?: (value: string) => void;
     onSearch?: () => void;
     onCreateNew?: () => void;
@@ -14,6 +14,11 @@ interface ProductAutocompleteProps {
     placeholder?: string;
     className?: string;
 }
+
+type SuggestionItem = {
+    product: Product;
+    variation?: Variation;
+};
 
 const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({
     onSelect,
@@ -26,7 +31,7 @@ const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({
     className = ""
 }) => {
     const [query, setQuery] = useState(value);
-    const [suggestions, setSuggestions] = useState<Product[]>([]);
+    const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -62,7 +67,21 @@ const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({
                     .limit(10);
 
                 if (error) throw error;
-                setSuggestions(data || []);
+                
+                const items: SuggestionItem[] = [];
+                (data || []).forEach((p: Product) => {
+                    if (p.hasVariations && p.variations && p.variations.length > 0) {
+                        p.variations.forEach(v => {
+                            if (v.active !== false) {
+                                items.push({ product: p, variation: v });
+                            }
+                        });
+                    } else {
+                        items.push({ product: p });
+                    }
+                });
+
+                setSuggestions(items);
             } catch (error) {
                 console.error('Erro ao buscar sugestões:', error);
                 // No toast here to avoid spamming while typing
@@ -124,29 +143,37 @@ const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({
 
             <DropdownPortal anchorRef={wrapperRef} isOpen={showSuggestions && suggestions.length > 0}>
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-2xl max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
-                    {suggestions.map((p) => (
-                        <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => {
-                                onSelect(p);
-                                setQuery(p.description);
-                                setShowSuggestions(false);
-                            }}
-                            className="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex flex-col gap-0.5"
-                        >
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{p.description}</span>
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{p.code || 'S/REF'}</span>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">
-                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.unitPrice)}
-                                </span>
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${p.stock && p.stock > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                    Estoque: {p.stock || 0}
-                                </span>
-                            </div>
-                        </button>
-                    ))}
+                    {suggestions.map((item, index) => {
+                        const { product: p, variation: v } = item;
+                        const displayName = v ? `${p.description} (${v.name})` : p.description;
+                        const displayCode = v?.sku || p.code || 'S/REF';
+                        const displayPrice = v ? v.unitPrice : p.unitPrice;
+                        const displayStock = v ? v.stock : p.stock;
+
+                        return (
+                            <button
+                                key={`${p.id}-${v?.id || 'base'}-${index}`}
+                                type="button"
+                                onClick={() => {
+                                    onSelect(p, v);
+                                    setQuery(displayName);
+                                    setShowSuggestions(false);
+                                }}
+                                className="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex flex-col gap-0.5"
+                            >
+                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{displayName}</span>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{displayCode}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">
+                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(displayPrice)}
+                                    </span>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${displayStock && displayStock > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                        Estoque: {displayStock || 0}
+                                    </span>
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
             </DropdownPortal>
         </div>

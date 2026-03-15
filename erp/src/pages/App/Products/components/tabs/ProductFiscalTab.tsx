@@ -70,9 +70,36 @@ const ProductFiscalTab: React.FC<ProductFiscalTabProps> = ({
             {/* Simples Nacional / Tributação */}
             <div className="bg-slate-50/50 dark:bg-slate-950/20 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 flex flex-col gap-6">
                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">Configurações de Imposto por Produto</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="flex flex-col gap-2">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">CFOP Padrão (Venda Estadual)</label>
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Origem da Mercadoria</label>
+                        <select
+                            value={formData.fiscal?.origem || '0'}
+                            onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, origem: e.target.value } })}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-xs font-bold dark:text-slate-200"
+                        >
+                            <option value="0">0 - Nacional</option>
+                            <option value="1">1 - Estrangeira - Importação Direta</option>
+                            <option value="2">2 - Estrangeira - Adquirida no Mercado Interno</option>
+                            <option value="3">3 - Nacional, mercadoria ou bem com Conteúdo de Importação superior a 40%</option>
+                            <option value="4">4 - Nacional, cuja produção tenha sido feita em conformidade com os processos produtivos básicos</option>
+                            <option value="5">5 - Nacional, mercadoria ou bem com Conteúdo de Importação inferior ou igual a 40%</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">CST / CSOSN ICMS</label>
+                        <input
+                            value={formData.fiscal?.cst || ''}
+                            onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, cst: e.target.value } })}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-xs font-bold dark:text-slate-200"
+                            placeholder="Ex: 102, 500, 00..."
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">CFOP Padrão (Estadual)</label>
                         <input
                             value={formData.fiscal?.cfop || '5102'}
                             onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, cfop: e.target.value } })}
@@ -80,6 +107,7 @@ const ProductFiscalTab: React.FC<ProductFiscalTabProps> = ({
                             placeholder="EX: 5102"
                         />
                     </div>
+
                     <div className="flex flex-col gap-2">
                         <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Aliquota ICMS (%)</label>
                         <input
@@ -87,6 +115,26 @@ const ProductFiscalTab: React.FC<ProductFiscalTabProps> = ({
                             value={formData.fiscal?.icmsPercent}
                             onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, icmsPercent: parseFloat(e.target.value) } })}
                             className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-xs font-bold dark:text-slate-200"
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">PIS CST</label>
+                        <input
+                            value={formData.fiscal?.pisCst || ''}
+                            onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, pisCst: e.target.value } })}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-xs font-bold dark:text-slate-200"
+                            placeholder="Ex: 01, 07, 49..."
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">COFINS CST</label>
+                        <input
+                            value={formData.fiscal?.cofinsCst || ''}
+                            onChange={(e) => setFormData({ ...formData, fiscal: { ...formData.fiscal!, cofinsCst: e.target.value } })}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-xs font-bold dark:text-slate-200"
+                            placeholder="Ex: 01, 07, 49..."
                         />
                     </div>
                 </div>

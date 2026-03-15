@@ -152,7 +152,7 @@ export const getAvailableLots = async (productId: string, variationId?: string):
             .from(TABLE_NAME)
             .select('parent_move_id, quantity')
             .eq('type', 'withdrawal')
-            .not('parent_move_id', 'is', null);
+            .neq('parent_move_id', null);
         
         const { data: withdrawals, error: withdrawalError } = await withdrawalQuery;
         if (withdrawalError) throw withdrawalError;
@@ -188,8 +188,7 @@ const mapToDB = (move: InventoryMove) => ({
     label: move.label,
     unit_cost: move.unitCost,
     parent_move_id: move.parentMoveId,
-    observation: move.observation,
-    created_at: move.createdAt || new Date().toISOString()
+    observation: move.observation
 });
 
 const mapFromDB = (data: any): InventoryMove => ({

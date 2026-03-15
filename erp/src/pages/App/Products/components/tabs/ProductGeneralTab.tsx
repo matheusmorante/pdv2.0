@@ -78,6 +78,15 @@ const ProductGeneralTab: React.FC<ProductGeneralTabProps> = ({
                     placeholder="Ex: UN, KG, M..."
                     icon="bi-box-seam"
                 />
+                <SmartInput
+                    label="Marca / Fabricante"
+                    value={formData.brand || ""}
+                    onValueChange={(val) => setFormData({ ...formData, brand: val })}
+                    tableName="products"
+                    columnName="brand"
+                    placeholder="Ex: Kappesberg, Henn..."
+                    icon="bi-award"
+                />
 
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">

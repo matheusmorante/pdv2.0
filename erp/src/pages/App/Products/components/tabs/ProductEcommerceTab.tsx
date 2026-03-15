@@ -4,8 +4,8 @@ import Product from '../../../../types/product.type';
 interface ProductEcommerceTabProps {
     formData: Partial<Product>;
     setFormData: React.Dispatch<React.SetStateAction<Partial<Product>>>;
-    activeEcommerceSubTab: 'photos' | 'descriptions';
-    setActiveEcommerceSubTab: React.Dispatch<React.SetStateAction<'photos' | 'descriptions'>>;
+    activeEcommerceSubTab: 'photos' | 'descriptions' | 'logistics';
+    setActiveEcommerceSubTab: React.Dispatch<React.SetStateAction<'photos' | 'descriptions' | 'logistics'>>;
     isDraggingPhoto: boolean;
     setIsDraggingPhoto: React.Dispatch<React.SetStateAction<boolean>>;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent) => void;
@@ -35,6 +35,7 @@ const ProductEcommerceTab: React.FC<ProductEcommerceTabProps> = ({
                 {[
                     { id: 'photos', label: 'Fotos', icon: 'bi-images' },
                     { id: 'descriptions', label: 'Descrição / Canais', icon: 'bi-pencil-square' },
+                    { id: 'logistics', label: 'Logística / Frete', icon: 'bi-truck' },
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -148,6 +149,62 @@ const ProductEcommerceTab: React.FC<ProductEcommerceTabProps> = ({
                             className="w-full h-64 p-5 bg-blue-50/20 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/30 rounded-[2rem] outline-none text-xs leading-relaxed font-bold custom-scrollbar"
                             placeholder="Descrição completa com especificações técnicas e SEO..."
                         />
+                    </div>
+                </div>
+            )}
+
+            {/* LOGISTICS SUB-TAB */}
+            {activeEcommerceSubTab === 'logistics' && (
+                <div className="flex flex-col gap-8 animate-in fade-in duration-300">
+                    <div className="bg-slate-50/50 dark:bg-slate-950/20 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 flex flex-col gap-6">
+                        <div className="flex items-center gap-2">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200">Dados de Envio / Logística</h4>
+                            <p className="text-[9px] text-slate-400 uppercase font-black tracking-widest mt-1">Utilizado para cálculo de frete nos marketplaces</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Peso Bruto (KG)</label>
+                                <input
+                                    type="number"
+                                    step="0.001"
+                                    value={formData.weight || ''}
+                                    onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) })}
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-200"
+                                    placeholder="0.000"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Largura Emb. (cm)</label>
+                                <input
+                                    type="number"
+                                    value={formData.pkgWidth || ''}
+                                    onChange={(e) => setFormData({ ...formData, pkgWidth: parseFloat(e.target.value) })}
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-200"
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Altura Emb. (cm)</label>
+                                <input
+                                    type="number"
+                                    value={formData.pkgHeight || ''}
+                                    onChange={(e) => setFormData({ ...formData, pkgHeight: parseFloat(e.target.value) })}
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-200"
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Profund. Emb. (cm)</label>
+                                <input
+                                    type="number"
+                                    value={formData.pkgDepth || ''}
+                                    onChange={(e) => setFormData({ ...formData, pkgDepth: parseFloat(e.target.value) })}
+                                    className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-200"
+                                    placeholder="0"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

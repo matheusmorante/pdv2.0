@@ -6,7 +6,6 @@ import StockActionModal from "../OrderActions/StockActionModal";
 
 type OrderHistoryListProps = {
     onEdit: (order: Order) => void;
-    onViewDetails: (order: Order) => void;
     filters?: any;
     visibilitySettings: VisibilitySettings;
     onToggleColumn: (column: keyof VisibilitySettings) => void;
@@ -14,7 +13,7 @@ type OrderHistoryListProps = {
 };
 
 
-const OrderHistoryList = ({ onEdit, onViewDetails, filters, visibilitySettings, onToggleColumn, onSort }: OrderHistoryListProps) => {
+const OrderHistoryList = ({ onEdit, filters, visibilitySettings, onToggleColumn, onSort }: OrderHistoryListProps) => {
     const {
         orders,
         loading,
@@ -155,7 +154,6 @@ const OrderHistoryList = ({ onEdit, onViewDetails, filters, visibilitySettings, 
                     onPermanentDelete={handlePermanentDelete}
                     onAction={onAction}
                     onStatusUpdate={handleStatusUpdate}
-                    onViewDetails={onViewDetails}
                     visibilitySettings={visibilitySettings}
                     onToggleColumn={onToggleColumn}
                     showTrash={filters?.showTrash}

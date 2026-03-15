@@ -14,7 +14,7 @@ export type Variation = {
     syncCondition?: boolean;
     syncDescription?: boolean;
     images?: string[];
-    freightType?: 'fixed' | 'percentage';
+    freightType?: 'fixed' | 'percentage' | 'none';
     freightCost?: number;
     ipiPercent?: number;
     finalPurchasePrice?: number;
@@ -54,13 +54,12 @@ export type Product = {
     id?: string;
     code?: string;
     description: string;
-    brand?: string;
     category?: string;
     categoryIds?: string[]; // IDs das categorias/subcategorias associadas
     condition?: 'novo' | 'usado' | 'salvado' | ''; // Condição do Móvel
     unitPrice: number;
     costPrice?: number; // Preço de custo base
-    freightType?: 'fixed' | 'percentage';
+    freightType?: 'fixed' | 'percentage' | 'none';
     freightCost?: number; // Can be a fixed value or a percentage
     ipiPercent?: number;
     finalPurchasePrice?: number; // (costPrice + freight) * (1 + ipi/100) aprox.
@@ -73,12 +72,15 @@ export type Product = {
     deleted?: boolean;
     createdAt?: string;
     updatedAt?: string;
-    supplierId?: string;
 
     // Dimensions & Details
     width?: number;
     height?: number;
     depth?: number;
+    weight?: number; // Peso bruto em KG
+    pkgWidth?: number; // Largura da embalagem
+    pkgHeight?: number; // Altura da embalagem
+    pkgDepth?: number; // Profundidade da embalagem
     extraDimensions?: ExtraDimension[];
     line?: string;
     mainDifferential?: string;
@@ -88,6 +90,7 @@ export type Product = {
 
     // Ecommerce & Marketplace
     images?: string[];
+    brand?: string;
     ecommerceDescription?: string;
     whatsappDescription?: string;
     ecommerceTemplate?: string;
@@ -111,6 +114,11 @@ export type Product = {
 
     // Fiscal
     fiscal?: FiscalInfo;
+    
+    // Supplier Details
+    supplierId?: string;
+    mainSupplierId?: string; // Same as supplierId? Keeping for UI compatibility
+    supplierRef?: string; // Referência do fornecedor
 
     // Per-product notification configuration
     notificationConfig?: ProductNotificationConfig;

@@ -19,6 +19,17 @@ interface Props {
  */
 const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index: number; onOrderClick: (order: Order) => void }) => {
     const settings = getSettings();
+    const [showStatusPicker, setShowStatusPicker] = React.useState(false);
+
+    const statuses = settings.orderStatuses || [
+        { id: 'draft', label: 'Rascunho', color: 'slate' },
+        { id: 'scheduled', label: 'Agendado', color: 'amber' },
+        { id: 'fulfilled', label: 'Atendido', color: 'emerald' },
+        { id: 'cancelled', label: 'Cancelado', color: 'rose' },
+    ];
+
+    const currentStatus = statuses.find(s => s.id === (order.status || 'draft')) || statuses[0];
+
     const isAssistance = order.orderType === 'assistance';
     const isPickup = order.shipping?.deliveryMethod === 'pickup';
 
@@ -91,28 +102,49 @@ const DeliveryOrderCard = ({ order, index, onOrderClick }: { order: Order; index
                             {typeLabel}
                         </span>
 
-                        {order.status !== 'fulfilled' ? (
+                        <div className="relative" onClick={(e) => e.stopPropagation()}>
                             <button
-                                onClick={async (e) => {
-                                    e.stopPropagation();
-                                    try {
-                                        await updateOrder(order.id!, { status: 'fulfilled' }, order);
-                                        toast.success(`Pedido #${order.id?.slice(-4)} marcado como Atendido! (Estoque atualizado)`);
-                                    } catch (err: any) {
-                                        toast.error(`Falha ao concluir: ${err.message}`);
-                                    }
-                                }}
-                                className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-100 dark:shadow-none transition-all active:scale-95"
+                                onClick={(e) => { e.stopPropagation(); setShowStatusPicker(!showStatusPicker); }}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all active:scale-95 ${order.status === 'fulfilled' 
+                                    ? 'bg-emerald-500 text-white border-emerald-400' 
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400'}`}
                             >
-                                <i className="bi bi-check-circle-fill" />
-                                Concluir
+                                <div className={`w-1.5 h-1.5 rounded-full ${order.status === 'fulfilled' ? 'bg-white animate-pulse' : `bg-${currentStatus.color}-500 animate-pulse`}`} />
+                                <span className="text-[9px] font-black uppercase tracking-widest">
+                                    {currentStatus.label}
+                                </span>
+                                <i className="bi bi-chevron-down text-[8px] opacity-50" />
                             </button>
-                        ) : (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-[8px] font-black uppercase tracking-widest">
-                                <i className="bi bi-check-all text-emerald-500" />
-                                Finalizado {order.stockProcessed && "• Estoque OK"}
-                            </div>
-                        )}
+
+                            {showStatusPicker && (
+                                <>
+                                    <div className="fixed inset-0 z-10" onClick={() => setShowStatusPicker(false)} />
+                                    <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-xl z-[100] p-1.5 flex flex-col gap-1 animate-slide-up">
+                                        {statuses.map((s) => (
+                                            <button
+                                                key={s.id}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                        await updateOrder(order.id!, { status: s.id as any }, order);
+                                                        toast.success(`Pedido #${order.id?.slice(-4)} alterado para ${s.label}`);
+                                                    } catch (err: any) {
+                                                        toast.error(`Falha: ${err.message}`);
+                                                    }
+                                                    setShowStatusPicker(false);
+                                                }}
+                                                className={`flex items-center gap-3 w-full p-2.5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-slate-800 ${order.status === s.id ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
+                                            >
+                                                <div className={`w-2 h-2 rounded-full bg-${s.color}-500`} />
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${order.status === s.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                    {s.label}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     {/* Card Content: Customer & Details */}

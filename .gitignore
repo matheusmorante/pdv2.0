@@ -17,3 +17,11 @@ dist/
 *.wmv
 *.flv
 *.webm
+
+
+# Ignorar arquivos de saída de texto que podem ficar gigantes
+checklist_output.txt
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

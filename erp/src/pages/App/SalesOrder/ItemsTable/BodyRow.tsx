@@ -43,7 +43,7 @@ const BodyRow = ({ item, onChange, onSelectProduct, onToggleDiscountType, onDele
                     <div className="relative flex-1">
                         {!item.isComboItem ? (
                             <ProductAutocomplete
-                                onSelect={(p) => handleSelectProduct(p)}
+                                onSelect={(p, v) => handleSelectProduct(p, v)}
                                 onChange={(val) => onChange(idx, 'description', val)}
                                 onSearch={() => setIsSearchModalOpen(true)}
                                 onCreateNew={() => {

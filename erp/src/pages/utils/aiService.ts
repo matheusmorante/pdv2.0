@@ -65,6 +65,23 @@ export const aiService = {
         return await callAIBackend("generate-description", productData);
     },
 
+    async generateProductDescription(data: { title: string; material?: string; dimensions?: string; type: 'whatsapp' | 'ecommerce' }) {
+        return await callAIBackend("generate-product-description", data);
+    },
+
+    async suggestCategory(title: string, categories: string[]) {
+        return await callAIBackend("suggest-category", { title, categories });
+    },
+
+    async generateComboName(items: string) {
+        return await callAIBackend("generate-combo-name", { items });
+    },
+
+    async findNCM(productName: string, material: string): Promise<{ ncm: string, description: string }> {
+        const result = await this.generateNCM(productName, material);
+        return { ncm: result.ncm, description: result.desc };
+    },
+
     async generateNCM(productName: string, material: string): Promise<{ ncm: string, desc: string }> {
         const prompt = `Você é um classificador fiscal (especialista tributário do Brasil). 
         Sua tarefa é encontrar o NCM mais provável para o seguinte produto:

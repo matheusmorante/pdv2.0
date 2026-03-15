@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Móveis Morante | Loja Oficial",
   description: "A melhor seleção de móveis para sua casa você encontra aqui na Móveis Morante.",
   icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
   }
 };
 

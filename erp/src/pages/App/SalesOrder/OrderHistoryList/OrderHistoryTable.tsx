@@ -13,7 +13,6 @@ interface OrderHistoryTableProps {
     onPermanentDelete: (id: string) => void;
     onAction: (actionKey: string, order: Order) => void;
     onStatusUpdate: (id: string, newStatus: Order['status']) => void;
-    onViewDetails: (order: Order) => void;
     visibilitySettings: VisibilitySettings;
     onToggleColumn: (column: keyof VisibilitySettings) => void;
     showTrash?: boolean;
@@ -47,7 +46,7 @@ const COLUMNS_DEF: ColumnDef[] = [
 ];
 
 const OrderHistoryTable = ({
-    orders, onEdit, onDelete, onRestore, onPermanentDelete, onAction, onStatusUpdate, onViewDetails,
+    orders, onEdit, onDelete, onRestore, onPermanentDelete, onAction, onStatusUpdate,
     visibilitySettings, onToggleColumn, showTrash, filters, onSort,
     selectedOrders, onToggleSelection, onSelectAll, onBulkTrash, onBulkRestore, onBulkPermanentDelete, onClearSelection
 }: OrderHistoryTableProps) => {
@@ -259,7 +258,6 @@ const OrderHistoryTable = ({
                                     onPermanentDelete={onPermanentDelete}
                                     onAction={onAction}
                                     onStatusUpdate={onStatusUpdate}
-                                    onViewDetails={onViewDetails}
                                     visibilitySettings={visibilitySettings}
                                     showTrash={showTrash}
                                     orderedColumnKeys={orderedColumns.map(c => c.key as string)}
@@ -290,7 +288,6 @@ const OrderHistoryTable = ({
                             onPermanentDelete={onPermanentDelete}
                             onAction={onAction}
                             onStatusUpdate={onStatusUpdate}
-                            onViewDetails={onViewDetails}
                             showTrash={showTrash}
                             isSelected={selectedOrders.includes(order.id!)}
                             onToggleSelection={() => onToggleSelection(order.id!)}
