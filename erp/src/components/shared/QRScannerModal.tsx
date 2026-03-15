@@ -19,8 +19,22 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
     const [scannerInstance, setScannerInstance] = useState<Html5Qrcode | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isInitializing, setIsInitializing] = useState(false);
-    const qrContainerRef = useRef<HTMLDivElement>(null);
     const scannerRef = useRef<Html5Qrcode | null>(null);
+
+    const [manualCode, setManualCode] = useState("");
+    const [showManualInput, setShowManualInput] = useState(false);
+
+    const handleManualSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (manualCode.trim()) {
+            onScan(manualCode.trim());
+            if (closeOnScan) {
+                onClose();
+            }
+            setManualCode("");
+            setShowManualInput(false);
+        }
+    };
 
     const stopScanner = async () => {
         if (scannerRef.current) {
@@ -28,7 +42,9 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
                 if (scannerRef.current.isScanning) {
                     await scannerRef.current.stop();
                 }
-                scannerRef.current.clear();
+                const container = document.getElementById("qr-reader");
+                if (container) container.innerHTML = "";
+                
                 scannerRef.current = null;
                 setScannerInstance(null);
             } catch (err) {
@@ -42,45 +58,42 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
         
         setIsInitializing(true);
         setError(null);
+        setShowManualInput(false);
         
         try {
-            // Garante limpeza de instâncias fantasmas antes de começar
             await stopScanner();
-            
-            // Pequeno delay para garantir que o DOM está pronto e estável
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             const readerElem = document.getElementById("qr-reader");
-            if (!readerElem) {
-                throw new Error("Elemento de leitura não encontrado no DOM.");
-            }
+            if (!readerElem) throw new Error("Elemento de leitura não encontrado.");
 
             const qrCode = new Html5Qrcode("qr-reader");
             scannerRef.current = qrCode;
             setScannerInstance(qrCode);
 
+            const config = {
+                fps: 15,
+                qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    const size = Math.floor(minEdge * 0.7);
+                    return { width: size, height: size };
+                },
+                aspectRatio: 1.0,
+                showTorchButtonIfSupported: true
+            };
+
             await qrCode.start(
                 { facingMode: "environment" },
-                {
-                    fps: 20,
-                    qrbox: (viewfinderWidth, viewfinderHeight) => {
-                        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                        const size = Math.floor(minEdge * 0.75);
-                        return { width: size, height: size };
-                    },
-                    aspectRatio: 1.0
-                },
+                config,
                 (decodedText: string) => {
                     onScan(decodedText);
-                    if (closeOnScan) {
-                        onClose();
-                    }
+                    if (closeOnScan) onClose();
                 },
-                () => { /* ignorar erros de frames */ }
+                () => {} 
             );
         } catch (err: any) {
-            console.error("Falha Crítica no Scanner:", err);
-            setError(err.message || "Erro ao acessar a câmera. Verifique se outra aba está usando a câmera ou as permissões do navegador.");
+            console.error("Scanner Error:", err);
+            setError("Não foi possível iniciar a câmera. Verifique as permissões ou se o dispositivo suporta acesso via navegador.");
         } finally {
             setIsInitializing(false);
         }
@@ -91,24 +104,18 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
             startScanner();
         } else {
             stopScanner();
+            setError(null);
+            setShowManualInput(false);
         }
-
-        return () => {
-            stopScanner();
-        };
+        return () => { stopScanner(); };
     }, [isOpen]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div 
-                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
-                onClick={onClose}
-            />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md animate-fade-in" onClick={onClose} />
             
-            {/* Modal Content */}
             <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-slide-up">
                 <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center">
                     <div>
@@ -116,83 +123,89 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
                             {title}
                         </h3>
                         <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">
-                            Aponte a câmera para o QR Code ou Código de Barras
+                            {showManualInput ? 'Digite o código manualmente' : 'Aponte a câmera para o código'}
                         </p>
                     </div>
-                    <button 
-                        onClick={onClose}
-                        className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                    >
+                    <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 transition-all">
                         <i className="bi bi-x-lg text-xl" />
                     </button>
                 </div>
 
                 <div className="p-8">
-                    <div id="qr-reader" className="w-full rounded-3xl overflow-hidden border-4 border-slate-100 dark:border-slate-800 bg-black relative min-h-[300px] flex items-center justify-center">
-                        {isInitializing && (
-                            <div className="absolute inset-0 z-20 bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
-                                <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Iniciando Câmera...</p>
-                            </div>
-                        )}
-
-                        {error && (
-                            <div className="absolute inset-0 z-30 bg-rose-600/90 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-300">
-                                <i className="bi bi-camera-video-off text-4xl text-white mb-4" />
-                                <p className="text-xs font-black uppercase text-white tracking-widest mb-4 leading-relaxed">
-                                    {error}
-                                </p>
-                                <button
-                                    onClick={startScanner}
-                                    className="px-6 py-3 bg-white text-rose-600 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl active:scale-95 transition-all"
-                                >
-                                    Tentar Novamente
-                                </button>
-                            </div>
-                        )}
-
-                        {!error && !isInitializing && (
-                            <div className="absolute inset-0 pointer-events-none z-10">
-                                <div className="w-full h-0.5 bg-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.5)] animate-scan-line top-0" />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-8 flex flex-col gap-4">
-                        {error && (
-                            <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-100 dark:border-rose-800/50 flex items-center gap-4">
-                                <i className="bi bi-exclamation-octagon-fill text-rose-600" />
-                                <p className="text-[10px] font-bold text-rose-700 dark:text-rose-400">
-                                    Se o problema persistir, cheque as configurações de privacidade do navegador.
-                                </p>
-                            </div>
-                        )}
-                        
-                        {!error && (
-                            <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800/50">
-                                <i className="bi bi-info-circle-fill text-blue-500 text-xl" />
-                                <p className="text-xs font-bold text-blue-700 dark:text-blue-300 leading-snug">
-                                    Certifique-se de que o código esteja bem iluminado e centralizado no quadrado.
-                                </p>
-                            </div>
-                        )}
-                        
-                        <div className="flex gap-3">
-                            {error && (
-                                <button 
-                                    onClick={startScanner}
-                                    className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all hover:bg-emerald-700 active:scale-95 shadow-lg flex items-center justify-center gap-2"
-                                >
-                                    <i className="bi bi-arrow-clockwise" /> Reiniciar
-                                </button>
+                    {!showManualInput ? (
+                        <div id="qr-reader" className="w-full rounded-3xl overflow-hidden border-4 border-slate-100 dark:border-slate-800 bg-black relative min-h-[320px] flex items-center justify-center">
+                            {isInitializing && (
+                                <div className="absolute inset-0 z-20 bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+                                    <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mb-4" />
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Iniciando Sensor...</p>
+                                </div>
                             )}
-                            <button 
-                                onClick={onClose}
-                                className={`py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-xl ${error ? 'w-1/3 bg-slate-100 text-slate-400' : 'w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'}`}
-                            >
-                                {error ? 'Sair' : 'Cancelar'}
-                            </button>
+
+                            {error && (
+                                <div className="absolute inset-0 z-30 bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
+                                    <i className="bi bi-camera-video-off text-4xl text-rose-500 mb-4" />
+                                    <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest mb-6 leading-relaxed">
+                                        {error}
+                                    </p>
+                                    <div className="flex flex-col w-full gap-3">
+                                        <button onClick={startScanner} className="w-full py-3 bg-emerald-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all">
+                                            Tentar Novamente
+                                        </button>
+                                        <button onClick={() => setShowManualInput(true)} className="w-full py-3 bg-slate-800 text-white rounded-xl font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all">
+                                            Digitar Código Manualmente
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!error && !isInitializing && (
+                                <div className="absolute inset-0 pointer-events-none z-10 border-[30px] border-black/40">
+                                    <div className="w-full h-0.5 bg-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.8)] animate-scan-line top-0" />
+                                </div>
+                            )}
                         </div>
+                    ) : (
+                        <form onSubmit={handleManualSubmit} className="space-y-6 py-4">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Código do Produto / SKU</label>
+                                <input 
+                                    autoFocus
+                                    type="text"
+                                    value={manualCode}
+                                    onChange={(e) => setManualCode(e.target.value)}
+                                    placeholder="Digite ou cole o código..."
+                                    className="w-full px-6 py-5 bg-slate-50 dark:bg-slate-950 border-2 border-slate-100 dark:border-slate-800 rounded-2xl outline-none focus:border-emerald-500 transition-all font-bold text-lg"
+                                />
+                            </div>
+                            <div className="flex gap-3">
+                                <button type="submit" className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all">
+                                    Confirmar
+                                </button>
+                                <button type="button" onClick={() => setShowManualInput(false)} className="px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-2xl font-black uppercase tracking-widest text-xs active:scale-95 transition-all">
+                                    Voltar
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    <div className="mt-8">
+                        {!showManualInput && !error && (
+                            <button 
+                                onClick={() => setShowManualInput(true)}
+                                className="w-full py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-500 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <i className="bi bi-keyboard" /> Problemas com a câmera? Digite o código
+                            </button>
+                        )}
+                        
+                        {!error && !showManualInput && (
+                            <div className="mt-4 flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800/50">
+                                <i className="bi bi-info-circle-fill text-blue-500 text-xl" />
+                                <p className="text-[10px] font-bold text-blue-700 dark:text-blue-300 leading-snug">
+                                    Aponte para o código de barras ou PDF. A tela ficará escura até que a câmera seja autorizada pelo navegador.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

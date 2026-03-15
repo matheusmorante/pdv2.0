@@ -4,6 +4,7 @@ import { savePerson, getPersonByIdentifiers } from '@/pages/utils/personService'
 import { toast } from "react-toastify";
 import { capitalizePerson, toTitleCase } from "../../../utils/formatters";
 import SmartInput from "../../../../components/SmartInput";
+import { getSettings } from "../../../utils/settingsService";
 import { PatternFormat as PatternFormatBase } from "react-number-format";
 const PatternFormat = PatternFormatBase as any;
 
@@ -38,6 +39,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
     });
 
     const [loading, setLoading] = useState(false);
+    const [settings, setSettings] = useState(getSettings());
     const isInitialMount = useRef(true);
 
     useEffect(() => {
@@ -103,7 +105,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        const { requiredFields } = await import("../../../utils/settingsService").then(m => m.getSettings());
+        const { requiredFields } = settings;
 
         if (!formData.fullName) {
             toast.error(formData.personType === 'PJ' ? "A Razão Social é obrigatória." : "O nome é obrigatório.");
@@ -277,7 +279,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                         {collectionName === 'employees' && (
                             <div className="md:col-span-2">
                                 <SmartInput
-                                    label="Cargo Principal *"
+                                    label={`Cargo Principal ${settings.requiredFields.customer?.position ? '*' : ''}`}
                                     value={formData.position || ""}
                                     onValueChange={(val) => setFormData({ ...formData, position: val })}
                                     patterns={['Vendedor', 'Gerente', 'Entregador', 'Montador', 'Auxiliar']}
@@ -317,7 +319,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
 
                         <div className="flex flex-col gap-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                                {formData.personType === 'PJ' ? 'CNPJ' : 'CPF'} <span className="text-red-500">*</span>
+                                {formData.personType === 'PJ' ? 'CNPJ' : 'CPF'} {settings.requiredFields.customer?.cpfCnpj ? <span className="text-red-500">*</span> : null}
                             </label>
                             <PatternFormat
                                 format={formData.personType === 'PJ' ? "##.###.###/####-##" : "###.###.###-##"}
@@ -330,7 +332,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Telefone <span className="text-red-500">*</span></label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Telefone {settings.requiredFields.customer?.phone ? <span className="text-red-500">*</span> : null}</label>
                             <div className="flex gap-2">
                                 <PatternFormat
                                     format="(##) #####-####"
@@ -356,7 +358,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                         </div>
 
                         <div className="md:col-span-2 flex flex-col gap-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">E-mail</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">E-mail {settings.requiredFields.customer?.email ? <span className="text-red-500">*</span> : null}</label>
                             <input
                                 type="email"
                                 value={formData.email}
@@ -383,7 +385,7 @@ const PersonFormModal = ({ isOpen, onClose, onSuccess, person, collectionName, t
                     <div className="flex flex-col gap-6">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-300 border-b border-slate-50 dark:border-slate-800 pb-2 flex items-center gap-2">
                             <i className="bi bi-geo-alt-fill text-blue-600"></i>
-                            Endereço
+                            Endereço {settings.requiredFields.customer?.address ? <span className="text-red-500">*</span> : null}
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="flex flex-col gap-2">
