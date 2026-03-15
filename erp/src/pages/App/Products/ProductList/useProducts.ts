@@ -83,11 +83,17 @@ export const useProducts = (filters?: any) => {
 
     const transformedProducts = useMemo(() => {
         const flattened: any[] = [];
-        filteredProducts.forEach(product => {
-            // Parent Row
-            flattened.push({ ...product, isParent: product.hasVariations });
+        const parents = filteredProducts.filter(p => !p.isVariation);
+        const independentVars = filteredProducts.filter(p => p.isVariation);
 
-            // Child Rows
+        parents.forEach(product => {
+            // Parent Row
+            const variationsFromIndependent = independentVars.filter(v => v.parentId === product.id);
+            const actuallyHasVariations = product.hasVariations || variationsFromIndependent.length > 0;
+            
+            flattened.push({ ...product, isParent: actuallyHasVariations });
+
+            // 1. Child Rows from JSON field
             if (product.hasVariations && product.variations) {
                 product.variations.forEach((v: any) => {
                     const child = {
@@ -110,7 +116,36 @@ export const useProducts = (filters?: any) => {
                     flattened.push(child);
                 });
             }
+
+            // 2. Child Rows from independent items (e.g. from imports)
+            variationsFromIndependent.forEach(v => {
+                // Avoid double showing if SKU matches one from JSON
+                // Independent products use 'code' as their SKU/Code
+                const vCode = v.code || v.sku; 
+                if (product.variations?.some((jv: any) => jv.sku === vCode)) return;
+
+                flattened.push({
+                    ...v,
+                    sku: vCode, // map code to sku for consistency in variation display
+                    isVariation: true,
+                    parentId: product.id,
+                    description: v.description.includes(product.description) ? v.description : `${product.description} - ${v.description}`
+                });
+            });
         });
+
+        // 3. Variations whose parent is NOT in the list (orphans)
+        independentVars.forEach(v => {
+            const parentInList = parents.some(p => p.id === v.parentId);
+            if (!parentInList) {
+                flattened.push({
+                    ...v,
+                    isVariation: true,
+                    isOrphan: true
+                });
+            }
+        });
+
         return flattened;
     }, [filteredProducts]);
 

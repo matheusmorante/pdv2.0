@@ -201,8 +201,8 @@ const Products = () => {
                                 onClick={() => setIsTrashOpen(true)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all shadow-sm font-bold text-xs uppercase tracking-widest border bg-white text-slate-600 border-slate-200 dark:bg-slate-900 dark:border-slate-800 hover:border-red-200 dark:hover:border-red-800 hover:text-red-500`}
                             >
-                                <i className="bi bi-trash3"></i>
-                                Lixeira
+                                <i className="bi bi-pause-circle"></i>
+                                Desativados
                             </button>
 
                             <Link
@@ -317,9 +317,9 @@ const Products = () => {
                         <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
-                                    Lixeira de Itens
+                                    Produtos Desativados
                                 </h2>
-                                <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">Gerencie produtos e serviços excluídos</p>
+                                <p className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest mt-1">Gerencie produtos e serviços desativados</p>
                             </div>
                             <button onClick={() => setIsTrashOpen(false)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
                                 <i className="bi bi-x-lg text-xl"></i>

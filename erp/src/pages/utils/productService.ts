@@ -59,6 +59,8 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.mainSupplierId !== undefined) data.main_supplier_id = product.mainSupplierId;
     if (product.supplierRef !== undefined) data.supplier_ref = product.supplierRef;
     if (product.observations !== undefined) data.observations = product.observations;
+    if (product.parentId !== undefined) data.parent_id = product.parentId;
+    if (product.isVariation !== undefined) data.is_variation = product.isVariation;
 
     return data;
 };
@@ -117,7 +119,9 @@ const mapFromDB = (data: any): Product => {
         notIncluded: data.not_included,
         mainSupplierId: data.main_supplier_id,
         supplierRef: data.supplier_ref,
-        observations: data.observations
+        observations: data.observations,
+        parentId: data.parent_id,
+        isVariation: data.is_variation
     };
 };
 
@@ -270,11 +274,71 @@ export const updateProduct = async (id: string, productToUpdate: Partial<Product
                 await supabase.from('product_categories').insert(links);
             }
         }
+
+        // --- Code Sync Logic ---
+        // If code changed or variations changed, update linked orders
+        const oldCode = currentItem.code;
+        const newCode = dbProduct.code;
+        const variationsChanged = productToUpdate.variations !== undefined;
+
+        if ((newCode && oldCode !== newCode) || variationsChanged) {
+            syncCodesInOrders(id, newCode || oldCode, productToUpdate.variations).catch(e => 
+                console.error("Erro ao sincronizar códigos nas vendas:", e)
+            );
+        }
     } catch (error: any) {
         console.error("Erro ao atualizar o produto:", error.message || error);
         if (error.details) console.error("Detalhes do erro:", error.details);
         if (error.hint) console.error("Dica:", error.hint);
         throw error;
+    }
+};
+
+/**
+ * Sincroniza códigos de produtos e variações em pedidos de venda existentes
+ */
+const syncCodesInOrders = async (productId: string, parentCode: string, variations?: Variation[]) => {
+    try {
+        // Find orders containing this product
+        const { data: orders, error } = await supabase
+            .from('orders')
+            .select('id, order_data')
+            .contains('order_data', { items: [{ productId }] });
+
+        if (error) throw error;
+        if (!orders || orders.length === 0) return;
+
+        for (const order of orders) {
+            let changed = false;
+            const orderData = order.order_data;
+            if (!orderData?.items) continue;
+
+            const updatedItems = orderData.items.map((item: any) => {
+                if (item.productId === productId) {
+                    let correctCode = parentCode;
+                    
+                    if (item.variationId && variations) {
+                        const v = variations.find((v: any) => v.id === item.variationId);
+                        if (v?.sku) correctCode = v.sku;
+                    }
+
+                    if (item.code !== correctCode) {
+                        changed = true;
+                        return { ...item, code: correctCode };
+                    }
+                }
+                return item;
+            });
+
+            if (changed) {
+                await supabase
+                    .from('orders')
+                    .update({ order_data: { ...orderData, items: updatedItems } })
+                    .eq('id', order.id);
+            }
+        }
+    } catch (err) {
+        console.error(`Falha no sync de códigos para produto ${productId}:`, err);
     }
 };
 
@@ -304,13 +368,29 @@ export const restoreProduct = async (id: string): Promise<void> => {
 
 export const permanentDeleteProduct = async (id: string): Promise<void> => {
     try {
+        // Check if there are any orders linked to this product
+        // We look inside the order_data JSON column for the productId
+        const { data: linkedOrders, error: checkError } = await supabase
+            .from('orders')
+            .select('id')
+            .contains('order_data', { items: [{ productId: id }] })
+            .limit(1);
+
+        if (checkError) {
+            console.error("Erro ao verificar vínculos do produto:", checkError);
+        }
+
+        if (linkedOrders && linkedOrders.length > 0) {
+            throw new Error("Este produto possui vendas vinculadas e não pode ser excluído permanentemente. Por favor, utilize a desativação (Mover para Lixeira).");
+        }
+
         const { error } = await supabase
             .from(TABLE_NAME)
             .delete()
             .eq('id', id);
 
         if (error) throw error;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Erro ao deletar permanentemente o produto: ", error);
         throw error;
     }

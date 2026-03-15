@@ -3,6 +3,7 @@ type DiscountType = 'percentage' | 'fixed';
 export type Item = {
     productId?: string;
     variationId?: string;
+    code?: string;
     description: string;
     quantity: number;
     unitPrice: number;

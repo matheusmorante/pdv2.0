@@ -508,6 +508,12 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             return;
         }
 
+        if (!formData.code) {
+            toast.error("O código (SKU) do produto é obrigatório.");
+            setActiveTab('geral');
+            return;
+        }
+
         if (!formData.categoryIds?.length) {
             toast.error("Selecione pelo menos uma categoria.");
             setActiveTab('geral');
@@ -518,6 +524,25 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             toast.error("O preço de venda é obrigatório.");
             setActiveTab('geral');
             return;
+        }
+
+        // Validate that variations have codes and they are different from parent
+        if (formData.hasVariations && formData.variations?.length) {
+            const invalidVar = formData.variations.find(v => !v.sku || v.sku === formData.code);
+            if (invalidVar) {
+                toast.error(`A variação "${invalidVar.name}" precisa de um SKU único e diferente do pai.`);
+                setActiveTab('variacoes');
+                return;
+            }
+            
+            // Check for duplicate SKUs within variations
+            const skus = formData.variations.map(v => v.sku);
+            const duplicateSku = skus.find((sku, index) => skus.indexOf(sku) !== index);
+            if (duplicateSku) {
+                toast.error(`Existem variações com SKUs duplicados: ${duplicateSku}`);
+                setActiveTab('variacoes');
+                return;
+            }
         }
 
         setLoading(true);

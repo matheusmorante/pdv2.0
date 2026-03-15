@@ -163,20 +163,24 @@ app.post('/api/suggest-prices', async (req, res) => {
         - Material: ${material || 'Não informado'}
         - Diferencial: ${differential || 'Não informado'}
 
-        REGRAS DE PRECIFICAÇÃO:
-        1. Opção 1 (Margem Baixa - Competitivo): Foco em giro rápido. Deve cobrir custo e taxas de cartão (+- 3.5%).
-        2. Opção 2 (Margem Média - Equilibrado): Valor recomendado. Cobre custo, taxas, impostos e operação Colombo.
-        3. Opção 3 (Margem Alta - Premium): Alta lucratividade considerando diferenciais exclusivos.
+        REGRAS DE PRECIFICAÇÃO (ESTRATÉGIA MORANTE):
+        1. Base de Cálculo: Custo de Compra (R$ ${costPrice}).
+        2. Impostos Gerais: Considere 19% sobre o preço de venda final.
+        3. Custos Fixos/Adm + Frete: Considere uma reserva de 10-15% do valor.
+        4. Margens de Lucro Líquido Desejadas:
+           - Opção 1 (Giro): Lucro Líquido de 5-10%.
+           - Opção 2 (Ideal): Lucro Líquido de 15-20%.
+           - Opção 3 (Premium): Lucro Líquido de 25-35%.
 
-        IMPORTANTE: Use números brutos. Considere taxa de cartão de 4% nos cálculos internos para sugestões realistas.
-        Siga os padrões de mercado (markup 1.4 a 2.5).
-        Retorne APENAS um objeto JSON válido com a seguinte estrutura:
+        REGRAS DE FORMATAÇÃO:
+        - Os labels devem estar em MAIÚSCULAS.
+        - Retorne APENAS um objeto JSON válido com a seguinte estrutura:
         {
-            "low": { "price": number, "label": "Competitivo (Giro)", "margin": number },
-            "medium": { "price": number, "label": "Equilibrado (Recomendado)", "margin": number },
-            "high": { "price": number, "label": "Premium (Lucros)", "margin": number }
+            "low": { "price": number, "label": "COMPETITIVO (GIRO RÁPIDO)", "margin": number },
+            "medium": { "price": number, "label": "EQUILIBRADO (IDEAL MORANTE)", "margin": number },
+            "high": { "price": number, "label": "PREMIUM (LUCRO MÁXIMO)", "margin": number }
         }
-        O campo 'margin' deve ser a porcentagem de margem de lucro sobre o CUSTO (Ex: 50 para 50%).
+        O campo 'margin' deve ser a porcentagem de margem de lucro LÍQUIDO estimada.
         Use números brutos, sem R$ ou strings no campo price e margin.`;
 
         const answer = await safePrompt("Gere as sugestões de preço agora.", systemPrompt);

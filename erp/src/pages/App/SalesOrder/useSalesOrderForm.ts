@@ -299,6 +299,7 @@ export const useSalesOrderForm = (initialDeliveryMethod: 'delivery' | 'pickup' =
                 ...newItems[idx],
                 productId: product.id,
                 variationId: variation?.id,
+                code: variation?.sku || product.code,
                 description: variation ? `${product.description} - ${variation.name}` : product.description,
                 unitPrice: (variation?.unitPrice || product.unitPrice) || 0,
                 costPrice: (variation?.costPrice || product.costPrice) || 0,

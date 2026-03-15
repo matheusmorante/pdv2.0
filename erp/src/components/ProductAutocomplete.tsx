@@ -69,7 +69,23 @@ const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({
                 if (error) throw error;
                 
                 const items: SuggestionItem[] = [];
-                (data || []).forEach((p: Product) => {
+                (data || []).forEach((raw: any) => {
+                    // Map to product type to ensure correct property names
+                    const p: Product = {
+                        id: String(raw.id),
+                        code: raw.code,
+                        description: raw.description,
+                        unitPrice: Number(raw.unit_price),
+                        costPrice: Number(raw.cost_price),
+                        stock: Number(raw.stock),
+                        minStock: Number(raw.min_stock),
+                        unit: raw.unit || 'un',
+                        active: raw.active,
+                        hasVariations: raw.has_variations,
+                        variations: raw.variations,
+                        itemType: raw.item_type || 'product'
+                    };
+
                     if (p.hasVariations && p.variations && p.variations.length > 0) {
                         p.variations.forEach(v => {
                             if (v.active !== false) {
