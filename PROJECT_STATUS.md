@@ -5,18 +5,16 @@
 ### Recent Changes (2026-03-15)
 - **AI-Powered Financial Insights**:
     - **Profit Margin & Markup**: AI suggestions now include the percentage margin (markup) for each price tier.
-    - **Real-Time Margin Calculator**: Added a live profit/margin monitor in the Inventory tab that updates as the user changes prices.
-- **Enhanced Inventory Operations**:
-    - **Auto-Increment Scanning**: The QR scanner now automatically increments the product count by +1 per scan, allowing for "series scanning" without manual input.
-    - **Visual Feedback**: Added success notifications and row highlighting (green pulse) when a product is scanned during inventory audits.
+    - **Real-Time Margin Calculator**: Added a live profit/margin monitor in the Inventory tab.
+    - **Card Fee Integration**: AI price suggestions now consider a **4% card machine fee** and operational overhead for the Colombo store.
+- **Enhanced Inventory & Manufacture**:
+    - **Hybrid Stock Management**: Added `Showroom` and `Warehouse` stock fields to distinguish physical store inventory from the central deposit. Total stock is now automatically calculated.
+    - **Manufacture Calculator**: Integrated a **Profile Handle Meter Calculator** into the product form to assist in production planning.
+    - **Auto-Increment Scanning**: The QR scanner now automatically increments count by +1 per scan.
 - **Global Text Padronization (All Caps)**:
-    - **Enforced Uppercase**: Titles, Descriptions, Marketplace Titles, and Variation Names are now automatically converted to uppercase across the ERP and in AI-generated content.
-    - **Placeholders**: All input placeholders were updated to follow the uppercase convention.
+    - **Enforced Uppercase**: Titles, Descriptions, Marketplace Titles, and Variation Names are now automatically converted to uppercase across the ERP and AI prompts.
 - **E-commerce Stability**:
-    - **Build Fixes**: Resolved Vercel build errors by fixing font dependencies (switching to Inter to avoid missing Geist errors) and adding missing libraries (`lucide-react`, `supabase-js`).
-- **Core Improvements**:
-    - **Internal Observations**: Verified and ensured the persistence of internal product observations in the database.
-    - **NCM Identification**: Updated the AI NCM identification prompt for better accuracy and formatting.
+    - **Vercel Build Stability**: Switched to Inter fonts and added missing dependencies (`lucide-react`, `supabase-js`) to resolve deployment errors.
 
 ### Recent Changes (2026-03-14)
 - **Multi-Repo Architecture**: Project successfully migrated from a monorepo (`moveismorantehub`) to a decentralized multi-repo structure inside `morante-hub`.

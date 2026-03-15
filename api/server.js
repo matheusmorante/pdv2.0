@@ -164,11 +164,12 @@ app.post('/api/suggest-prices', async (req, res) => {
         - Diferencial: ${differential || 'Não informado'}
 
         REGRAS DE PRECIFICAÇÃO:
-        1. Opção 1 (Margem Baixa - Competitivo): Foco em giro rápido e competitividade agressiva em marketplaces.
-        2. Opção 2 (Margem Média - Equilibrado): Valor justo, cobrindo custos operacionais e gerando lucro sustentável.
-        3. Opção 3 (Margem Alta - Premium): Aproveitando diferenciais e qualidade para maior lucratividade.
+        1. Opção 1 (Margem Baixa - Competitivo): Foco em giro rápido. Deve cobrir custo e taxas de cartão (+- 3.5%).
+        2. Opção 2 (Margem Média - Equilibrado): Valor recomendado. Cobre custo, taxas, impostos e operação Colombo.
+        3. Opção 3 (Margem Alta - Premium): Alta lucratividade considerando diferenciais exclusivos.
 
-        Siga os padrões de mercado de móveis (markup variando de 1.4 a 2.5 dependendo do material/qualidade).
+        IMPORTANTE: Use números brutos. Considere taxa de cartão de 4% nos cálculos internos para sugestões realistas.
+        Siga os padrões de mercado (markup 1.4 a 2.5).
         Retorne APENAS um objeto JSON válido com a seguinte estrutura:
         {
             "low": { "price": number, "label": "Competitivo (Giro)", "margin": number },

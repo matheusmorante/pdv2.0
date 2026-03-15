@@ -170,14 +170,46 @@ const ProductInventoryTab: React.FC<ProductInventoryTabProps> = ({
                     <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 flex items-center gap-2">
                         <i className="bi bi-box-seam text-blue-600"></i> Gestão de Estoque
                     </h4>
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Estoque Atual</label>
+                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Estoque Showroom</label>
+                            <input
+                                type="number"
+                                value={formData.showroomStock || 0}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value) || 0;
+                                    setFormData({ 
+                                        ...formData, 
+                                        showroomStock: val,
+                                        stock: val + (formData.warehouseStock || 0)
+                                    });
+                                }}
+                                className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-200"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Estoque Depósito</label>
+                            <input
+                                type="number"
+                                value={formData.warehouseStock || 0}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value) || 0;
+                                    setFormData({ 
+                                        ...formData, 
+                                        warehouseStock: val,
+                                        stock: (formData.showroomStock || 0) + val
+                                    });
+                                }}
+                                className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-200"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-blue-600 transition-colors">Estoque Total</label>
                             <input
                                 type="number"
                                 value={formData.stock}
-                                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) })}
-                                className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-bold dark:text-slate-200"
+                                readOnly
+                                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-black text-blue-600 dark:text-blue-400 cursor-not-allowed"
                             />
                         </div>
                         <div className="flex flex-col gap-2">

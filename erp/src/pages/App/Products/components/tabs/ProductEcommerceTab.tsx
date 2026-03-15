@@ -247,6 +247,49 @@ const ProductEcommerceTab: React.FC<ProductEcommerceTabProps> = ({
                                 />
                             </div>
                         </div>
+
+                        {/* Automated Logistics Intelligence */}
+                        {formData.pkgWidth && formData.pkgHeight && formData.pkgDepth ? (
+                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 rounded-3xl border border-blue-100 dark:border-blue-900/20 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-blue-600 rounded-2xl text-white">
+                                            <i className="bi bi-box"></i>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-blue-600">Peso Cubado (DIM)</p>
+                                            <p className="text-xl font-black text-slate-800 dark:text-slate-100">
+                                                {((formData.pkgWidth * formData.pkgHeight * formData.pkgDepth) / 6000).toFixed(2)} KG
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Fator: 6000</p>
+                                    </div>
+                                </div>
+
+                                {(((formData.pkgWidth * formData.pkgHeight * formData.pkgDepth) / 6000) > 68 || (formData.weight || 0) > 68) && (
+                                    <div className="p-6 bg-amber-500/10 rounded-3xl border border-amber-500/20 flex items-center gap-4 animate-pulse">
+                                        <div className="p-3 bg-amber-500 rounded-2xl text-white shadow-xl shadow-amber-500/20">
+                                            <i className="bi bi-exclamaion-triangle-fill"></i>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Alerta de Logística LTL</p>
+                                            <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-tight">
+                                                Este item ultrapassa 150 lbs (68kg). <br />
+                                                Requer transporte de carga fracionada (LTL).
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-center">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    Insira as dimensões para calcular o peso cubado automaticamente.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

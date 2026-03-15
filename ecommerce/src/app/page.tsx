@@ -22,46 +22,56 @@ export default async function Home(props: { searchParams: Promise<{ category?: s
   const searchParams = await props.searchParams;
   const currentCategory = searchParams.category;
 
-  // Fetch categories
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
+  let categoriesData: any[] = [];
+  let productsData: any[] = [];
 
-  // Fetch active products with category filtering logic
-  let query = supabase
-    .from("products")
-    .select("*")
-    .eq("deleted", false)
-    .eq("active", true) // Using 'active' instead of 'status' to match ERP
-    .order("created_at", { ascending: false });
+  const isConfigured = 
+    process.env.NEXT_PUBLIC_SUPABASE_URL && 
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (currentCategory) {
-    // We can filter by the category string field or via the link table.
-    // Given the previous fixes, we use the string field for simplicity if it exists,
-    // otherwise we just use the name as a filter.
-    query = query.ilike("category", `%${currentCategory}%`);
-  }
+  if (isConfigured) {
+    try {
+      // Fetch categories
+      const { data } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name");
+      categoriesData = data || [];
 
-  const { data: products, error } = await query;
+      // Fetch active products
+      let query = supabase
+        .from("products")
+        .select("*")
+        .eq("deleted", false)
+        .eq("active", true)
+        .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Erro ao carregar produtos:", error);
+      if (currentCategory) {
+        query = query.ilike("category", `%${currentCategory}%`);
+      }
+
+      const { data: products, error } = await query;
+      if (!error) productsData = products || [];
+    } catch (err) {
+      console.error("Configured but failed to fetch during build:", err);
+    }
   }
 
   // Map ERP columns to Ecomm display structure
-  const displayProducts: any[] = products?.map(p => ({
+  const displayProducts: any[] = productsData.map(p => ({
     id: p.id,
     name: p.description, // ERP uses description as title
     sku: p.code, // ERP uses code as SKU
     sale_price: p.unit_price,
-    promotional_price: null, // ERP doesn't have this yet, or it's a diff column
+    promotional_price: null,
     description: p.ecommerce_description || p.description,
     main_image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
     stock_quantity: p.stock || 0,
     status: p.active ? 'active' : 'inactive',
     category: p.category
-  })) || [];
+  }));
+
+  const categories = categoriesData;
 
   const handleFormatPrice = (val: number) => {
     return new Intl.NumberFormat("pt-BR", {

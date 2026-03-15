@@ -20,6 +20,8 @@ export type Variation = {
     finalPurchasePrice?: number;
     minStock?: number;
     comboItems?: ComboItem[];
+    showroomStock?: number;
+    warehouseStock?: number;
 };
 
 export type FiscalInfo = {
@@ -65,6 +67,8 @@ export type Product = {
     finalPurchasePrice?: number; // (costPrice + freight) * (1 + ipi/100) aprox.
     initialStock?: number;
     stock?: number;
+    showroomStock?: number;
+    warehouseStock?: number;
     minStock?: number;
     unit: string;
     active: boolean;
