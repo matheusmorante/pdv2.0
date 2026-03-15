@@ -53,7 +53,32 @@ const ProductRow = ({
             case 'description':
                 return (
                     <td key="description" className="px-6 py-4 text-left">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
+                            {/* Thumbnail with Variation Badge */}
+                            {!product.isVariation && (
+                                <div className="relative shrink-0">
+                                    {product.images?.[0] ? (
+                                        <img
+                                            src={product.images[0]}
+                                            alt=""
+                                            className="w-12 h-12 rounded-xl object-cover border border-slate-100 dark:border-slate-800 shadow-sm group-hover:scale-105 transition-transform"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-300 border border-slate-100 dark:border-slate-800 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 transition-colors">
+                                            <i className="bi bi-image text-lg"></i>
+                                        </div>
+                                    )}
+                                    {product.hasVariations && (
+                                        <div 
+                                            className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-lg border-2 border-white dark:border-slate-900 animate-in zoom-in duration-300" 
+                                            title="Possui variações"
+                                        >
+                                            <i className="bi bi-layers-fill text-[10px]"></i>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {product.isVariation && (
                                 <div className="flex items-center text-slate-300 dark:text-slate-700 ml-4 mr-1">
                                     <i className="bi bi-arrow-return-right text-sm" />

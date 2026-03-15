@@ -2,6 +2,22 @@
 
 ## Last Update: 2026-03-14
 
+### Recent Changes (2026-03-15)
+- **AI-Powered Financial Insights**:
+    - **Profit Margin & Markup**: AI suggestions now include the percentage margin (markup) for each price tier.
+    - **Real-Time Margin Calculator**: Added a live profit/margin monitor in the Inventory tab that updates as the user changes prices.
+- **Enhanced Inventory Operations**:
+    - **Auto-Increment Scanning**: The QR scanner now automatically increments the product count by +1 per scan, allowing for "series scanning" without manual input.
+    - **Visual Feedback**: Added success notifications and row highlighting (green pulse) when a product is scanned during inventory audits.
+- **Global Text Padronization (All Caps)**:
+    - **Enforced Uppercase**: Titles, Descriptions, Marketplace Titles, and Variation Names are now automatically converted to uppercase across the ERP and in AI-generated content.
+    - **Placeholders**: All input placeholders were updated to follow the uppercase convention.
+- **E-commerce Stability**:
+    - **Build Fixes**: Resolved Vercel build errors by fixing font dependencies (switching to Inter to avoid missing Geist errors) and adding missing libraries (`lucide-react`, `supabase-js`).
+- **Core Improvements**:
+    - **Internal Observations**: Verified and ensured the persistence of internal product observations in the database.
+    - **NCM Identification**: Updated the AI NCM identification prompt for better accuracy and formatting.
+
 ### Recent Changes (2026-03-14)
 - **Multi-Repo Architecture**: Project successfully migrated from a monorepo (`moveismorantehub`) to a decentralized multi-repo structure inside `morante-hub`.
     - **erp-admin** (React/Vite) isolated.

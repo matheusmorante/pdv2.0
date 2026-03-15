@@ -1,6 +1,6 @@
 import React from 'react';
 import { LabelConfig } from './Index';
-import logoMorante from '../../../../assets/logo.jpg';
+import logoMorante from '../../../../assets/logo.jpeg';
 
 interface Props {
     config: LabelConfig;
@@ -48,8 +48,8 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
             width: '100%',
             height: '100%',
             flexDirection: config.layout === 'horizontal' ? 'row' : 'column',
-            padding: '2mm',
-            gap: '2mm'
+            padding: '1.5mm',
+            gap: '1mm'
         };
     }
 
@@ -131,8 +131,8 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
                             src={logoMorante} 
                             alt="Logo" 
                             style={{ 
-                                height: '8mm', 
-                                width: '8mm', 
+                                height: '7mm', 
+                                width: '7mm', 
                                 borderRadius: '50%', 
                                 objectFit: 'cover', 
                                 border: '1px solid #f1f5f9',
@@ -162,16 +162,16 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
                 </div>
                 
                 {/* Middle Section: Descrição */}
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1mm 0' }}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5mm 0' }}>
                     {config.showName && (
                         <div style={{ 
-                            fontSize: config.text.length > 30 ? (isSquare ? '8px' : '9px') : (isSquare ? '10px' : '11px'), 
+                            fontSize: config.text.length > 30 ? (isSquare ? '8px' : '9px') : (isSquare ? '9.5px' : '10.5px'), 
                             fontWeight: '900', 
                             color: '#0f172a', 
                             textTransform: 'uppercase', 
-                            lineHeight: '1.1', 
+                            lineHeight: '1', 
                             textAlign: 'center',
-                            maxHeight: '3.3em',
+                            maxHeight: '3em',
                             overflow: 'hidden',
                             letterSpacing: '-0.02em',
                             display: '-webkit-box',
@@ -195,7 +195,7 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
                     <div style={{ display: 'flex', flexDirection: 'column', flex: isOnlyQR ? 0 : 1 }}>
                         {!isOnlyQR && config.showPrice && (
                             <div style={{ 
-                                fontSize: isSquare ? '18px' : '22px', 
+                                fontSize: isSquare ? '16px' : '20px', 
                                 fontWeight: '950', 
                                 color: '#1d4ed8', // Darker blue for contrast
                                 letterSpacing: '-0.04em',
@@ -208,12 +208,12 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
 
                     {config.showQR && (
                         <div style={{ 
-                            width: isOnlyQR ? (isSquare ? '36mm' : '26mm') : (isSquare ? '16mm' : '12mm'), 
-                            height: isOnlyQR ? (isSquare ? '36mm' : '26mm') : (isSquare ? '16mm' : '12mm'), 
+                            width: isOnlyQR ? (isSquare ? '36mm' : '26mm') : (isSquare ? '15mm' : '11mm'), 
+                            height: isOnlyQR ? (isSquare ? '36mm' : '26mm') : (isSquare ? '15mm' : '11mm'), 
                             background: 'white', 
-                            padding: isOnlyQR ? '2mm' : '1.5mm', 
+                            padding: isOnlyQR ? '2mm' : '1mm', 
                             border: '1px solid #e2e8f0',
-                            borderRadius: isOnlyQR ? '3mm' : '2mm',
+                            borderRadius: isOnlyQR ? '3mm' : '1.5mm',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',

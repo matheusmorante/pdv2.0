@@ -53,9 +53,9 @@ const VariationRow = React.memo(({ v, updateVariation, removeVariation, setFormD
                 </button>
                 <input
                     value={v.name}
-                    onChange={(e) => updateVariation(v.id, 'name', e.target.value)}
+                    onChange={(e) => updateVariation(v.id, 'name', e.target.value.toUpperCase())}
                     className="w-full bg-transparent border-none outline-none text-sm font-bold dark:text-slate-200"
-                    placeholder="Ex: Azul / P"
+                    placeholder="EX: AZUL / P"
                 />
             </div>
         </td>
@@ -139,6 +139,9 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
     const [isGeneratingComboName, setIsGeneratingComboName] = useState(false);
     const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
     const [isGeneratingNCM, setIsGeneratingNCM] = useState(false);
+    const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+    const [isSuggestingPrices, setIsSuggestingPrices] = useState(false);
+    const [suggestPricesResults, setSuggestPricesResults] = useState<{ low: any, medium: any, high: any } | null>(null);
     const [removingPhoto, setRemovingPhoto] = useState<string | null>(null);
     const [isGeneratingBulk, setIsGeneratingBulk] = useState(false);
     const [bulkVariationOptions, setBulkVariationOptions] = useState<{ name: string, values: string }[]>([
@@ -166,6 +169,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
         hasVariations: false,
         variations: [],
         images: [],
+        marketplaceTitle: "",
         condition: 'novo',
         itemType: 'product',
         active: true,
@@ -327,6 +331,11 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                 title: formData.description,
                 material: formData.material,
                 dimensions: `${formData.width}x${formData.height}x${formData.depth}`,
+                brand: formData.brand,
+                line: formData.line,
+                mainDifferential: formData.mainDifferential,
+                colors: formData.colors,
+                notIncluded: formData.notIncluded,
                 type
             });
             if (type === 'whatsapp') setFormData(prev => ({ ...prev, whatsappDescription: desc }));
@@ -336,6 +345,24 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             console.error(error);
         } finally {
             setIsGeneratingDescription(false);
+        }
+    };
+
+    const handleGenerateMarketplaceTitle = async () => {
+        if (!formData.description) return toast.warning("O produto precisa de um título base");
+        setIsGeneratingTitle(true);
+        try {
+            const { title } = await aiService.generateMarketplaceTitle({
+                description: formData.description,
+                material: formData.material,
+                differential: formData.mainDifferential
+            });
+            setFormData(prev => ({ ...prev, marketplaceTitle: title }));
+            toast.success("Título para marketplace gerado!");
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsGeneratingTitle(false);
         }
     };
 
@@ -353,6 +380,29 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             console.error(error);
         } finally {
             setIsGeneratingNCM(false);
+        }
+    };
+
+    const handleSuggestPrices = async () => {
+        if (!formData.description) return toast.warning("O produto precisa de um título");
+        if (!formData.finalPurchasePrice || formData.finalPurchasePrice <= 0) 
+            return toast.warning("Preço de custo final é necessário para sugerir preços");
+        
+        setIsSuggestingPrices(true);
+        try {
+            const suggestions = await aiService.suggestPrices({
+                description: formData.description,
+                costPrice: formData.finalPurchasePrice,
+                material: formData.material,
+                differential: formData.mainDifferential
+            });
+            setSuggestPricesResults(suggestions);
+            toast.info("Sugestões de preço geradas!");
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao sugerir preços");
+        } finally {
+            setIsSuggestingPrices(false);
         }
     };
 
@@ -412,7 +462,7 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
             });
 
             const newVars: Variation[] = combinations.map(combo => {
-                const name = Object.values(combo).join(' / ');
+                const name = Object.values(combo).join(' / ').toUpperCase();
                 return {
                     id: Math.random().toString(36).substr(2, 9),
                     name,
@@ -552,6 +602,9 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                             formData={formData}
                             setFormData={setFormData}
                             suppliers={suppliers}
+                            handleSuggestPrices={handleSuggestPrices}
+                            isSuggestingPrices={isSuggestingPrices}
+                            suggestPricesResults={suggestPricesResults}
                         />
                     )}
 
@@ -586,6 +639,8 @@ const ProductFormModal = ({ isOpen, onClose, product, initialData, onSuccess }: 
                             removePhoto={removePhoto}
                             handleGenerateAIDescription={handleGenerateAIDescription}
                             isGeneratingDescription={isGeneratingDescription}
+                            handleGenerateMarketplaceTitle={handleGenerateMarketplaceTitle}
+                            isGeneratingTitle={isGeneratingTitle}
                         />
                     )}
 

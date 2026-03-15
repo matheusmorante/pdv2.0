@@ -93,19 +93,44 @@ const ProductCard = ({
                 </div>
             </div>
 
-            <div className="mb-3">
-                <h3 className={`leading-tight line-clamp-2 ${
-                    isParent
-                        ? 'text-sm font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight'
-                        : isVariation
-                        ? 'text-xs font-bold text-slate-700 dark:text-slate-300 pl-3 border-l-2 border-indigo-200 dark:border-indigo-800'
-                        : 'text-sm font-bold text-slate-800 dark:text-slate-100'
-                }`}>
-                    {product.description}
-                </h3>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1 leading-relaxed">
-                    {getCategoryBreadcrumb(product.categoryIds || [], categoryTree)}
-                </p>
+            <div className="mb-3 flex gap-3">
+                {!isVariation && (
+                    <div className="relative shrink-0">
+                        {product.images?.[0] ? (
+                            <img
+                                src={product.images[0]}
+                                alt=""
+                                className="w-16 h-16 rounded-2xl object-cover border border-slate-100 dark:border-slate-800 shadow-sm"
+                            />
+                        ) : (
+                            <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-300 border border-slate-100 dark:border-slate-800">
+                                <i className="bi bi-image text-xl"></i>
+                            </div>
+                        )}
+                        {product.hasVariations && (
+                            <div
+                                className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-indigo-600 text-white rounded-lg flex items-center justify-center shadow-lg border-2 border-white dark:border-slate-900 animate-in zoom-in duration-300"
+                                title="Possui variações"
+                            >
+                                <i className="bi bi-layers-fill text-xs"></i>
+                            </div>
+                        )}
+                    </div>
+                )}
+                <div className="flex-1 min-w-0">
+                    <h3 className={`leading-tight line-clamp-2 ${
+                        isParent
+                            ? 'text-sm font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight'
+                            : isVariation
+                            ? 'text-xs font-bold text-slate-700 dark:text-slate-300 pl-3 border-l-2 border-indigo-200 dark:border-indigo-800'
+                            : 'text-sm font-bold text-slate-800 dark:text-slate-100'
+                    }`}>
+                        {product.description}
+                    </h3>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1 leading-relaxed">
+                        {getCategoryBreadcrumb(product.categoryIds || [], categoryTree)}
+                    </p>
+                </div>
             </div>
 
             <div className="flex justify-between items-end border-t border-slate-50 dark:border-slate-800/50 pt-2.5">

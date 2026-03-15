@@ -24,12 +24,12 @@ const LabelGrid: React.FC<Props> = ({ config, image, cellImages = {}, onCellClic
         height: '297mm',
         backgroundColor: 'white',
         margin: '0 auto',
-        padding: isRound ? '28mm 10mm' : '15mm 9.75mm', // Improved standard alignment
+        padding: isRound ? '20mm 8mm' : '8mm 6mm', // More compact margins to use more page space
         display: 'grid',
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gridAutoRows: isRound ? '40mm' : '38.1mm',
-        rowGap: isRound ? '5mm' : '0mm',
-        columnGap: isRound ? '5mm' : '0mm',
+        gridTemplateRows: isRound ? `repeat(6, 1fr)` : `repeat(7, 1fr)`,
+        rowGap: isRound ? '2mm' : '0mm',
+        columnGap: isRound ? '2mm' : '0mm',
         boxSizing: 'border-box',
         overflow: 'hidden'
     };

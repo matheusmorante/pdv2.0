@@ -6,44 +6,62 @@ interface QRScannerModalProps {
     onClose: () => void;
     onScan: (decodedText: string) => void;
     title?: string;
+    closeOnScan?: boolean;
 }
 
-const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose, onScan, title = "Escanear Produto" }) => {
+const QRScannerModal: React.FC<QRScannerModalProps> = ({ 
+    isOpen, 
+    onClose, 
+    onScan, 
+    title = "Escanear Produto",
+    closeOnScan = true
+}) => {
     const [scanner, setScanner] = useState<Html5Qrcode | null>(null);
+    const [error, setError] = useState<string | null>(null);
     const scannerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         let qrCode: Html5Qrcode | null = null;
 
         const startScanner = async () => {
-            if (isOpen && !scanner) {
+            if (isOpen) {
                 // Pequeno delay para garantir que o elemento #qr-reader está no DOM
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 300));
                 
                 try {
+                    const readerElem = document.getElementById("qr-reader");
+                    if (!readerElem) return;
+
                     qrCode = new Html5Qrcode("qr-reader");
                     setScanner(qrCode);
+                    setError(null);
 
                     await qrCode.start(
                         { facingMode: "environment" },
                         {
-                            fps: 10,
-                            qrbox: { width: 250, height: 250 },
-                            aspectRatio: 1.0
+                            fps: 15, // Aumentado um pouco para ser mais responsivo
+                            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                                const size = Math.floor(minEdge * 0.7);
+                                return { width: size, height: size };
+                            }
                         },
                         (decodedText: string) => {
                             onScan(decodedText);
-                            qrCode?.stop().then(() => {
-                                setScanner(null);
-                                onClose();
-                            }).catch((err: any) => console.error("Erro ao parar scanner:", err));
+                            if (closeOnScan) {
+                                qrCode?.stop().then(() => {
+                                    setScanner(null);
+                                    onClose();
+                                }).catch((err: any) => console.error("Erro ao parar scanner:", err));
+                            }
                         },
                         (errorMessage: string) => {
-                            // Erros de scan (não encontrou QR) são ignorados para não poluir o console
+                            // Ignorar erros de scan rotineiros
                         }
                     );
                 } catch (err: any) {
                     console.error("Falha ao iniciar o scanner:", err);
+                    setError("Não foi possível acessar a câmera. Verifique as permissões do navegador.");
                 }
             }
         };
@@ -51,8 +69,14 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose, onScan
         startScanner();
 
         return () => {
-            if (qrCode && qrCode.isScanning) {
-                qrCode.stop().catch((err: any) => console.error("Erro no cleanup do scanner:", err));
+            if (qrCode) {
+                if (qrCode.isScanning) {
+                    qrCode.stop().then(() => {
+                        qrCode?.clear();
+                    }).catch((err: any) => console.error("Erro no cleanup do scanner:", err));
+                } else {
+                    qrCode.clear();
+                }
             }
         };
     }, [isOpen]);

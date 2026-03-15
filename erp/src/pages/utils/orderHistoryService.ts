@@ -132,7 +132,7 @@ async function handleStockAndBusinessRules(orderId: string, order: Order): Promi
                 if (item.productId) {
                     const { data: p } = await supabase.from('products').select('stock, description').eq('id', item.productId).single();
                     if (p && (p.stock || 0) < item.quantity) {
-                        throw new Error(`Estoque insuficiente para o produto: ${p.description}. (Saldo: ${p.stock || 0}, Necessário: ${item.quantity})`);
+                        console.warn(`[Stock] Estoque insuficiente para ${p.description}. Saldo: ${p.stock || 0}, Necessário: ${item.quantity}. Permitindo conforme configuração.`);
                     }
                 }
             }

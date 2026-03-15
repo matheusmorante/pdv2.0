@@ -3,6 +3,7 @@ import Product from '../../../../types/product.type';
 import SmartInput from '../../../../../components/SmartInput';
 import CategoryAutocomplete from '../../../../../components/CategoryAutocomplete';
 import { toast } from 'react-toastify';
+import { generateProductCode } from '../../../../utils/formatters';
 
 interface ProductGeneralTabProps {
     formData: Partial<Product>;
@@ -52,22 +53,41 @@ const ProductGeneralTab: React.FC<ProductGeneralTabProps> = ({
                 <input
                     required
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value.toUpperCase() })}
                     className="w-full px-4 py-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm font-bold text-slate-700 dark:text-slate-200"
-                    placeholder={formData.isCombo ? "Ex: Jogo de Jantar Moderno 4 Cadeiras" : "Ex: Camiseta Algodão Egípcio Premium"}
+                    placeholder={formData.isCombo ? "Ex: JOGO DE JANTAR MODERNO 4 CADEIRAS" : "Ex: CAMISETA ALGODÃO EGÍPCIO PREMIUM"}
                 />
             </div>
 
             <div className="grid grid-cols-2 gap-6 md:col-span-2">
-                <SmartInput
-                    label="Código (SKU Principal) *"
-                    value={formData.code}
-                    onValueChange={(val) => setFormData({ ...formData, code: val })}
-                    tableName="products"
-                    columnName="code"
-                    placeholder="Ex: PROD-001"
-                    icon="bi-upc-scan"
-                />
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                            Código (SKU Principal) <span className="text-red-500">*</span>
+                        </label>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (!formData.description) return toast.warning("Digite o título para gerar o SKU");
+                                const newCode = generateProductCode(formData.description);
+                                setFormData({ ...formData, code: newCode });
+                                toast.info(`SKU Sugerido: ${newCode}`);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 transition-all"
+                            title="Regerar SKU baseado no título"
+                        >
+                            <i className="bi bi-magic"></i> Sugerir SKU
+                        </button>
+                    </div>
+                    <SmartInput
+                        value={formData.code}
+                        onValueChange={(val) => setFormData({ ...formData, code: val.toUpperCase() })}
+                        tableName="products"
+                        columnName="code"
+                        placeholder="Ex: PROD-001"
+                        icon="bi-upc-scan"
+                    />
+                </div>
                 <SmartInput
                     label="Unidade de Medida"
                     value={formData.unit || "UN"}
@@ -362,6 +382,21 @@ const ProductGeneralTab: React.FC<ProductGeneralTabProps> = ({
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* Observations */}
+            <div className="md:col-span-2 mt-4">
+                <div className="bg-slate-50/50 dark:bg-slate-950/20 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                        Observações Internas (Não visível no marketplace)
+                    </label>
+                    <textarea
+                        value={formData.observations || ''}
+                        onChange={(e) => setFormData({ ...formData, observations: e.target.value })}
+                        placeholder="Digite notas internas sobre este produto, processos ou detalhes específicos..."
+                        className="w-full h-32 px-4 py-4 bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl outline-none text-sm font-medium dark:text-slate-200 resize-none"
+                    />
                 </div>
             </div>
         </div>

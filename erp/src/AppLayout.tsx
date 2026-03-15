@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 import { crmIntelligenceService } from "./pages/utils/crmIntelligenceService";
 import { useEffect } from "react";
 import { redeConciliationService } from '@/pages/services/redeConciliationService';
-import logoMorante from "./assets/logo.jpg";
+import logoMorante from "./assets/logo.jpeg";
 
 export type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | 'finance' | 'design' | null;
 

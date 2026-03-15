@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import Order from "../types/order.type";
-import logoMorante from "../../assets/logo.jpg";
+import logoMorante from "../../assets/logo.jpeg";
 
 const ShippingLabelPage = () => {
     const storedOrder = sessionStorage.getItem('order');

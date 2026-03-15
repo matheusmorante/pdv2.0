@@ -7,7 +7,7 @@ import { saveInventoryMove } from '../../../../pages/utils/inventoryService';
 import { supabase } from '@/pages/utils/supabaseConfig';
 import LabelGrid from './LabelGrid';
 import { formatCurrency, slugify } from '../../../utils/formatters';
-import logoMorante from '../../../../assets/logo.jpg';
+import logoMorante from '../../../../assets/logo.jpeg';
 import labelMdf from '../../../../assets/label_mdf.png';
 
 export type LabelType = 'round' | 'rect';

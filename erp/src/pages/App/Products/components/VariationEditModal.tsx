@@ -122,16 +122,16 @@ const VariationEditModal = ({ isOpen, onClose, variation, parentProduct, onSave 
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nome da Variação</label>
                                     <input
                                         value={localVariation.name}
-                                        onChange={(e) => handleChange('name', e.target.value)}
+                                        onChange={(e) => handleChange('name', e.target.value.toUpperCase())}
                                         className="w-full bg-slate-50 dark:bg-slate-950 px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-800 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-sm"
-                                        placeholder="Ex: Cor: Azul / Tam: G"
+                                        placeholder="EX: COR: AZUL / TAM: G"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">SKU / Código</label>
                                     <input
                                         value={localVariation.sku}
-                                        onChange={(e) => handleChange('sku', e.target.value)}
+                                        onChange={(e) => handleChange('sku', e.target.value.toUpperCase())}
                                         className="w-full bg-slate-50 dark:bg-slate-950 px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-800 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold text-sm"
                                         placeholder="SKU-VAR-001"
                                     />

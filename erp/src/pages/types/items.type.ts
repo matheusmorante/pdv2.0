@@ -14,6 +14,8 @@ export type Item = {
     deliveryMethod?: 'delivery' | 'pickup';
     isCombo?: boolean;
     isComboItem?: boolean;
+    currentStock?: number;
+    minStock?: number;
 }
 
 export type ItemsSummary = {

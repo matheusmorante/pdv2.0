@@ -80,8 +80,15 @@ const StockList = ({ onLaunch }: StockListProps) => {
                                 <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
                                     <td className="px-4 md:px-8 py-3 md:py-5">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 dark:group-hover:bg-emerald-900/30 transition-all shrink-0">
-                                                <i className="bi bi-box-seam text-lg"></i>
+                                            <div className="relative shrink-0">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 dark:group-hover:bg-emerald-900/30 transition-all">
+                                                    <i className="bi bi-box-seam text-lg"></i>
+                                                </div>
+                                                {product.hasVariations && (
+                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white rounded-md flex items-center justify-center shadow-lg border-2 border-white dark:border-slate-800 animate-in zoom-in duration-300">
+                                                        <i className="bi bi-layers-fill text-[8px]"></i>
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="flex flex-col min-w-[120px]">
                                                 <span className="block font-bold text-slate-700 dark:text-slate-200 truncate">{product.description}</span>

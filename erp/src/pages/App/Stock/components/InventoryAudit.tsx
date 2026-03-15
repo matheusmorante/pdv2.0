@@ -174,22 +174,33 @@ const InventoryAudit = () => {
             <QRScannerModal 
                 isOpen={isScannerOpen} 
                 onClose={() => setIsScannerOpen(false)} 
+                closeOnScan={false} // Allow multiple scans
                 onScan={(code) => {
-                    setSearch(code);
-                    setIsScannerOpen(false);
-                    // Automaticamente tenta focar no input do item se encontrado
-                    setTimeout(() => {
-                        const row = document.querySelector(`tr[data-code="${code}"]`);
-                        if (row) {
-                            const input = row.querySelector('input') as HTMLInputElement;
-                            if (input) {
-                                input.focus();
-                                input.select();
+                    const item = flatItems.find(fi => fi.code === code);
+                    if (item) {
+                        setCounts(prev => {
+                            const currentVal = prev[item.id] || "0";
+                            const newVal = (parseFloat(currentVal) + 1).toString();
+                            return { ...prev, [item.id]: newVal };
+                        });
+                        toast.success(`+1: ${item.name}`, { autoClose: 1000, position: "top-center" });
+                        
+                        // Scroll to the row and highlight it
+                        setTimeout(() => {
+                            const row = document.querySelector(`tr[data-code="${code}"]`);
+                            if (row) {
+                                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                row.classList.add('bg-emerald-50', 'dark:bg-emerald-900/20');
+                                setTimeout(() => {
+                                    row.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
+                                }, 2000);
                             }
-                        }
-                    }, 300);
+                        }, 100);
+                    } else {
+                        toast.error(`Código "${code}" não encontrado na lista.`, { autoClose: 2000 });
+                    }
                 }}
-                title="Escanear para Contagem"
+                title="Contagem por Escaneamento"
             />
 
             <div className="overflow-x-auto">

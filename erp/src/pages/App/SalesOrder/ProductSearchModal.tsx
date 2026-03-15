@@ -180,7 +180,16 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
                                                     </span>
                                                 </td>
                                                 <td className="hidden xs:table-cell px-4 py-4 text-center">
-                                                    <span className={`text-xs font-bold ${p.stock && p.stock <= (p.minStock || 0) ? 'text-red-500' : 'text-slate-500'}`}>
+                                                    <span className={`text-xs font-bold ${
+                                                        p.itemType === 'service' ? 'text-slate-500' :
+                                                        (p.isCombo 
+                                                            ? (p.comboItems?.length && Math.min(...p.comboItems.map(i => Math.floor((i.stock || 0) / (i.quantity || 1)))) <= 0)
+                                                            : (p.stock || 0) <= 0)
+                                                        ? 'text-amber-500' 
+                                                        : (p.stock && p.stock <= (p.minStock || 0) ? 'text-red-500' : 'text-slate-500')
+                                                    }`}
+                                                    title={(p.itemType !== 'service' && (p.stock || 0) <= 0) ? "Atenção: Item esgotado no sistema. Verifique disponibilidade física." : ""}
+                                                    >
                                                         {p.itemType === 'service' ? '∞' : (
                                                             p.isCombo
                                                                 ? (p.comboItems?.length
@@ -188,6 +197,7 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
                                                                     : 0)
                                                                 : (p.stock || 0)
                                                         )}
+                                                        {p.itemType !== 'service' && (p.stock || 0) <= 0 && <i className="bi bi-exclamation-triangle-fill ml-1 animate-pulse" />}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-4 text-right">
@@ -230,8 +240,10 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
                                                         </span>
                                                     </td>
                                                     <td className="hidden xs:table-cell px-4 py-3 text-center">
-                                                        <span className={`text-[10px] font-bold ${v.stock <= (v.minStock || 0) ? 'text-red-400' : 'text-slate-400'}`}>
+                                                        <span className={`text-[10px] font-bold ${v.stock <= 0 ? 'text-amber-500' : (v.stock <= (v.minStock || 0) ? 'text-red-400' : 'text-slate-400')}`}
+                                                              title={v.stock <= 0 ? "Atenção: Variação esgotada no sistema. Verifique disponibilidade física." : ""}>
                                                             {v.stock}
+                                                            {v.stock <= 0 && <i className="bi bi-exclamation-triangle-fill ml-1 animate-pulse" />}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-3 text-right">

@@ -91,6 +91,7 @@ export type Product = {
     // Ecommerce & Marketplace
     images?: string[];
     brand?: string;
+    marketplaceTitle?: string;
     ecommerceDescription?: string;
     whatsappDescription?: string;
     ecommerceTemplate?: string;
@@ -122,6 +123,9 @@ export type Product = {
 
     // Per-product notification configuration
     notificationConfig?: ProductNotificationConfig;
+
+    // Adicional
+    observations?: string;
 };
 
 export type ProductNotificationConfig = {

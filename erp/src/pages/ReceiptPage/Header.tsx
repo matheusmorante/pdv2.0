@@ -1,4 +1,4 @@
-import logo from '../../assets/logo.jpg';
+import logo from '../../assets/logo.jpeg';
 import { getSettings } from '@/pages/utils/settingsService';
 
 interface Props {

@@ -417,7 +417,7 @@ RESPOSTA NO FORMATO JSON:
         compactMode: false
     },
     businessRules: {
-        allowNegativeStock: false,
+        allowNegativeStock: true, // Default to true to prevent blocking sales
         autoReserveStock: true
     },
     inventoryAutomation: {

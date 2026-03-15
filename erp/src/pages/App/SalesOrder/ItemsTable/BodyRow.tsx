@@ -83,6 +83,11 @@ const BodyRow = ({ item, onChange, onSelectProduct, onToggleDiscountType, onDele
                                     Combo
                                 </span>
                             )}
+                            {item.currentStock !== undefined && item.currentStock <= 0 && (
+                                <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-600 rounded text-[8px] font-black uppercase tracking-widest border border-amber-200 animate-pulse" title="Item esgotado no estoque. Verifique disponibilidade física antes de prosseguir.">
+                                    <i className="bi bi-exclamation-triangle-fill" /> Esgotado
+                                </span>
+                            )}
                         </div>
                         {error && (
                             <div className="absolute left-4 -top-8 hidden group-hover/desc:flex items-center px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-lg z-50 whitespace-nowrap font-sans">

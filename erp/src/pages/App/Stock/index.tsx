@@ -52,7 +52,7 @@ const StockPage = () => {
                                     onClick={() => setActiveTab('audit')}
                                     className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all pb-1 border-b-2 ${activeTab === 'audit' ? 'text-emerald-600 border-emerald-600' : 'text-slate-400 border-transparent hover:text-slate-600'}`}
                                 >
-                                    Inventário / Balanço
+                                    Inventário
                                 </button>
                             </div>
                         </div>

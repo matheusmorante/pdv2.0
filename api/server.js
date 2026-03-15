@@ -40,12 +40,16 @@ async function safePrompt(prompt, systemPrompt = null) {
         return response.text();
     } catch (error) {
         console.error("Gemini Error:", error.message);
+        addLog("AI_ERROR", `Erro no Gemini: ${error.message}`);
         
+        // Detailed error for developers
+        console.error("DEBUG - Full Error:", error);
+
         // MOCK FALLBACK for BI processing
         if (prompt.includes("JSON")) {
             return JSON.stringify({
                 product: "Desconhecido",
-                reason: "Erro de Conexão",
+                reason: `Erro de Conexão: ${error.message}`,
                 objections: ["O sistema não conseguiu processar os detalhes no momento"],
                 sentiment: "Neutro",
                 customer_profile: "Não identificado",
@@ -55,7 +59,7 @@ async function safePrompt(prompt, systemPrompt = null) {
                 next_step: "Salvar relato bruto"
             });
         }
-        return JSON.stringify({ error: "Serviço de IA temporariamente indisponível." });
+        return JSON.stringify({ error: `Serviço de IA indisponível: ${error.message}` });
     }
 }
 
@@ -73,6 +77,122 @@ app.post('/api/generate-description', async (req, res) => {
         const answer = await safePrompt(prompt);
         res.json({ description: answer });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/generate-product-description', async (req, res) => {
+    try {
+        const { title, material, dimensions, brand, line, mainDifferential, colors, notIncluded, type } = req.body;
+        addLog("PRODUCT_DESCRIPTION", `Gerando descrição ${type} para: ${title}`);
+
+        const systemPrompt = `Você é um especialista em vendas e copywriting de móveis da "Móveis Morante". 
+        Seu objetivo é criar descrições altamente persuasivas e profissionais que destaquem a qualidade e o benefício do produto.
+
+        DADOS DO PRODUTO:
+        - Título: ${title}
+        - Marca: ${brand || 'Móveis Morante'}
+        - Material: ${material || 'Não informado'}
+        - Dimensões: ${dimensions || 'Não informado'}
+        - Linha/Modelo: ${line || 'Não informado'}
+        - Diferencial: ${mainDifferential || 'Não informado'}
+        - Cores: ${colors || 'Não informado'}
+        - O que NÃO acompanha: ${notIncluded || 'Não informado'}
+
+        FORMATAÇÃO DESEJADA:
+        ${type === 'whatsapp' 
+            ? 'Crie um texto curto, direto, com tópicos e emojis. Foco em urgência e praticidade para conversas no WhatsApp.' 
+            : 'Crie uma descrição completa, estruturada com cabeçalhos, rica em detalhes técnicos e com foco em SEO para loja virtual. Use um tom elegante e profissional.'}
+
+        REGRAS:
+        - TUDO EM MAIÚSCULAS (ALL CAPS). Nunca use letras minúsculas.
+        - Nunca invente características que não foram fornecidas.
+        - Use uma linguagem que passe confiança e qualidade.
+        - Não coloque preços, a menos que explicitamente solicitado (o que não é o caso aqui).`;
+
+        const answer = await safePrompt("Gere a descrição agora.", systemPrompt);
+        res.json({ description: answer });
+    } catch (error) {
+        addLog("ERROR", `Erro ao gerar descrição: ${error.message}`);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/generate-marketplace-title', async (req, res) => {
+    try {
+        const { description, material, differential } = req.body;
+        addLog("MARKETPLACE_TITLE", `Gerando título para: ${description}`);
+
+        const systemPrompt = `Você é um especialista em vendas e SEO para marketplaces como Mercado Livre, Shopee e Magalu.
+        Sua tarefa é criar um TÍTULO DE ALTO IMPACTO (máximo 60 caracteres) para o produto fornecido.
+
+        DADOS DO PRODUTO:
+        - Título base/Descrição curta: ${description}
+        - Material: ${material || 'Não informado'}
+        - Diferencial: ${differential || 'Não informado'}
+
+        REGRAS DE OURO PARA O TÍTULO:
+        1. TUDO EM MAIÚSCULAS (ALL CAPS). Nunca use letras minúsculas.
+        2. Comece com o nome principal do produto (EX: GUARDA-ROUPA, SOFÁ, PAINEL).
+        3. Inclua o material principal ou característica chave.
+        4. Inclua o diferencial principal de forma curta.
+        5. Mantenha o título com no máximo 60 caracteres.
+        6. Não use emojis no título.
+        7. Não use a palavra "Oferta" ou "Promoção" (marketplaces proíbem).
+        8. Retorne APENAS o título gerado, sem aspas, explicações ou saudações.`;
+
+        const answer = await safePrompt("Gere o título agora.", systemPrompt);
+        res.json({ title: answer.trim().replace(/^"|"$/g, '') });
+    } catch (error) {
+        addLog("ERROR", `Erro ao gerar título: ${error.message}`);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/suggest-prices', async (req, res) => {
+    try {
+        const { description, costPrice, material, differential } = req.body;
+        addLog("PRICE_SUGGESTION", `Sugerindo preços para: ${description} (Custo: ${costPrice})`);
+
+        const systemPrompt = `Você é um consultor financeiro e especialista em precificação para o setor moveleiro brasileiros.
+        Sua tarefa é sugerir três valores de venda baseados no custo do produto e no seu posicionamento de mercado.
+
+        DADOS DO PRODUTO:
+        - Produto: ${description}
+        - Preço de Custo (Final): R$ ${costPrice}
+        - Material: ${material || 'Não informado'}
+        - Diferencial: ${differential || 'Não informado'}
+
+        REGRAS DE PRECIFICAÇÃO:
+        1. Opção 1 (Margem Baixa - Competitivo): Foco em giro rápido e competitividade agressiva em marketplaces.
+        2. Opção 2 (Margem Média - Equilibrado): Valor justo, cobrindo custos operacionais e gerando lucro sustentável.
+        3. Opção 3 (Margem Alta - Premium): Aproveitando diferenciais e qualidade para maior lucratividade.
+
+        Siga os padrões de mercado de móveis (markup variando de 1.4 a 2.5 dependendo do material/qualidade).
+        Retorne APENAS um objeto JSON válido com a seguinte estrutura:
+        {
+            "low": { "price": number, "label": "Competitivo (Giro)", "margin": number },
+            "medium": { "price": number, "label": "Equilibrado (Recomendado)", "margin": number },
+            "high": { "price": number, "label": "Premium (Lucros)", "margin": number }
+        }
+        O campo 'margin' deve ser a porcentagem de margem de lucro sobre o CUSTO (Ex: 50 para 50%).
+        Use números brutos, sem R$ ou strings no campo price e margin.`;
+
+        const answer = await safePrompt("Gere as sugestões de preço agora.", systemPrompt);
+        
+        const jsonMatch = answer.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                const parsed = JSON.parse(jsonMatch[0]);
+                res.json(parsed);
+            } catch (e) {
+                throw new Error("Falha ao processar JSON da IA");
+            }
+        } else {
+            throw new Error("IA não retornou um JSON válido");
+        }
+    } catch (error) {
+        addLog("ERROR", `Erro ao sugerir preços: ${error.message}`);
         res.status(500).json({ error: error.message });
     }
 });

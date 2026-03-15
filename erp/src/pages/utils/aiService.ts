@@ -65,7 +65,26 @@ export const aiService = {
         return await callAIBackend("generate-description", productData);
     },
 
-    async generateProductDescription(data: { title: string; material?: string; dimensions?: string; type: 'whatsapp' | 'ecommerce' }) {
+    async generateMarketplaceTitle(data: { 
+        description: string;
+        material?: string;
+        differential?: string;
+    }) {
+        if (!data.description) throw new Error("Título base/descrição é obrigatório");
+        return await callAIBackend("generate-marketplace-title", data);
+    },
+
+    async generateProductDescription(data: { 
+        title: string; 
+        material?: string; 
+        dimensions?: string; 
+        brand?: string;
+        line?: string;
+        mainDifferential?: string;
+        colors?: string;
+        notIncluded?: string;
+        type: 'whatsapp' | 'ecommerce' 
+    }) {
         return await callAIBackend("generate-product-description", data);
     },
 
@@ -105,5 +124,10 @@ export const aiService = {
             console.error("Erro extraindo o NCM", error);
             throw new Error("Não foi possível gerar um NCM automaticamente. Verifique se a IA respondeu num formato válido.");
         }
+    },
+
+    async suggestPrices(data: { description: string, costPrice: number, material?: string, differential?: string }) {
+        if (!data.description || !data.costPrice) throw new Error("Título e Preço de Custo são obrigatórios");
+        return await callAIBackend("suggest-prices", data);
     }
 };

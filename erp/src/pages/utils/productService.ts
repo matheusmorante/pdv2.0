@@ -58,6 +58,7 @@ const mapToDB = (product: Partial<Product>) => {
     if (product.notIncluded !== undefined) data.not_included = product.notIncluded;
     if (product.mainSupplierId !== undefined) data.main_supplier_id = product.mainSupplierId;
     if (product.supplierRef !== undefined) data.supplier_ref = product.supplierRef;
+    if (product.observations !== undefined) data.observations = product.observations;
 
     return data;
 };
@@ -115,7 +116,8 @@ const mapFromDB = (data: any): Product => {
         colors: data.colors,
         notIncluded: data.not_included,
         mainSupplierId: data.main_supplier_id,
-        supplierRef: data.supplier_ref
+        supplierRef: data.supplier_ref,
+        observations: data.observations
     };
 };
 

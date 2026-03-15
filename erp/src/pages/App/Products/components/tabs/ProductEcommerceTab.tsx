@@ -13,6 +13,8 @@ interface ProductEcommerceTabProps {
     removePhoto: (url: string) => void;
     handleGenerateAIDescription: (type: 'whatsapp' | 'ecommerce') => void;
     isGeneratingDescription: boolean;
+    handleGenerateMarketplaceTitle: () => void;
+    isGeneratingTitle: boolean;
 }
 
 const ProductEcommerceTab: React.FC<ProductEcommerceTabProps> = ({
@@ -26,7 +28,9 @@ const ProductEcommerceTab: React.FC<ProductEcommerceTabProps> = ({
     removingPhoto,
     removePhoto,
     handleGenerateAIDescription,
-    isGeneratingDescription
+    isGeneratingDescription,
+    handleGenerateMarketplaceTitle,
+    isGeneratingTitle
 }) => {
     return (
         <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -104,51 +108,89 @@ const ProductEcommerceTab: React.FC<ProductEcommerceTabProps> = ({
 
             {/* DESCRIPTIONS SUB-TAB */}
             {activeEcommerceSubTab === 'descriptions' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 animate-in fade-in duration-300">
-                    {/* WhatsApp Marketplace */}
-                    <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-10 animate-in fade-in duration-300">
+                    {/* Marketplace Title Section */}
+                    <div className="bg-blue-50/50 dark:bg-blue-950/20 p-8 rounded-[2.5rem] border border-blue-100 dark:border-blue-900/30 flex flex-col gap-6">
                         <div className="flex items-center justify-between">
-                            <h5 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
-                                <i className="bi bi-whatsapp"></i> Catálogo WhatsApp
-                            </h5>
+                            <div className="flex flex-col gap-1">
+                                <h5 className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+                                    <i className="bi bi-megaphone"></i> Título para Marketplace
+                                </h5>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Este título será usado em Mercado Livre, Shopee, etc.</p>
+                            </div>
                             <button
                                 type="button"
-                                onClick={() => handleGenerateAIDescription('whatsapp')}
-                                disabled={isGeneratingDescription}
-                                className="text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg hover:bg-emerald-200"
+                                onClick={handleGenerateMarketplaceTitle}
+                                disabled={isGeneratingTitle}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50"
                             >
-                                <i className="bi bi-stars"></i> IA: Gerar Descrição
+                                {isGeneratingTitle ? <i className="bi bi-arrow-repeat animate-spin"></i> : <i className="bi bi-stars"></i>}
+                                IA: Gerar Título Otimizado
                             </button>
                         </div>
-                        <textarea
-                            value={formData.whatsappDescription || ''}
-                            onChange={(e) => setFormData({ ...formData, whatsappDescription: e.target.value })}
-                            className="w-full h-64 p-5 bg-emerald-50/20 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/30 rounded-[2rem] outline-none text-xs leading-relaxed font-bold custom-scrollbar"
-                            placeholder="Descrição atraente para vendas rápidas no WhatsApp..."
+                        <input
+                            type="text"
+                            maxLength={60}
+                            value={formData.marketplaceTitle || ''}
+                            onChange={(e) => setFormData({ ...formData, marketplaceTitle: e.target.value.toUpperCase() })}
+                            className="w-full px-6 py-4 bg-white dark:bg-slate-950 border border-blue-100 dark:border-blue-900/30 rounded-2xl outline-none text-sm font-bold dark:text-slate-200 placeholder:text-slate-300"
+                            placeholder="EX: GUARDA-ROUPA CASAL 6 PORTAS EM MADEIRA MACIÇA"
                         />
+                        <div className="flex justify-end">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{(formData.marketplaceTitle || '').length}/60 caracteres</span>
+                        </div>
                     </div>
 
-                    {/* E-commerce Full */}
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-between">
-                            <h5 className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
-                                <i className="bi bi-globe"></i> Loja Virtual / Site
-                            </h5>
-                            <button
-                                type="button"
-                                onClick={() => handleGenerateAIDescription('ecommerce')}
-                                disabled={isGeneratingDescription}
-                                className="text-[9px] font-black uppercase tracking-widest bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200"
-                            >
-                                <i className="bi bi-stars"></i> IA: Gerar Descrição
-                            </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        {/* WhatsApp Marketplace */}
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center justify-between">
+                                <h5 className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+                                    <i className="bi bi-whatsapp"></i> Catálogo WhatsApp
+                                </h5>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleGenerateAIDescription('whatsapp')}
+                                        disabled={isGeneratingDescription}
+                                        className="text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg hover:bg-emerald-200 flex items-center gap-1.5"
+                                    >
+                                        <i className="bi bi-stars"></i> IA: Descrever
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea
+                                value={formData.whatsappDescription || ''}
+                                onChange={(e) => setFormData({ ...formData, whatsappDescription: e.target.value.toUpperCase() })}
+                                className="w-full h-64 p-5 bg-emerald-50/20 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/30 rounded-[2rem] outline-none text-xs leading-relaxed font-bold custom-scrollbar"
+                                placeholder="DESCRIÇÃO ATRAENTE PARA VENDAS RÁPIDAS NO WHATSAPP..."
+                            />
                         </div>
-                        <textarea
-                            value={formData.ecommerceDescription || ''}
-                            onChange={(e) => setFormData({ ...formData, ecommerceDescription: e.target.value })}
-                            className="w-full h-64 p-5 bg-blue-50/20 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/30 rounded-[2rem] outline-none text-xs leading-relaxed font-bold custom-scrollbar"
-                            placeholder="Descrição completa com especificações técnicas e SEO..."
-                        />
+
+                        {/* E-commerce Full */}
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center justify-between">
+                                <h5 className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+                                    <i className="bi bi-globe"></i> Loja Virtual / Site
+                                </h5>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleGenerateAIDescription('ecommerce')}
+                                        disabled={isGeneratingDescription}
+                                        className="text-[9px] font-black uppercase tracking-widest bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 flex items-center gap-1.5"
+                                    >
+                                        <i className="bi bi-stars"></i> IA: Descrever
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea
+                                value={formData.ecommerceDescription || ''}
+                                onChange={(e) => setFormData({ ...formData, ecommerceDescription: e.target.value.toUpperCase() })}
+                                className="w-full h-64 p-5 bg-blue-50/20 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/30 rounded-[2rem] outline-none text-xs leading-relaxed font-bold custom-scrollbar"
+                                placeholder="DESCRIÇÃO COMPLETA COM ESPECIFICAÇÕES TÉCNICAS E SEO..."
+                            />
+                        </div>
                     </div>
                 </div>
             )}

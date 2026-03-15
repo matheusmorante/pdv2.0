@@ -49,6 +49,8 @@ const Body = ({ items, setItems, deliveryMethod, errors }: Props) => {
                 unitPrice: (variation ? variation.unitPrice : product.unitPrice) || 0,
                 condition: product.condition || '',
                 isCombo: product.isCombo,
+                currentStock: variation ? variation.stock : product.stock,
+                minStock: variation ? variation.minStock : product.minStock,
             });
 
             // If it's a combo, add linked items
