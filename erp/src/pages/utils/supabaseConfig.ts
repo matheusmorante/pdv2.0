@@ -1,15 +1,44 @@
 import { createClient } from "@supabase/supabase-js";
 
-const isMissingKeys = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "public-anon-key-placeholder";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-const logger = (globalThis as any).console;
+const isConfigured = supabaseUrl && supabaseKey && supabaseUrl.startsWith('https://')
 
-if (isMissingKeys) {
-  if (logger) logger.warn("Supabase URL ou Key não encontrados em .env. Por favor, configure as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.");
+if (!isConfigured) {
+  console.warn("⚠️ Supabase environment variables are missing (VITE_SUPABASE_URL/KEY). Using dummy client.");
 }
 
-if (logger) logger.log('[Supabase] Initializing client with URL:', supabaseUrl);
-export const supabase = createClient(supabaseUrl, supabaseKey);
-if (logger) logger.log('[Supabase] Client created.');
+// Helper for chainable dummy
+const createDummyQuery = () => {
+    const query: any = {
+        select: () => query,
+        order: () => query,
+        eq: () => query,
+        ilike: () => query,
+        limit: () => query,
+        then: (fn: any) => Promise.resolve(fn({ data: [], error: null })),
+        catch: () => query
+    };
+    return query;
+};
+
+export const supabase = isConfigured
+  ? createClient(supabaseUrl, supabaseKey)
+  : ({
+      from: () => createDummyQuery(),
+      auth: {
+        getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+        getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+        signInWithOAuth: () => { 
+            alert("Erro: O sistema não está configurado. Cadastre as chaves VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no painel da Vercel.");
+            return Promise.resolve({ data: null, error: new Error('Not configured') });
+        },
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      },
+      storage: {
+        from: () => ({
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+        })
+      }
+    } as any);

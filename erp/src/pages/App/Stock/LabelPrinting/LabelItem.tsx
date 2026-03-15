@@ -93,7 +93,98 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
         );
     }
 
-    // Renderização para Modelos Quadrados ou Retangulares
+    // Especial handling for SKU + NAME in Header and BIG QR below
+    if (config.preset === 'qr_product') {
+        return (
+            <div style={{
+                ...containerStyle,
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                padding: '1mm',
+            }}>
+                {/* Header: [SKU] PRODUCT NAME (Single line) */}
+                <div style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    borderBottom: '0.1px solid #eee',
+                    paddingBottom: '0.5mm',
+                    marginBottom: '1mm',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden'
+                }}>
+                    <span style={{
+                        fontSize: '8px',
+                        fontWeight: '900',
+                        color: '#1e293b',
+                        backgroundColor: '#f1f5f9',
+                        padding: '0.1mm 1mm',
+                        borderRadius: '0.5mm',
+                        fontFamily: 'monospace'
+                    }}>
+                        {config.sku}
+                    </span>
+                    <span style={{
+                        fontSize: '9px',
+                        fontWeight: '950',
+                        color: '#0f172a',
+                        textTransform: 'uppercase',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                    }}>
+                        {config.text}
+                    </span>
+                </div>
+
+                {/* Body: Massive QR Code */}
+                <div style={{
+                    flex: 1,
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'white',
+                }}>
+                    {config.qrContent ? (
+                        <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(config.qrContent)}`} 
+                            alt="QR Code" 
+                            style={{ 
+                                height: '95%', 
+                                width: 'auto', 
+                                maxWidth: '100%',
+                                imageRendering: 'pixelated' 
+                            }}
+                        />
+                    ) : (
+                        <i className="bi bi-qr-code text-slate-200 text-6xl"></i>
+                    )}
+                </div>
+
+                {/* Footer optional price if enabled */}
+                {config.showPrice && (
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '2mm',
+                        right: '2mm',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        padding: '0.5mm 1.5mm',
+                        borderRadius: '1mm',
+                        fontSize: '12px',
+                        fontWeight: '950',
+                        color: '#1d4ed8',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        zIndex: 10
+                    }}>
+                        {config.price}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // Renderização para Modelos Quadrados ou Retangulares (Default)
     return (
         <div style={containerStyle}>
             {/* Marca d'água ou fundo se houver imagem customizada */}

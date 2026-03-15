@@ -25,10 +25,18 @@ const StockList = ({ onLaunch }: StockListProps) => {
         return () => unsubscribe();
     }, []);
 
-    const filtered = products.filter(p => 
-        p.description.toLowerCase().includes(search.toLowerCase()) || 
-        p.code?.toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = products.filter(p => {
+        const searchLower = search.toLowerCase();
+        const matchesParent = p.description.toLowerCase().includes(searchLower) || 
+                             p.code?.toLowerCase().includes(searchLower);
+        
+        const matchesVariation = p.hasVariations && p.variations?.some(v => 
+            v.sku?.toLowerCase().includes(searchLower) || 
+            v.name?.toLowerCase().includes(searchLower)
+        );
+
+        return matchesParent || matchesVariation;
+    });
 
     if (loading) {
         return (
