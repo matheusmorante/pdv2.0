@@ -59,7 +59,7 @@ const LabelPrinting: React.FC = () => {
         preset: isProductContext ? 'qr_product' : 'store_logo',
         layout: isProductContext ? 'horizontal' : 'vertical',
         showName: isProductContext,
-        showPrice: isProductContext,
+        showPrice: false, // Default to false as per user request for product identification
         showQR: isProductContext,
         showSKU: isProductContext,
         showStoreName: !isProductContext,

@@ -11,9 +11,15 @@
     - **Hybrid Stock Management**: Added `Showroom` and `Warehouse` stock fields to distinguish physical store inventory from the central deposit. Total stock is now automatically calculated.
     - **Manufacture Calculator**: Integrated a **Profile Handle Meter Calculator** into the product form to assist in production planning.
     - **Auto-Increment Scanning**: The QR scanner now automatically increments count by +1 per scan.
-- **Global Text Padronization (All Caps)**:
-    - **Enforced Uppercase**: Titles, Descriptions, Marketplace Titles, and Variation Names are now automatically converted to uppercase across the ERP and AI prompts.
-- **E-commerce Stability**:
+- **Logistics Intelligence & Scalability**:
+    - **Dimensional Weight (DIM)**: Integrated automatic volumetric weight calculation (Factor: 6000) inside the Logistics tab.
+    - **Taxed Weight Comparison**: UI now highlights the "Taxed Weight" (the higher between physical and dimensional weight) used by freight carriers.
+    - **LTL Automatic Alerts**: Real-time warning system for items exceeding 68kg (150lbs), flagging the need for Less-Than-Truckload (LTL) shipping.
+- **Advanced Label UX (Identification Mode)**:
+    - **Vertical Header Layout**: Redesigned the `qr_product` preset with a vertical SKU/Name block on the left and a maximized QR code on the right for superior scanning speed.
+    - **Logistics-First Defaults**: "Show Price" is now disabled by default for identification labels, reducing initial friction.
+- **E-commerce Stability & Performance**:
+    - **AI Uppercase Hard-Enforcement**: Enforced `.toUpperCase()` on all AI server responses (Titles/Descriptions) to ensure 100% consistency with brand guidelines.
     - **Vercel Build Stability**: Switched to Inter fonts and added missing dependencies (`lucide-react`, `supabase-js`) to resolve deployment errors.
 
 ### Recent Changes (2026-03-14)

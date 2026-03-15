@@ -46,8 +46,9 @@ O ecossistema Morante-Hub está em transição da **Fase 1 (Saneamento)** para a
 *   Cálculo automático: `Total = Showroom + Depósito`.
 
 ### 4. `erp/src/pages/App/Stock/LabelPrinting/LabelItem.tsx`
-*   **Aprimoramento de Etiquetas**: Maximizado o tamanho do QR Code para facilitar a leitura.
-*   **Cabeçalho Unificado**: Nome e Código do produto agora ocupam uma única linha no topo, conforme solicitado.
+*   **Layout Vertical Revolucionário**: SKU e Nome do produto agora em um bloco vertical à esquerda.
+*   **QR Code Maximizado**: Liberação de espaço total à direita para leitura instantânea por scanners.
+*   **Preset de Identificação**: Preço desativado por padrão para foco em logística.
 
 ### 5. `erp/src/pages/App/Stock/components/StockList.tsx`
 *   **Busca Inteligente**: Corrigido bug onde buscas/scans por SKU de variação não encontravam o produto. Agora o filtro percorre todas as variações.

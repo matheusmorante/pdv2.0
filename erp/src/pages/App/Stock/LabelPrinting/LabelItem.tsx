@@ -93,65 +93,68 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
         );
     }
 
-    // Especial handling for SKU + NAME in Header and BIG QR below
+    // Special handling for SKU + NAME in Left Vertical Block and HUGE QR on the Right
     if (config.preset === 'qr_product') {
         return (
             <div style={{
                 ...containerStyle,
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 padding: '1mm',
+                alignItems: 'stretch',
+                gap: 0
             }}>
-                {/* Header: [SKU] PRODUCT NAME (Single line) */}
+                {/* Left Section: SKU + NAME (Stacked) */}
                 <div style={{
-                    width: '100%',
+                    width: '30%',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '2px',
-                    borderBottom: '0.1px solid #eee',
-                    paddingBottom: '0.5mm',
-                    marginBottom: '1mm',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden'
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    borderRight: '0.1px solid #f1f5f9',
+                    paddingRight: '1mm',
+                    gap: '1mm'
                 }}>
-                    <span style={{
-                        fontSize: '8px',
+                    <div style={{
+                        fontSize: '7.5px',
                         fontWeight: '900',
-                        color: '#1e293b',
-                        backgroundColor: '#f1f5f9',
-                        padding: '0.1mm 1mm',
-                        borderRadius: '0.5mm',
-                        fontFamily: 'monospace'
+                        color: '#64748b',
+                        fontFamily: 'monospace',
+                        textTransform: 'uppercase',
+                        lineBreak: 'anywhere'
                     }}>
                         {config.sku}
-                    </span>
-                    <span style={{
+                    </div>
+                    <div style={{
                         fontSize: '9px',
                         fontWeight: '950',
                         color: '#0f172a',
                         textTransform: 'uppercase',
+                        lineHeight: '1.1',
+                        wordBreak: 'break-word',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis'
+                        display: '-webkit-box',
+                        WebkitLineClamp: 6,
+                        WebkitBoxOrient: 'vertical'
                     }}>
                         {config.text}
-                    </span>
+                    </div>
                 </div>
 
-                {/* Body: Massive QR Code */}
+                {/* Right Section: Massive QR Code */}
                 <div style={{
                     flex: 1,
-                    width: '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     background: 'white',
+                    paddingLeft: '1mm'
                 }}>
                     {config.qrContent ? (
                         <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(config.qrContent)}`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(config.qrContent)}`} 
                             alt="QR Code" 
                             style={{ 
-                                height: '95%', 
+                                height: '98%', 
                                 width: 'auto', 
                                 maxWidth: '100%',
                                 imageRendering: 'pixelated' 
@@ -161,25 +164,6 @@ const LabelItem: React.FC<Props> = ({ config, image }) => {
                         <i className="bi bi-qr-code text-slate-200 text-6xl"></i>
                     )}
                 </div>
-
-                {/* Footer optional price if enabled */}
-                {config.showPrice && (
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '2mm',
-                        right: '2mm',
-                        backgroundColor: 'rgba(255,255,255,0.9)',
-                        padding: '0.5mm 1.5mm',
-                        borderRadius: '1mm',
-                        fontSize: '12px',
-                        fontWeight: '950',
-                        color: '#1d4ed8',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        zIndex: 10
-                    }}>
-                        {config.price}
-                    </div>
-                )}
             </div>
         );
     }

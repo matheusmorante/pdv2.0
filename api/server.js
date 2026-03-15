@@ -111,7 +111,7 @@ app.post('/api/generate-product-description', async (req, res) => {
         - Não coloque preços, a menos que explicitamente solicitado (o que não é o caso aqui).`;
 
         const answer = await safePrompt("Gere a descrição agora.", systemPrompt);
-        res.json({ description: answer });
+        res.json({ description: answer.trim().toUpperCase() });
     } catch (error) {
         addLog("ERROR", `Erro ao gerar descrição: ${error.message}`);
         res.status(500).json({ error: error.message });
@@ -142,7 +142,7 @@ app.post('/api/generate-marketplace-title', async (req, res) => {
         8. Retorne APENAS o título gerado, sem aspas, explicações ou saudações.`;
 
         const answer = await safePrompt("Gere o título agora.", systemPrompt);
-        res.json({ title: answer.trim().replace(/^"|"$/g, '') });
+        res.json({ title: answer.trim().replace(/^"|"$/g, '').toUpperCase() });
     } catch (error) {
         addLog("ERROR", `Erro ao gerar título: ${error.message}`);
         res.status(500).json({ error: error.message });
