@@ -8,6 +8,8 @@ dist/
 .DS_Store
 .agent/
 .gemini/
+*.exe
+*.msi
 
 # Multimedia (Large files)
 *.mp4
@@ -17,7 +19,17 @@ dist/
 *.wmv
 *.flv
 *.webm
+*.exe
+*.msi
+*.log
+*.tmp
+# temporarios
+*.tmp
+*.cache
 
+# sistema
+.DS_Store
+Thumbs.db
 
 # Ignorar arquivos de saída de texto que podem ficar gigantes
 checklist_output.txt
