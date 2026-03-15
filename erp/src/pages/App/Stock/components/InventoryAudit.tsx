@@ -26,13 +26,15 @@ const InventoryAudit = () => {
 
     const flatItems = useMemo(() => {
         const items: any[] = [];
-        products.forEach(p => {
+        products.forEach((p, pIdx) => {
+            const productId = p.id || `p-ref-${pIdx}`;
             if (p.hasVariations && p.variations) {
-                p.variations.forEach(v => {
+                p.variations.forEach((v, vIdx) => {
+                    const variationId = v.id || `v-ref-${vIdx}`;
                     items.push({
-                        id: `v-${v.id}`,
-                        productId: p.id,
-                        variationId: v.id,
+                        id: `v-${variationId}-${productId}-${vIdx}`, // Added vIdx for extra safety
+                        productId: productId,
+                        variationId: variationId,
                         name: `${p.description} (${v.name})`,
                         code: v.sku || p.code,
                         supplierRef: p.supplierRef,
@@ -43,8 +45,8 @@ const InventoryAudit = () => {
                 });
             } else {
                 items.push({
-                    id: `p-${p.id}`,
-                    productId: p.id,
+                    id: `p-${productId}-${pIdx}`, // Added pIdx for extra safety
+                    productId: productId,
                     name: p.description,
                     code: p.code,
                     supplierRef: p.supplierRef,

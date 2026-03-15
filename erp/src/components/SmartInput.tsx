@@ -12,6 +12,7 @@ interface SmartInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     icon?: string;
     error?: boolean;
     isSelected?: boolean;
+    forceSelection?: boolean; // If true, requires selecting from list, else reverts
 }
 
 const SmartInput: React.FC<SmartInputProps> = ({
@@ -26,6 +27,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
     className,
     error,
     isSelected = false,
+    forceSelection = false,
     ...props
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +57,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
 
                 if (data) {
                     const uniqueValues = Array.from(new Set(data.map((item: any) => String(item[columnName]))))
-                        .filter(v => v.trim() !== "");
+                        .filter((v: any) => typeof v === 'string' && v.trim() !== "");
                     setDynamicSuggestions(uniqueValues as string[]);
                 }
             } catch (err) {
@@ -109,12 +111,14 @@ const SmartInput: React.FC<SmartInputProps> = ({
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
-                setInputValue(value || ""); // Revert on blur
+                if (forceSelection) {
+                    setInputValue(value || ""); // Revert only if forceSelection is true
+                }
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [value]);
+    }, [value, forceSelection]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isOpen) {
@@ -131,7 +135,9 @@ const SmartInput: React.FC<SmartInputProps> = ({
             handleSelect(filteredSuggestions[activeIndex]);
         } else if (e.key === "Escape") {
             setIsOpen(false);
-            setInputValue(value || "");
+            if (forceSelection) {
+                setInputValue(value || "");
+            }
         }
     };
 
@@ -150,7 +156,11 @@ const SmartInput: React.FC<SmartInputProps> = ({
                     {...props}
                     value={inputValue}
                     onChange={(e) => {
-                        setInputValue(e.target.value);
+                        const val = e.target.value;
+                        setInputValue(val);
+                        if (!forceSelection) {
+                            onValueChange(val); // Update parent immediately for non-selection fields
+                        }
                         setIsOpen(true);
                         setActiveIndex(-1);
                     }}

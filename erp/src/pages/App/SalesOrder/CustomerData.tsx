@@ -424,6 +424,10 @@ const CustomerDataInputs = ({ customerData, setCustomerData, errors }: Props) =>
                         setSearchTerm(selected.fullName || '');
                     }}
                     onClose={() => setIsSearchModalOpen(false)}
+                    onAddNew={() => {
+                        setIsSearchModalOpen(false);
+                        setIsNewCustomerModalOpen(true);
+                    }}
                 />
             )}
 

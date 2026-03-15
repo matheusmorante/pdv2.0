@@ -18,9 +18,10 @@ interface CustomerSearchEntry {
 interface Props {
     onSelect: (customer: CustomerData) => void;
     onClose: () => void;
+    onAddNew?: () => void;
 }
 
-const CustomerSearchModal = ({ onSelect, onClose }: Props) => {
+const CustomerSearchModal = ({ onSelect, onClose, onAddNew }: Props) => {
     const [search, setSearch] = useState("");
     const [people, setPeople] = useState<Person[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
@@ -158,12 +159,23 @@ const CustomerSearchModal = ({ onSelect, onClose }: Props) => {
                             </p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-full transition-colors text-slate-400 hover:text-slate-600"
-                    >
-                        <i className="bi bi-x-lg text-xl" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {onAddNew && (
+                            <button
+                                onClick={onAddNew}
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-all shadow-lg shadow-emerald-200 dark:shadow-none active:scale-95 font-black text-[10px] uppercase tracking-widest"
+                            >
+                                <i className="bi bi-person-plus-fill" />
+                                <span className="hidden sm:inline">Novo Cliente</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+                        >
+                            <i className="bi bi-x-lg text-xl" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Search Bar */}
@@ -210,10 +222,21 @@ const CustomerSearchModal = ({ onSelect, onClose }: Props) => {
                             <span className="text-sm font-bold">Carregando clientes...</span>
                         </div>
                     ) : filtered.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-3">
+                        <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-4">
                             <i className="bi bi-person-x text-4xl opacity-30" />
-                            <p className="text-sm font-bold">Nenhum cliente encontrado</p>
-                            <p className="text-xs text-slate-400">Tente outro nome, telefone ou cidade</p>
+                            <div className="text-center">
+                                <p className="text-sm font-bold">Nenhum cliente encontrado</p>
+                                <p className="text-xs text-slate-400">Tente outro nome, telefone ou cidade</p>
+                            </div>
+                            {onAddNew && (
+                                <button
+                                    onClick={onAddNew}
+                                    className="mt-2 flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-all shadow-xl shadow-blue-200 dark:shadow-none active:scale-95 font-black text-xs uppercase tracking-widest"
+                                >
+                                    <i className="bi bi-person-plus-fill" />
+                                    Cadastrar Novo Cliente
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <table className="w-full text-left">

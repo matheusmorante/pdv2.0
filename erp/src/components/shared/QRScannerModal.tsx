@@ -42,13 +42,13 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
                 if (scannerRef.current.isScanning) {
                     await scannerRef.current.stop();
                 }
-                const container = document.getElementById("qr-reader");
-                if (container) container.innerHTML = "";
-                
-                scannerRef.current = null;
-                setScannerInstance(null);
             } catch (err) {
                 console.warn("Erro ao parar scanner:", err);
+            } finally {
+                const container = document.getElementById("qr-reader");
+                if (container) container.innerHTML = "";
+                scannerRef.current = null;
+                setScannerInstance(null);
             }
         }
     };
@@ -65,7 +65,7 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
             await new Promise(resolve => setTimeout(resolve, 300));
             
             const readerElem = document.getElementById("qr-reader");
-            if (!readerElem) throw new Error("Elemento de leitura não encontrado.");
+            if (!readerElem) return; // Silent return if element gone
 
             const qrCode = new Html5Qrcode("qr-reader");
             scannerRef.current = qrCode;
@@ -100,14 +100,20 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({
     };
 
     useEffect(() => {
+        let isMounted = true;
         if (isOpen) {
             startScanner();
         } else {
             stopScanner();
-            setError(null);
-            setShowManualInput(false);
+            if (isMounted) {
+                setError(null);
+                setShowManualInput(false);
+            }
         }
-        return () => { stopScanner(); };
+        return () => { 
+            isMounted = false;
+            stopScanner(); 
+        };
     }, [isOpen]);
 
     if (!isOpen) return null;

@@ -85,8 +85,8 @@ const StockList = ({ onLaunch }: StockListProps) => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                        {filtered.map((product) => (
-                            <React.Fragment key={product.id}>
+                        {filtered.map((product, pIdx) => (
+                            <React.Fragment key={product.id || `product-${pIdx}`}>
                                 <tr className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group">
                                     <td className="px-4 md:px-8 py-3 md:py-5">
                                         <div className="flex items-center gap-4">
@@ -139,8 +139,8 @@ const StockList = ({ onLaunch }: StockListProps) => {
                                         )}
                                     </td>
                                 </tr>
-                                {product.hasVariations && product.variations?.map(v => (
-                                    <tr key={v.id} className="bg-slate-50/30 dark:bg-slate-900/30 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 transition-colors group border-l-4 border-emerald-500/20">
+                                {product.hasVariations && product.variations?.map((v, vIdx) => (
+                                    <tr key={v.id || `var-${vIdx}`} className="bg-slate-50/30 dark:bg-slate-900/30 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 transition-colors group border-l-4 border-emerald-500/20">
                                         <td className="px-4 md:px-8 py-3 md:py-4 pl-8 md:pl-16">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300 border border-slate-100 dark:border-slate-800 shrink-0">

@@ -24,15 +24,49 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
         return () => { if (unsub) unsub(); };
     }, []);
 
+    const flatSelectableItems = useMemo(() => {
+        const items: { p: Product; v?: Variation; key: string }[] = [];
+        
+        products.forEach((p, pIdx) => {
+            if (p.hasVariations && p.variations && p.variations.length > 0) {
+                p.variations.forEach((v, vIdx) => {
+                    if (v.active !== false) {
+                        items.push({ 
+                            p, 
+                            v, 
+                            key: `v-${v.id || vIdx}-${p.id || pIdx}` 
+                        });
+                    }
+                });
+            } else {
+                items.push({ 
+                    p, 
+                    key: `p-${p.id || pIdx}` 
+                });
+            }
+        });
+        
+        return items;
+    }, [products]);
+
     const filtered = useMemo(() => {
-        if (!search.trim()) return products;
+        if (!search.trim()) return flatSelectableItems;
         const s = search.toLowerCase();
-        return products.filter(p =>
-            String(p.description || '').toLowerCase().includes(s) ||
-            String(p.code || '').toLowerCase().includes(s) ||
-            String(p.category || '').toLowerCase().includes(s)
-        );
-    }, [products, search]);
+        
+        return flatSelectableItems.filter(item => {
+            const p = item.p;
+            const v = item.v;
+            const searchableText = [
+                p.description,
+                p.code,
+                p.category,
+                v?.name,
+                v?.sku
+            ].filter(Boolean).join(' ').toLowerCase();
+            
+            return searchableText.includes(s);
+        });
+    }, [flatSelectableItems, search]);
 
     return (
         <div
@@ -127,137 +161,97 @@ const ProductSearchModal = ({ onSelect, onClose, priceType = 'unit' }: Props) =>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                                {filtered.slice(0, 30).map((p) => (
-                                        <React.Fragment key={p.id}>
-                                            <tr
-                                                onClick={() => {
-                                                    if (!(p.hasVariations && p.variations && p.variations.length > 0)) {
-                                                        onSelect(p);
-                                                        onClose();
-                                                    }
-                                                }}
-                                                className={`hover:bg-blue-50/60 dark:hover:bg-blue-900/10 transition-colors group ${p.hasVariations ? 'cursor-default' : 'cursor-pointer'}`}
-                                            >
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-2">
-                                                            {p.description}
-                                                        </span>
-                                                        <div className="flex flex-wrap gap-1.5 items-center mt-1">
-                                                            {p.isCombo && (
-                                                                <span className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border border-purple-200 dark:border-purple-900/40">
-                                                                    <i className="bi bi-layers-fill"></i> Combo
-                                                                </span>
-                                                            )}
-                                                            <span className={`text-[8px] w-fit px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${p.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/10'}`}>
-                                                                {p.itemType === 'service' ? 'Serviço' : 'Prod'}
+                                {filtered.slice(0, 50).map((item) => {
+                                    const { p, v, key } = item;
+                                    const displayName = v ? `${p.description} - ${v.name}` : p.description;
+                                    const displayCode = v?.sku || p.code || "---";
+                                    const displayPrice = (priceType === 'cost' ? (v?.costPrice || p.costPrice) : (v?.unitPrice || p.unitPrice)) || 0;
+                                    const displayStock = v ? (v.stock || 0) : (p.stock || 0);
+                                    const minStock = v ? (v.minStock || 0) : (p.minStock || 0);
+
+                                    return (
+                                        <tr
+                                            key={key}
+                                            onClick={() => { onSelect(p, v); onClose(); }}
+                                            className="hover:bg-blue-50/60 dark:hover:bg-blue-900/10 transition-colors group cursor-pointer"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-2">
+                                                        {displayName}
+                                                    </span>
+                                                    <div className="flex flex-wrap gap-1.5 items-center mt-1">
+                                                        {v && (
+                                                            <span className="text-[8px] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-900/40">
+                                                                Variação
                                                             </span>
-                                                            {p.itemType === 'product' && p.condition && (
-                                                                <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest border ${p.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/10 dark:text-emerald-400' :
-                                                                    p.condition === 'usado' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/10 dark:text-purple-400' :
-                                                                        'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/10 dark:text-amber-400'
-                                                                    }`}>
-                                                                    {p.condition}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="hidden sm:table-cell px-4 py-4">
-                                                    <span className="text-xs font-mono text-slate-400">
-                                                        {p.code || "---"}
-                                                    </span>
-                                                </td>
-                                                <td className="hidden md:table-cell px-4 py-4">
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                        {p.category || "Sem Categoria"}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-4 text-right">
-                                                    <span className="text-sm font-black text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                                                        {!p.hasVariations && formatCurrency((priceType === 'cost' ? p.costPrice : p.unitPrice) || 0)}
-                                                        {p.hasVariations && "---"}
-                                                    </span>
-                                                </td>
-                                                <td className="hidden xs:table-cell px-4 py-4 text-center">
-                                                    <span className={`text-xs font-bold ${
-                                                        p.itemType === 'service' ? 'text-slate-500' :
-                                                        (p.isCombo 
-                                                            ? (p.comboItems?.length && Math.min(...p.comboItems.map(i => Math.floor((i.stock || 0) / (i.quantity || 1)))) <= 0)
-                                                            : (p.stock || 0) <= 0)
-                                                        ? 'text-amber-500' 
-                                                        : (p.stock && p.stock <= (p.minStock || 0) ? 'text-red-500' : 'text-slate-500')
-                                                    }`}
-                                                    title={(p.itemType !== 'service' && (p.stock || 0) <= 0) ? "Atenção: Item esgotado no sistema. Verifique disponibilidade física." : ""}
-                                                    >
-                                                        {p.itemType === 'service' ? '∞' : (
-                                                            p.isCombo
-                                                                ? (p.comboItems?.length
-                                                                    ? Math.min(...p.comboItems.map(i => Math.floor((i.stock || 0) / (i.quantity || 1))))
-                                                                    : 0)
-                                                                : (p.stock || 0)
                                                         )}
-                                                        {p.itemType !== 'service' && (p.stock || 0) <= 0 && <i className="bi bi-exclamation-triangle-fill ml-1 animate-pulse" />}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-4 text-right">
-                                                    {!p.hasVariations && (
-                                                        <button
-                                                            type="button"
-                                                            className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 bg-blue-600 text-white rounded-full sm:rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-sm"
-                                                        >
-                                                            <span className="hidden sm:inline">Selecionar</span>
-                                                            <i className="bi bi-plus text-lg sm:text-base" />
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                            {p.hasVariations && p.variations?.map(v => (
-                                                <tr
-                                                    key={v.id}
-                                                    onClick={() => { onSelect(p, v); onClose(); }}
-                                                    className="bg-slate-50/40 dark:bg-slate-800/20 hover:bg-blue-50/60 dark:hover:bg-blue-900/30 cursor-pointer transition-colors group"
-                                                >
-                                                    <td className="px-6 py-3 pl-8 sm:pl-12 border-l-4 border-blue-200 dark:border-blue-900">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                                                                {v.name}
+                                                        {p.isCombo && (
+                                                            <span className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest border border-purple-200 dark:border-purple-900/40">
+                                                                <i className="bi bi-layers-fill"></i> Combo
                                                             </span>
-                                                            <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest">Variação</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="hidden sm:table-cell px-4 py-3">
-                                                        <span className="text-[10px] font-mono text-slate-400">
-                                                            {v.sku || "---"}
+                                                        )}
+                                                        <span className={`text-[8px] w-fit px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${p.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/10'}`}>
+                                                            {p.itemType === 'service' ? 'Serviço' : 'Prod'}
                                                         </span>
-                                                    </td>
-                                                    <td className="hidden md:table-cell px-4 py-3">
-                                                        <span className="text-[9px] text-slate-300 italic">Mesma Cat.</span>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right">
-                                                        <span className={`text-xs font-black whitespace-nowrap ${priceType === 'cost' ? 'text-orange-600/80' : 'text-blue-600/80'}`}>
-                                                            {formatCurrency((priceType === 'cost' ? v.costPrice : v.unitPrice) || 0)}
-                                                        </span>
-                                                    </td>
-                                                    <td className="hidden xs:table-cell px-4 py-3 text-center">
-                                                        <span className={`text-[10px] font-bold ${v.stock <= 0 ? 'text-amber-500' : (v.stock <= (v.minStock || 0) ? 'text-red-400' : 'text-slate-400')}`}
-                                                              title={v.stock <= 0 ? "Atenção: Variação esgotada no sistema. Verifique disponibilidade física." : ""}>
-                                                            {v.stock}
-                                                            {v.stock <= 0 && <i className="bi bi-exclamation-triangle-fill ml-1 animate-pulse" />}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right">
-                                                        <button
-                                                            type="button"
-                                                            className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-7 h-7 sm:w-auto sm:h-auto sm:px-3 sm:py-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full sm:rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white"
-                                                        >
-                                                            <i className="bi bi-plus text-base sm:text-xs" />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </React.Fragment>
-                                    ))}
+                                                        {p.condition && (
+                                                            <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest border ${p.condition === 'novo' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/10 dark:text-emerald-400' :
+                                                                p.condition === 'usado' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/10 dark:text-purple-400' :
+                                                                    'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/10 dark:text-amber-400'
+                                                                }`}>
+                                                                {p.condition}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="hidden sm:table-cell px-4 py-4">
+                                                <span className="text-xs font-mono text-slate-400">
+                                                    {displayCode}
+                                                </span>
+                                            </td>
+                                            <td className="hidden md:table-cell px-4 py-4">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                    {p.category || "Sem Categoria"}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-right">
+                                                <span className="text-sm font-black text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                                                    {formatCurrency(displayPrice)}
+                                                </span>
+                                            </td>
+                                            <td className="hidden xs:table-cell px-4 py-4 text-center">
+                                                <span className={`text-xs font-bold ${
+                                                    p.itemType === 'service' ? 'text-slate-500' :
+                                                    (p.isCombo 
+                                                        ? (p.comboItems?.length && Math.min(...p.comboItems.map((i: any) => Math.floor((i.stock || 0) / (i.quantity || 1)))) <= 0)
+                                                        : displayStock <= 0)
+                                                    ? 'text-amber-500' 
+                                                    : (displayStock <= minStock ? 'text-red-500' : 'text-slate-500')
+                                                }`}
+                                                >
+                                                    {p.itemType === 'service' ? '∞' : (
+                                                        p.isCombo
+                                                            ? (p.comboItems?.length
+                                                                ? Math.min(...p.comboItems.map((i: any) => Math.floor((i.stock || 0) / (i.quantity || 1))))
+                                                                : 0)
+                                                            : displayStock
+                                                    )}
+                                                    {p.itemType !== 'service' && displayStock <= 0 && <i className="bi bi-exclamation-triangle-fill ml-1 animate-pulse" />}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 text-right">
+                                                <button
+                                                    type="button"
+                                                    className="opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:px-3 sm:py-1.5 bg-blue-600 text-white rounded-full sm:rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-700 shadow-sm"
+                                                >
+                                                    <span className="hidden sm:inline">Selecionar</span>
+                                                    <i className="bi bi-plus text-lg sm:text-base" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                                 </tbody>
                             </table>
                         </div>
