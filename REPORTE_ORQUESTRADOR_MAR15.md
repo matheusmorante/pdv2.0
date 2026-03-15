@@ -57,6 +57,11 @@ O ecossistema Morante-Hub está em transição da **Fase 1 (Saneamento)** para a
 *   Padronização do diretório de saída: Alterado de `build` para `dist`.
 *   Resolução do erro de deploy na Vercel ("No Output Directory named dist found").
 
+### 7. Estabilidade de Hardware & Interface
+- **Confiabilidade QR**: Refatoração do `QRScannerModal` para impedir múltiplas instâncias e travamento de câmera.
+- **Estrutura de Segurança**: Lançamento do `ErrorBoundary` para isolar falhas de hardware/scanner, garantindo que o ERP permaneça ativo mesmo em caso de erro de driver.
+- **Consistência de Layout**: Correção de aninhamento JSX nos módulos de estoque que afetavam a renderização mobile.
+
 ---
 
 ## 📋 Próximos Passos Sugeridos

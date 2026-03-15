@@ -43,6 +43,9 @@
     - **Identidade de Marca vs Identificação de Produtos**: Sistema agora separa etiquetas funcionais (Preço, QR Code) de etiquetas de design (Logo Morante, 100% MDF).
     - **Navegação Contextual**: Links específicos no menu "Estoque" (para rótulos) e no menu "Design" (para identidade visual).
     - **Interface Simplificada**: Remoção de filtros de categoria na área de etiquetas para reduzir poluição visual e focar na busca direta.
+    - **Estabilidade do Scanner QR**: Refatoração completa do `QRScannerModal` com gerenciamento de instâncias via refs, limpeza automática de drivers de câmera, tratamento de erros críticos e botão de reinicialização.
+    - **Estrutura de Segurança de Interface**: Implementação de `ErrorBoundary` global para todos os módulos que utilizam hardware de câmera, garantindo que falhas de driver não derrubem a aplicação e ofereçam recuperação graciosa.
+    - **Correção de Layout e Logística**: Ajuste de erros de aninhamento JSX no modal de lançamento de estoque e reforço na lógica de busca por SKU/Código.
     - **Deep Linking**: Acesso direto via produto via parâmetros de URL (`?productId=...`), que pré-seleciona apenas presets relevantes de identificação.
     - **Intelligent Layout**: Labels now automatically expand the QR Code and branding when other elements are disabled.
     - **Visual Refinement**: SKU/Code now has a dedicated background badge for better legibility on physical prints.

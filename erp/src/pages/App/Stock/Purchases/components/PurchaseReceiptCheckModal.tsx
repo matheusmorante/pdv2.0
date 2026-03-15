@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Purchase, { PurchaseItem } from "../../../../types/purchase.type";
 import { updatePurchase } from "../../../../utils/purchaseService";
 import QRScannerModal from "@/components/shared/QRScannerModal";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import { toast } from "react-toastify";
 import { formatToBRDate } from "../../../../utils/formatters";
 import { getProductsByIds } from "../../../../utils/productService";
@@ -50,8 +51,13 @@ const PurchaseReceiptCheckModal = ({ purchase, isOpen, onClose }: PurchaseReceip
     if (!isOpen || !purchase) return null;
 
     const handleScan = (code: string) => {
-        // Try to find product by code
-        const product = products.find(p => p.code === code);
+        const cleanCode = code.trim().toLowerCase();
+        
+        // Try to find product by code or supplierRef
+        const product = products.find(p => 
+            p.code?.trim().toLowerCase() === cleanCode || 
+            p.supplierRef?.trim().toLowerCase() === cleanCode
+        );
         
         if (product) {
             const purchaseItem = purchase.items.find(i => i.productId === product.id && !i.variationId);
@@ -67,7 +73,7 @@ const PurchaseReceiptCheckModal = ({ purchase, isOpen, onClose }: PurchaseReceip
         // Try to find variation by SKU
         for (const p of products) {
             if (p.hasVariations && p.variations) {
-                const variation = p.variations.find((v: any) => v.sku === code);
+                const variation = p.variations.find((v: any) => v.sku?.trim().toLowerCase() === cleanCode);
                 if (variation) {
                     const purchaseItem = purchase.items.find(i => i.productId === p.id && i.variationId === variation.id);
                     if (purchaseItem) {
@@ -103,8 +109,8 @@ const PurchaseReceiptCheckModal = ({ purchase, isOpen, onClose }: PurchaseReceip
                 };
             });
 
-            const isAllReceived = updatedItems.every((i: PurchaseItem) => i.receivedQuantity === i.quantity);
-            const isAnyReceived = updatedItems.some((i: PurchaseItem) => i.receivedQuantity > 0);
+            const isAllReceived = updatedItems.every((i: PurchaseItem) => (i.receivedQuantity || 0) === i.quantity);
+            const isAnyReceived = updatedItems.some((i: PurchaseItem) => (i.receivedQuantity || 0) > 0);
             
             // Check for discrepancies between Order, Invoice and Physical
             const hasDiscrepancy = updatedItems.some((i: PurchaseItem) => {
@@ -291,12 +297,14 @@ const PurchaseReceiptCheckModal = ({ purchase, isOpen, onClose }: PurchaseReceip
                 </div>
             </div>
 
-            <QRScannerModal 
-                isOpen={isScannerOpen} 
-                onClose={() => setIsScannerOpen(false)} 
-                onScan={handleScan}
-                title="Escanear Itens do Pedido"
-            />
+            <ErrorBoundary name="Scanner de Recebimento">
+                <QRScannerModal 
+                    isOpen={isScannerOpen} 
+                    onClose={() => setIsScannerOpen(false)} 
+                    onScan={handleScan}
+                    title="Escanear Itens do Pedido"
+                />
+            </ErrorBoundary>
         </div>
     );
 };

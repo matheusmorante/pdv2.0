@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Product, { Variation } from "../../../types/product.type";
 import { subscribeToProducts } from '@/pages/utils/productService';
 import QRScannerModal from "@/components/shared/QRScannerModal";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
 interface StockListProps {
     onLaunch: (product: Product, variation?: Variation) => void;
@@ -28,7 +29,8 @@ const StockList = ({ onLaunch }: StockListProps) => {
     const filtered = products.filter(p => {
         const searchLower = search.toLowerCase();
         const matchesParent = p.description.toLowerCase().includes(searchLower) || 
-                             p.code?.toLowerCase().includes(searchLower);
+                             p.code?.toLowerCase().includes(searchLower) ||
+                             p.supplierRef?.toLowerCase().includes(searchLower);
         
         const matchesVariation = p.hasVariations && p.variations?.some(v => 
             v.sku?.toLowerCase().includes(searchLower) || 
@@ -192,15 +194,17 @@ const StockList = ({ onLaunch }: StockListProps) => {
                     <p className="text-sm text-slate-300 dark:text-slate-600 mt-2 max-w-xs">Tente ajustar seus filtros de busca ou cadastre novos produtos.</p>
                 </div>
             )}
-            <QRScannerModal 
-                isOpen={isScannerOpen} 
-                onClose={() => setIsScannerOpen(false)} 
-                onScan={(code) => {
-                    setSearch(code);
-                    setIsScannerOpen(false);
-                }}
-                title="Escanear Produto"
-            />
+            <ErrorBoundary name="Scanner de Estoque">
+                <QRScannerModal 
+                    isOpen={isScannerOpen} 
+                    onClose={() => setIsScannerOpen(false)} 
+                    onScan={(code) => {
+                        setSearch(code);
+                        setIsScannerOpen(false);
+                    }}
+                    title="Escanear Produto"
+                />
+            </ErrorBoundary>
         </div>
     );
 };

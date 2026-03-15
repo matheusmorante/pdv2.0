@@ -5,6 +5,7 @@ import { saveInventoryMove } from '@/pages/utils/inventoryService';
 import { toast } from "react-toastify";
 import InventoryMove from "../../../types/inventoryMove.type";
 import QRScannerModal from "@/components/shared/QRScannerModal";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
 interface StockLaunchModalProps {
     isOpen: boolean;
@@ -161,7 +162,7 @@ const StockLaunchModal = ({ isOpen, onClose, targetProduct, targetVariation }: S
                                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
                                     type === t 
                                         ? 'bg-emerald-50 border-emerald-500 text-emerald-600 dark:bg-emerald-900/20 shadow-lg shadow-emerald-100 dark:shadow-none' 
-                                        : 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 text-slate-400 hober:border-slate-200'
+                                        : 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 text-slate-400 hover:border-slate-200'
                                 }`}
                             >
                                 <i className={`bi ${t === 'entry' ? 'bi-plus-circle' : t === 'exit' ? 'bi-dash-circle' : 'bi-arrow-left-right'} text-xl`}></i>
@@ -210,39 +211,41 @@ const StockLaunchModal = ({ isOpen, onClose, targetProduct, targetVariation }: S
                     </button>
                 </div>
             </div>
-            <QRScannerModal 
-                isOpen={isScannerOpen} 
-                onClose={() => setIsScannerOpen(false)} 
-                onScan={(code) => {
-                    // Busca por código de produto ou SKU de variação
-                    let foundProduct: Product | undefined;
-                    let foundVariation: Variation | undefined;
 
-                    for (const p of products) {
-                        if (p.code === code) {
-                            foundProduct = p;
-                            break;
+            <ErrorBoundary name="Scanner de Lançamento">
+                <QRScannerModal 
+                    isOpen={isScannerOpen} 
+                    onClose={() => setIsScannerOpen(false)} 
+                    onScan={(code) => {
+                        let foundProduct: Product | undefined;
+                        let foundVariation: Variation | undefined;
+    
+                        const cleanCode = code.trim().toLowerCase();
+    
+                        for (const p of products) {
+                            if (p.code?.trim().toLowerCase() === cleanCode || p.supplierRef?.trim().toLowerCase() === cleanCode) {
+                                foundProduct = p;
+                                break;
+                            }
+                            const v = p.variations?.find(v => v.sku?.trim().toLowerCase() === cleanCode);
+                            if (v) {
+                                foundProduct = p;
+                                foundVariation = v;
+                                break;
+                            }
                         }
-                        const v = p.variations?.find(v => v.sku === code);
-                        if (v) {
-                            foundProduct = p;
-                            foundVariation = v;
-                            break;
+    
+                        if (foundProduct) {
+                            setSelectedProductId(foundProduct.id!);
+                            setIsScannerOpen(false);
+                            toast.success(`Produto localizado: ${foundProduct.description} ${foundVariation ? `(${foundVariation.name})` : ''}`);
+                        } else {
+                            toast.error(`Produto com código/SKU "${code}" não encontrado.`);
                         }
-                    }
-
-                    if (foundProduct) {
-                        setSelectedProductId(foundProduct.id!);
-                        // Se houver uma variação, poderíamos passar para o modal, mas aqui as variações são passadas via props
-                        // Por ora, vamos apenas selecionar o produto pai se o SKU bater
-                        setIsScannerOpen(false);
-                        toast.success(`Produtos localizado: ${foundProduct.description} ${foundVariation ? `(${foundVariation.name})` : ''}`);
-                    } else {
-                        toast.error(`Produto com código/SKU "${code}" não encontrado.`);
-                    }
-                }}
-                title="Escanear Produto"
-            />
+                    }}
+                    title="Escanear Produto"
+                />
+            </ErrorBoundary>
         </div>
     );
 };

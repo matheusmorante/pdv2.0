@@ -5,6 +5,7 @@ import { saveInventoryMove } from '@/pages/utils/inventoryService';
 import { toast } from "react-toastify";
 import InventoryMove from "../../../types/inventoryMove.type";
 import QRScannerModal from "@/components/shared/QRScannerModal";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 
 const InventoryAudit = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -34,6 +35,7 @@ const InventoryAudit = () => {
                         variationId: v.id,
                         name: `${p.description} (${v.name})`,
                         code: v.sku || p.code,
+                        supplierRef: p.supplierRef,
                         systemStock: v.stock || 0,
                         unit: p.unit,
                         isVariation: true
@@ -45,6 +47,7 @@ const InventoryAudit = () => {
                     productId: p.id,
                     name: p.description,
                     code: p.code,
+                    supplierRef: p.supplierRef,
                     systemStock: p.stock || 0,
                     unit: p.unit,
                     isVariation: false
@@ -56,7 +59,8 @@ const InventoryAudit = () => {
 
     const filtered = flatItems.filter(item => 
         item.name.toLowerCase().includes(search.toLowerCase()) || 
-        item.code?.toLowerCase().includes(search.toLowerCase())
+        item.code?.toLowerCase().includes(search.toLowerCase()) ||
+        item.supplierRef?.toLowerCase().includes(search.toLowerCase())
     );
 
     const handleCountChange = (itemId: string, value: string) => {
@@ -171,37 +175,43 @@ const InventoryAudit = () => {
                 </div>
             </div>
 
-            <QRScannerModal 
-                isOpen={isScannerOpen} 
-                onClose={() => setIsScannerOpen(false)} 
-                closeOnScan={false} // Allow multiple scans
-                onScan={(code) => {
-                    const item = flatItems.find(fi => fi.code === code);
-                    if (item) {
-                        setCounts(prev => {
-                            const currentVal = prev[item.id] || "0";
-                            const newVal = (parseFloat(currentVal) + 1).toString();
-                            return { ...prev, [item.id]: newVal };
-                        });
-                        toast.success(`+1: ${item.name}`, { autoClose: 1000, position: "top-center" });
-                        
-                        // Scroll to the row and highlight it
-                        setTimeout(() => {
-                            const row = document.querySelector(`tr[data-code="${code}"]`);
-                            if (row) {
-                                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                row.classList.add('bg-emerald-50', 'dark:bg-emerald-900/20');
-                                setTimeout(() => {
-                                    row.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
-                                }, 2000);
-                            }
-                        }, 100);
-                    } else {
-                        toast.error(`Código "${code}" não encontrado na lista.`, { autoClose: 2000 });
-                    }
-                }}
-                title="Contagem por Escaneamento"
-            />
+            <ErrorBoundary name="Scanner de Inventário">
+                <QRScannerModal 
+                    isOpen={isScannerOpen} 
+                    onClose={() => setIsScannerOpen(false)} 
+                    closeOnScan={false} // Allow multiple scans
+                    onScan={(code) => {
+                        const cleanCode = code.trim().toLowerCase();
+                        const item = flatItems.find(fi => 
+                            fi.code?.trim().toLowerCase() === cleanCode || 
+                            fi.supplierRef?.trim().toLowerCase() === cleanCode
+                        );
+                        if (item) {
+                            setCounts(prev => {
+                                const currentVal = prev[item.id] || "0";
+                                const newVal = (parseFloat(currentVal) + 1).toString();
+                                return { ...prev, [item.id]: newVal };
+                            });
+                            toast.success(`+1: ${item.name}`, { autoClose: 1000, position: "top-center" });
+                            
+                            // Scroll to the row and highlight it
+                            setTimeout(() => {
+                                const row = document.querySelector(`tr[data-code="${code}"]`);
+                                if (row) {
+                                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    row.classList.add('bg-emerald-50', 'dark:bg-emerald-900/20');
+                                    setTimeout(() => {
+                                        row.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/20');
+                                    }, 2000);
+                                }
+                            }, 100);
+                        } else {
+                            toast.error(`Código "${code}" não encontrado na lista.`, { autoClose: 2000 });
+                        }
+                    }}
+                    title="Contagem por Escaneamento"
+                />
+            </ErrorBoundary>
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse whitespace-nowrap">
