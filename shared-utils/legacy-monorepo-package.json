@@ -1,0 +1,40 @@
+{
+  "name": "moveismorantehub",
+  "version": "1.0.0",
+  "description": "Monorepo for Móveis Morante - ERP & Ecommerce",
+  "private": true,
+  "workspaces": [
+    "apps/ecommerce",
+    "apps/server",
+    "apps/erp",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"ERP,ECOMM,SERVER\" -c \"blue,green,yellow\" \"npm run erp\" \"npm run ecomm\" \"npm run server\"",
+    "erp": "cd apps/erp && npm run dev",
+    "ecomm": "npm run dev -w apps/ecommerce",
+    "server": "npm run start -w apps/server",
+    "build": "npm run erp:build",
+    "erp:build": "cd apps/erp && npm run build",
+    "ecommerce:build": "npm run build -w apps/ecommerce",
+    "test": "npm test --workspaces"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.577.0",
+    "react": "18.3.1"
+  },
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "next": {
+      "react": "18.3.1",
+      "react-dom": "18.3.1"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

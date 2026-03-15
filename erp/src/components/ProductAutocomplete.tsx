@@ -1,0 +1,156 @@
+import React, { useState, useEffect, useRef } from 'react';
+import Product from '../pages/types/product.type';
+import { supabase } from '../pages/utils/supabaseConfig';
+import { toast } from 'react-toastify';
+import DropdownPortal from './shared/DropdownPortal';
+
+interface ProductAutocompleteProps {
+    onSelect: (product: Product) => void;
+    onChange?: (value: string) => void;
+    onSearch?: () => void;
+    onCreateNew?: () => void;
+    isSelected?: boolean;
+    value?: string;
+    placeholder?: string;
+    className?: string;
+}
+
+const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({
+    onSelect,
+    onChange,
+    onSearch,
+    onCreateNew,
+    isSelected = false,
+    value = "",
+    placeholder = "Digite o nome ou código do produto...",
+    className = ""
+}) => {
+    const [query, setQuery] = useState(value);
+    const [suggestions, setSuggestions] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setQuery(value);
+    }, [value]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (query.trim().length < 2) {
+                setSuggestions([]);
+                return;
+            }
+
+            setIsLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .or(`description.ilike.%${query}%,code.ilike.%${query}%`)
+                    .eq('deleted', false)
+                    .limit(10);
+
+                if (error) throw error;
+                setSuggestions(data || []);
+            } catch (error) {
+                console.error('Erro ao buscar sugestões:', error);
+                // No toast here to avoid spamming while typing
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchSuggestions, 300);
+        return () => clearTimeout(timeoutId);
+    }, [query]);
+
+    return (
+        <div ref={wrapperRef} className={`relative ${className}`}>
+            <div className="flex gap-1.5">
+                <div className="relative flex-1">
+                    <input
+                        type="text"
+                        value={query || ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setQuery(val);
+                            setShowSuggestions(true);
+                            if (onChange) onChange(val);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        placeholder={placeholder}
+                        className={`w-full px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 text-sm font-medium transition-all ${isSelected ? 'border-blue-500 bg-blue-50/30 ring-2 ring-blue-500/10' : ''}`}
+                    />
+                    {isLoading && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <i className="bi bi-arrow-repeat animate-spin text-slate-400"></i>
+                        </div>
+                    )}
+                </div>
+                
+                {onSearch && (
+                    <button
+                        type="button"
+                        onClick={onSearch}
+                        className="p-2 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-700 rounded-xl hover:bg-slate-100 transition-all shadow-sm"
+                        title="Busca Avançada (Lupa)"
+                    >
+                        <i className="bi bi-search"></i>
+                    </button>
+                )}
+
+                {onCreateNew && (
+                    <button
+                        type="button"
+                        onClick={onCreateNew}
+                        className="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                        title="Criar Novo Produto"
+                    >
+                        <i className="bi bi-plus-lg"></i>
+                    </button>
+                )}
+            </div>
+
+            <DropdownPortal anchorRef={wrapperRef} isOpen={showSuggestions && suggestions.length > 0}>
+                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-2xl max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+                    {suggestions.map((p) => (
+                        <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                                onSelect(p);
+                                setQuery(p.description);
+                                setShowSuggestions(false);
+                            }}
+                            className="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex flex-col gap-0.5"
+                        >
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{p.description}</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{p.code || 'S/REF'}</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">
+                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(p.unitPrice)}
+                                </span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${p.stock && p.stock > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    Estoque: {p.stock || 0}
+                                </span>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </DropdownPortal>
+        </div>
+    );
+};
+
+export default ProductAutocomplete;

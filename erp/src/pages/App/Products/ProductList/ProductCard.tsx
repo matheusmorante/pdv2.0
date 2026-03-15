@@ -1,0 +1,201 @@
+import React from "react";
+import Product from "../../../types/product.type";
+import { formatCurrency } from "../../../utils/formatters";
+import { getCategoryBreadcrumb } from '@/pages/utils/categoryService';
+
+interface ProductCardProps {
+    product: Product;
+    onEdit: (product: Product) => void;
+    onLaunchStock?: (product: any) => void;
+    onDelete: (id: string) => void;
+    onRestore: (id: string) => void;
+    onPermanentDelete: (id: string) => void;
+    onToggleActive: (id: string, currentStatus: boolean) => void;
+    showTrash?: boolean;
+    isSelected?: boolean;
+    onToggleSelection?: () => void;
+    categoryTree?: any;
+}
+
+const ProductCard = ({
+    product,
+    onEdit,
+    onLaunchStock,
+    onDelete,
+    onRestore,
+    onPermanentDelete,
+    onToggleActive,
+    showTrash,
+    isSelected,
+    onToggleSelection,
+    categoryTree
+}: ProductCardProps) => {
+    const isLowStock = (product.stock || 0) <= (product.minStock || 0);
+    const isParent = product.isParent;
+    const isVariation = product.isVariation;
+
+    return (
+        <div
+            className={`border rounded-xl p-3 shadow-sm active:scale-[0.98] transition-all
+                ${isSelected ? 'border-blue-500 ring-1 ring-blue-500' : 
+                  isParent ? 'border-blue-300 dark:border-blue-800' :
+                  isVariation ? 'border-indigo-100 dark:border-indigo-900 ml-4' :
+                  'border-slate-100 dark:border-slate-800'}
+                ${isParent ? 'bg-blue-50/50 dark:bg-blue-900/10' : 
+                  isVariation ? 'bg-slate-50/50 dark:bg-slate-900/40 relative' :
+                  'bg-white dark:bg-slate-900'}`}
+            onClick={() => onEdit(product)}
+        >
+            {isVariation && (
+                <div className="absolute left-[-1rem] top-1/2 -translate-y-1/2 w-4 h-0.5 bg-indigo-200 dark:bg-indigo-900/50" />
+            )}
+            <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                            e.stopPropagation();
+                            onToggleSelection?.();
+                        }}
+                        className="w-5 h-5 text-blue-600 bg-white border-slate-300 rounded-md focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-slate-900 focus:ring-2 dark:bg-slate-800 dark:border-slate-700 cursor-pointer"
+                    />
+                    <span className="font-mono text-[9px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-800">
+                        {product.code || "S/C"}
+                    </span>
+                    {/* Parent / Variation indicator */}
+                    {isParent && (
+                        <span className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest bg-blue-600 text-white flex items-center gap-1">
+                            <i className="bi bi-diagram-3-fill" />
+                            Pai
+                        </span>
+                    )}
+                    {isVariation && (
+                        <span className="text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 flex items-center gap-1">
+                            <i className="bi bi-arrow-return-right" />
+                            Variação
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                    <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${product.itemType === 'service' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'}`}>
+                        {product.itemType === 'service' ? 'Serviço' : 'Produto'}
+                    </span>
+                    {product.itemType === 'product' && product.condition && (
+                        <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${product.condition === 'salvado' ? 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
+                                product.condition === 'usado' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' :
+                                    'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                            }`}>
+                            {product.condition}
+                        </span>
+                    )}
+                </div>
+            </div>
+
+            <div className="mb-3">
+                <h3 className={`leading-tight line-clamp-2 ${
+                    isParent
+                        ? 'text-sm font-black text-blue-700 dark:text-blue-400 uppercase tracking-tight'
+                        : isVariation
+                        ? 'text-xs font-bold text-slate-700 dark:text-slate-300 pl-3 border-l-2 border-indigo-200 dark:border-indigo-800'
+                        : 'text-sm font-bold text-slate-800 dark:text-slate-100'
+                }`}>
+                    {product.description}
+                </h3>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wide mt-1 leading-relaxed">
+                    {getCategoryBreadcrumb(product.categoryIds || [], categoryTree)}
+                </p>
+            </div>
+
+            <div className="flex justify-between items-end border-t border-slate-50 dark:border-slate-800/50 pt-2.5">
+                <div className="flex flex-col">
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mb-0.5">
+                        Preço
+                    </span>
+                    <span className="text-base font-black text-blue-600 dark:text-blue-400">
+                        {formatCurrency(product.unitPrice || 0)}
+                    </span>
+                </div>
+
+                {product.itemType !== 'service' && (
+                    <div className="flex flex-col items-end">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mb-0.5 text-right">
+                            Estoque
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                            <span className={`text-sm font-black ${isLowStock ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                                {product.stock ?? 0}
+                            </span>
+                            <span className="text-[9px] text-slate-400 dark:text-slate-600 font-bold uppercase">
+                                {product.unit}
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className={`grid ${(!showTrash && product.itemType !== 'service' && !product.isParent) ? 'grid-cols-4' : 'grid-cols-3'} gap-1.5 mt-3`} onClick={(e) => e.stopPropagation()}>
+                {showTrash ? (
+                    <>
+                        <button
+                            onClick={() => onRestore(product.id!)}
+                            className="flex flex-col items-center justify-center gap-1 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                        >
+                            <i className="bi bi-arrow-counterclockwise text-base" />
+                            <span className="text-[8px] font-black uppercase">Restaurar</span>
+                        </button>
+                        <button
+                            onClick={() => onPermanentDelete(product.id!)}
+                            className="flex flex-col items-center justify-center gap-1 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg col-span-2 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                        >
+                            <i className="bi bi-trash3-fill text-base" />
+                            <span className="text-[8px] font-black uppercase tracking-tighter">Excluir Permanente</span>
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button
+                            onClick={() => onToggleActive(product.id!, product.active)}
+                            className={`flex flex-col items-center justify-center gap-1 py-2 rounded-lg border transition-all ${product.active
+                                ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-400'}`}
+                        >
+                            <i className={`bi ${product.active ? 'bi-toggle-on' : 'bi-toggle-off'} text-base`} />
+                            <span className="text-[8px] font-black uppercase">{product.active ? 'Ativo' : 'Inativo'}</span>
+                        </button>
+
+                        {/* Stock Button - only if not service/parent */}
+                        {product.itemType !== 'service' && !product.isParent && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onLaunchStock?.(product); }}
+                                className="flex flex-col items-center justify-center gap-1 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                            >
+                                <i className="bi bi-box-seam text-base" />
+                                <span className="text-[8px] font-black uppercase">Estoque</span>
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => onEdit(product)}
+                            className="flex flex-col items-center justify-center gap-1 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                        >
+                            <i className="bi bi-pencil-fill text-base" />
+                            <span className="text-[8px] font-black uppercase">Editar</span>
+                        </button>
+
+                        <button
+                            onClick={() => onDelete(product.id!)}
+                            className="flex flex-col items-center justify-center gap-1 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                        >
+                            <i className="bi bi-trash-fill text-base" />
+                            <span className="text-[8px] font-black uppercase">Excluir</span>
+                        </button>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default ProductCard;

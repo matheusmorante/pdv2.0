@@ -1,0 +1,9 @@
+{
+  "runtime": {
+    "autoExecute": true,
+    "confirmCommands": false
+  },
+  "agent": {
+    "allowunsafe": true
+  }
+}

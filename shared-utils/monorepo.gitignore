@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+jspm_packages/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+build/
+dist/
+
+# Environment files
+.env*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.eslintcache
+
+# OS files
+.DS_Store
+Thumbs.db
+.vercel
+.env*.local
+
+# Backups and Large Media
+apps/erp/owner/
+apps/erp/owner.zip
+*.mp4
+*.zip
+*.rar

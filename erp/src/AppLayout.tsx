@@ -1,0 +1,212 @@
+import { useState } from "react";
+import { Link, Outlet } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import { useTheme } from "./context/ThemeContext";
+import { useAuth } from "./context/AuthContext";
+import DesktopNav from "./components/layout/DesktopNav";
+import MobileNav from "./components/layout/MobileNav";
+import AIChatAssistant from "./components/shared/AIChatAssistant";
+import AttendanceVoiceInput from "./components/shared/AttendanceVoiceInput";
+import GlobalAutoScroll from "./components/shared/GlobalAutoScroll";
+import NotificationBell from "./components/shared/NotificationBell";
+import AssistanceOrderModal from "./pages/App/SalesOrder/AssistanceOrderModal";
+import { toast } from "react-toastify";
+import { crmIntelligenceService } from "./pages/utils/crmIntelligenceService";
+import { useEffect } from "react";
+import { redeConciliationService } from '@/pages/services/redeConciliationService';
+import logoMorante from "./assets/logo_morante.png";
+
+export type MenuKey = 'products' | 'stock' | 'salesOrder' | 'registrations' | 'finance' | 'design' | null;
+
+export default function AppLayout() {
+  const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const { user, profile, logout, isAdmin } = useAuth();
+  const [isAssistanceModalOpen, setIsAssistanceModalOpen] = useState(false);
+  const [assistanceInitialData, setAssistanceInitialData] = useState<any>(null);
+
+  useEffect(() => {
+    const handleOpenAssistance = (e: any) => {
+      setAssistanceInitialData(e.detail);
+      setIsAssistanceModalOpen(true);
+    };
+
+    const handleRegisterDesire = async (e: any) => {
+      try {
+        await crmIntelligenceService.registerProductDesire(e.detail);
+        toast.success(`Desejo registrado: ${e.detail.product_name} ✨`);
+      } catch (err) {
+        toast.error("Erro ao registrar desejo.");
+      }
+    };
+
+    window.addEventListener('OPEN_ASSISTANCE_MODAL', handleOpenAssistance);
+    window.addEventListener('REGISTER_CUSTOMER_DESIRE', handleRegisterDesire);
+    
+    return () => {
+      window.removeEventListener('OPEN_ASSISTANCE_MODAL', handleOpenAssistance);
+      window.removeEventListener('REGISTER_CUSTOMER_DESIRE', handleRegisterDesire);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Polling de transações Rede a cada 30 segundos
+    const syncInterval = setInterval(() => {
+      redeConciliationService.syncPendingTransactions();
+    }, 30000);
+
+    // Primeira execução imediata
+    redeConciliationService.syncPendingTransactions();
+
+    return () => clearInterval(syncInterval);
+  }, []);
+
+  return (
+    <div className="flex flex-col bg-slate-50 dark:bg-slate-950 min-h-screen font-['Inter',_sans-serif] transition-colors duration-300">
+      <GlobalAutoScroll />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        theme={theme === 'dark' ? 'dark' : 'colored'}
+        draggable
+      />
+
+      {/* Header */}
+      <header className="w-full bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-4 lg:px-8 h-16 lg:h-20 flex items-center justify-between sticky top-0 z-50 shadow-sm transition-colors duration-300">
+        <div className="flex items-center gap-4 lg:gap-8 h-full">
+          <button
+            className="lg:hidden p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <i className="bi bi-list text-2xl"></i>
+          </button>
+
+          <Link to="/" className="flex items-center gap-2 lg:gap-4 flex-shrink-0">
+            <div className="w-8 h-8 lg:w-14 lg:h-14 bg-white rounded-lg lg:rounded-2xl shadow-lg border border-slate-100 dark:border-slate-800 overflow-hidden flex items-center justify-center">
+              <img src={logoMorante} alt="ERP Móveis Morante" className="w-full h-full object-contain p-1" />
+            </div>
+            <h3 className="text-2xl lg:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight block uppercase italic whitespace-nowrap">ERP <span className="text-blue-600">Móveis Morante</span></h3>
+          </Link>
+
+          <DesktopNav activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+        </div>
+
+        <div className="flex items-center gap-2 lg:gap-6">
+          <NotificationBell />
+          <button
+            onClick={toggleTheme}
+            className="p-2 xl:p-3 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-yellow-400 transition-all rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+            title={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
+          >
+            {theme === 'light' ? (
+              <i className="bi bi-moon-stars-fill text-lg xl:text-xl"></i>
+            ) : (
+              <i className="bi bi-sun-fill text-lg xl:text-xl"></i>
+            )}
+          </button>
+
+          {/* Dropdown de Perfil */}
+          <div className="relative group">
+            <button className="flex items-center gap-3 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-all border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+              <div className="w-8 h-8 xl:w-10 xl:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-blue-600 dark:text-blue-400 font-black text-sm uppercase">
+                    {((profile?.full_name || user?.email || 'U') as any)[0]}
+                  </span>
+                )}
+              </div>
+              <div className="hidden xl:block text-left">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none mb-1">Bem-vindo</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
+                  {((profile?.full_name || 'Usuário') as any).split(' ')[0]}
+                </p>
+              </div>
+              <i className="bi bi-chevron-down text-[10px] text-slate-400 group-hover:rotate-180 transition-transform hidden xl:block"></i>
+            </button>
+
+            {/* Menu Dropdown - Com ponte de hover invisível */}
+            <div className="absolute top-full right-0 w-56 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all z-[60] pt-2">
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl p-2 backdrop-blur-xl">
+                <div className="p-4 border-b border-slate-50 dark:border-slate-800 mb-2">
+                  <p className="text-xs font-black text-slate-800 dark:text-slate-100 truncate">{profile?.full_name || 'Usuário'}</p>
+                  <p className="text-[10px] font-bold text-slate-400 truncate">{user?.email}</p>
+                </div>
+
+                <Link to="/profile" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                  <i className="bi bi-person-circle text-lg"></i>
+                  Meu Perfil
+                </Link>
+
+                {isAdmin && (
+                  <>
+                    <Link to="/settings" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                      <i className="bi bi-gear-fill text-lg"></i>
+                      Configurações Geral
+                    </Link>
+                    <Link to="/finance/settings" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                      <i className="bi bi-bank2 text-lg"></i>
+                      Financeiro & Rede
+                    </Link>
+                    <Link to="/system-docs" className="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest">
+                      <i className="bi bi-book-half text-lg"></i>
+                      Lógica do Sistema
+                    </Link>
+                  </>
+                )}
+
+                <div className="h-px bg-slate-50 dark:bg-slate-800 my-2 mx-2"></div>
+
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center gap-3 p-3 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/10 rounded-2xl transition-all font-bold text-xs uppercase tracking-widest"
+                >
+                  <i className="bi bi-box-arrow-right text-lg"></i>
+                  Sair do Sistema
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Nav */}
+      <MobileNav
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+      />
+
+      <main className="flex-1 p-4 xl:p-8 overflow-x-hidden">
+        <Outlet />
+      </main>
+
+      <AIChatAssistant />
+      <AttendanceVoiceInput />
+
+      {isAssistanceModalOpen && (
+        <AssistanceOrderModal 
+          onClose={() => setIsAssistanceModalOpen(false)}
+          onSaveSuccess={() => {
+            setIsAssistanceModalOpen(false);
+          }}
+          initialData={assistanceInitialData}
+        />
+      )}
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes slide-up { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slide-right { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .animate-slide-up { animation: slide-up 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-right { animation: slide-right 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      `}} />
+    </div>
+  );
+}

@@ -1,0 +1,30 @@
+import { toast } from "react-toastify";
+
+/**
+ * Utility for image compression using browser-image-compression
+ */
+export const compressImage = async (file: File, options?: { maxMB?: number, maxWidth?: number }): Promise<string> => {
+    try {
+        const imageCompression = (await import('browser-image-compression')).default;
+        
+        const compressionOptions = {
+            maxSizeMB: options?.maxMB || 0.3,
+            maxWidthOrHeight: options?.maxWidth || 1920,
+            useWebWorker: true,
+            initialQuality: 0.8,
+        };
+
+        const compressedFile = await imageCompression(file, compressionOptions);
+        
+        return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(compressedFile);
+        });
+    } catch (err) {
+        console.error("Erro ao comprimir imagem:", err);
+        toast.error("Falha ao processar imagem.");
+        throw err;
+    }
+};
